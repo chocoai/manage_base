@@ -1,0 +1,345 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>入库单维护</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+		
+<#if !(produce.id)??>
+	<#assign isAdd = true />
+<#else>
+    <#assign count="${(record)!}" />
+	<#assign isAdd = false />
+</#if>
+<script type="text/javascript">
+	var productImageIndex = 1;
+	var count = 1;
+	<#if !isAdd>
+	   productImageIndex = '${record?size}';
+	   count = '${record?size}';
+	</#if>
+	
+	$().ready( function() {
+	
+		//添加
+		$("#addProduceRKD").click(function() {
+			var select = '<select name="deviceMap" id="sbmc.'+productImageIndex+'" class="labelselect deviceid" style="width:180px;">';
+			select += '<option value="">请选择</option>';
+			select += '<#if statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall?exists>';
+			select += '<#list statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.keySet() as key>';
+			select += '<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(key)}</option>';
+			select += '</#list>';
+			select += '</#if>';
+			select += '</select>';
+			var trHtml = '<tr> <td>'+select+'</td><td><input name="numMap" class="numMap" id="num.' + productImageIndex + '" /></td><td><input class="Wdate" name="SCDATEArray" id="SCDATEArray.' + productImageIndex + '" type="text" onClick="WdatePicker()" /> <font color=red></font></td><td> <a href="javascript:;" class="deleteProduceRKD">[删除]</a> </td> </tr>';		
+			$("#produceRKDTable").append(trHtml);
+			productImageIndex ++;
+			count ++;
+			check();
+		});
+		
+		$(".deviceid").live("change",function(){
+			var array = $("body").find(".deviceid").get();
+			var count =0;
+  			for(i=0;i<array.length;i++){
+  				if(array[i].value == $(this).val()) {
+  					count += 1;
+  				}
+  			} 
+  			if(count == 2) {
+  				alert("该设备已经存在");
+  				$(this).attr("value","");
+  			}
+		});
+		$(".formTextarea").blur(function(){
+			if($(this).attr("value").length > 300) {
+				alert("最多只能输入300个字!!");
+				$(this).attr("value",$(this).attr("value").substring(0,300));
+			}
+		});
+			//刪除
+		$("a.deleteProduceRKD").live("click", function() {
+			var $this = $(this);
+			if(count ==1){
+				$.dialog({
+					type: "warn",
+					content: "不能再删除了！",
+					ok: "确 定", 
+					close: true, 
+					modal: true, 
+				});
+				return ;
+			}
+			$.dialog({
+				type: "warn",
+				content: "您确定要删除吗？",
+				ok: "确 定", 
+				cancel: "取 消",
+				close: true, 
+				modal: true, 
+				okCallback: function() {
+					$this.closest("tr").remove();
+					count -- ;
+				}
+			});
+		});
+		
+		$(".numMap").live("keypress",function(e){
+			var keyCode = e.which;
+			if (keyCode >= 48 && keyCode <=57) 
+                return true; 
+            else 
+                return false; 
+		});
+		
+		check();
+	});
+	
+	function check() {
+		$(".numMap").blur(function(){
+			if(($(this).attr("value").length != 0) && ($(this).attr("value")==0)) {
+				alert("设备数量不能为0，请重新填写");
+				$(this).attr("value","");
+			}
+		});
+		
+		$(".Wdate").blur(function(){
+			var myDate = new Date();
+			var date = $(this).attr("value");
+			if(date != "") {
+				if(date.split("-")[0] > myDate.getFullYear()) {
+					alert("年份比当前年份晚了，请重新选择!");
+					$(this).attr("value","");
+				} else if(date.split("-")[1] > (myDate.getMonth() + 1)) {
+					alert("月份比当前月份晚了，请重新选择!");
+					$(this).attr("value","");
+				} else if(date.split("-")[2] > myDate.getDate()) {
+					alert("日份比当前日份晚了，请重新选择!");
+					$(this).attr("value","");
+				}
+			}
+		});
+	}
+	
+	function mySubmit(){
+		var reg = new RegExp("^[1-9][0-9]*$");
+		if(productImageIndex>0){
+			for(var i=0;i<productImageIndex;i++){
+				var sbmcO = document.getElementById("sbmc."+i);
+				var SCDATEArrayO = document.getElementById("SCDATEArray."+i);
+				var numO = document.getElementById("num."+i);
+				if(sbmcO!=null&&numO!=null&&SCDATEArrayO!=null){
+					var sbmc = sbmcO.value;
+					var SCDATEArray = SCDATEArrayO.value;
+					var num  = numO.value;
+			        if(sbmc==""){ 
+			        	alert("请选择设备");
+			        	$('#rkd_DHZT').val("002");
+			        	return false;
+			        }else if(num==""){ 
+			        	alert("请输入设备数据");
+			        	$('#rkd_DHZT').val("002");
+			        	return false;
+			        }else if(!reg.test(num)){
+			        	  alert("数量只能为数字,且数字不能以零开头!");
+			        	  $('#rkd_DHZT').val("002");
+				          return false;
+			        } else if(SCDATEArray == "") {
+			        	alert("请输入生产日期");
+			        	$('#rkd_DHZT').val("002");
+			        	return false;
+			        }
+		        }
+	        }
+			$("#validateForm").submit();
+		}
+	}
+	
+	function changeDHZT(){
+		$('#rkd_DHZT').val("001");
+		mySubmit();
+	}
+</script>
+
+	</head>
+	<body class="input list" onload="showMsg('${errMsg}')">
+		<div class="ctrttop cy143w">
+			<#if isAdd>添加入库单<#else>编辑入库单</#if>
+		</div>
+		<div class="body">
+			<form id="validateForm"  action="<#if isAdd>${base}/manage/ruku/rkd/save<#else>${base}/manage/ruku/rkd/update</#if>" method="post">
+				<input type="hidden" name="produce.id" value="${(produce.id)!}" />
+				
+				<fieldset>
+				<legend>入库单</legend>
+				<table class="inputTable" title="入库单">
+					<tr>
+						<th>单号类型:</th>
+						<td>设备入库单<input type="hidden" value="001" name="produce.DHLX"></td>
+					</tr>
+				    <!-- 可编辑-->
+			        <#if !isAdd == true>
+					<tr >
+						<th>单　　号:</th>
+						<td>
+						 <#if ("${(produce.DHZT)!}" =="001")>
+					       <input type="text" name="produce.DH" value="${(produce.DH)!}" readonly="readonly" style="width:180px;"/>
+						 <!-- 已复核只显示文字（不可编辑）  -->
+						 <#else>
+						   ${(produce.DH)!}
+						 </#if>
+					    </td>
+					</tr> 
+					</#if>
+					<tr>
+						<th>仓库名称:</th>
+						<td>
+						 <!-- 表示草稿 （可编辑）-->
+				         <#if ("${(produce.DHZT)!}" =="001")||isAdd == true>
+							<select name="produce.RKCKBH" class="labelselect formText {required: true}" style="width:180px;">
+								<option value="">请选择</option>
+								<#if statics["cn.com.jandar.plugin.DicPlugin"].b_storeall?exists>
+									<#list statics["cn.com.jandar.plugin.DicPlugin"].b_storeall.keySet() as key>
+								         <#if key=="${(produce.RKCKBH)!}">
+								<option value="${key}" selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].b_storeall.get(key)}</option>
+										<#else>
+								<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_storeall.get(key)}</option>
+										</#if>
+									</#list>
+								</#if>
+							</select>
+						<label class="requireField">*</label>
+						<!-- 已复核只显示文字（不可编辑）  -->
+						<#else>
+						   <#if statics["cn.com.jandar.plugin.DicPlugin"].b_storeall?exists>
+								<#list statics["cn.com.jandar.plugin.DicPlugin"].b_storeall.keySet() as key>
+							         <#if key=="${(produce.RKCKBH)!}">
+							    ${statics["cn.com.jandar.plugin.DicPlugin"].b_storeall.get(key)}
+									</#if>
+								</#list>
+							</#if>
+						</#if>
+						</td>
+					</tr>
+					<tr>
+						<th>备　　注:</th>
+						<td >
+						<!-- 表示草稿 （可编辑）-->
+				        <#if ("${(produce.DHZT)!}" =="001")||isAdd == true>
+						  <textarea class="formTextarea" name="produce.BZ"  value="${(produce.BZ)!}" >${(produce.BZ)!}</textarea>
+						<!-- 已复核只显示文字（不可编辑）  -->
+						<#else>
+						  ${(produce.BZ)!}
+						</#if>
+						</td>
+				    </tr>
+				    
+				    <!-- 表示草稿 （可编辑）-->
+				    <#if ("${(produce.DHZT)!}" =="001")||isAdd == true>
+				     <input type="hidden" name="produce.DHZT" value="002" id="rkd_DHZT">
+				    <#else>
+				    </#if>
+				     </table>
+			</fieldset>
+			<fieldset>
+				<legend>单据明细</legend>
+			 <table class="listTable" id="produceRKDTable">
+				<#if !((((produce.DHZT)!) == '003') || (((produce.DHZT)!) == '002'))>
+				 <tr>
+					<td colspan="4" align="right">
+						<input type="button" class="formButton" id="addProduceRKD" value="增加设备"/>  
+					</td>
+				</tr>
+				</#if>
+				 <tr >
+				    <th>设备名称</th>
+				    <th>数量</th>
+				    <th>生产日期</th>
+				  <#if !((((produce.DHZT)!) == '003') || (((produce.DHZT)!) == '002'))>
+				    <th>操作</th>
+				  </#if>
+				 </tr>
+			 <#if !isAdd>
+				<#list record as lists>
+				 <tr >
+				    <td>
+				       <!-- 表示草稿 -->
+				       <#if (produce.DHZT =="001") == true>
+				      	<select name="deviceMap" id="sbmc.${lists_index}" class="labelselect deviceid" style="width:180px;">
+							<option value="">请选择</option>
+							<#if statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall?exists>
+								<#list statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.keySet() as key>
+							     <#if key=="${(lists.DEVICEID)!}">
+						  	<option value="${key}" selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(key)}</option>
+								 <#else>
+							<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(key)}</option>
+								 </#if>
+								</#list>
+							</#if>
+						</select>
+					  <#else>
+					     <#list statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.keySet() as key>
+							     <#if key=="${(lists.DEVICEID)!}">
+							       ${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(key)}
+							    </#if>
+					     </#list>
+					  </#if>
+				    </td>
+				    <td>
+				    <!-- 表示草稿 -->
+				    <#if (produce.DHZT =="001") == true>
+				    <input name="numMap" type="text" id="num.${lists_index}" class="produceNumber" value="${lists.sums!}"/>
+				    <#else>
+						${lists.sums!}
+					</#if>
+				    </td>
+				    <td>
+				    <!-- 表示草稿 -->
+				    <#if (produce.DHZT =="001") == true>
+				   <input class="Wdate" id="SCDATEArray.0" name="SCDATEArray" type="text" onClick="WdatePicker()" value="${lists.SCDATE!}" /> <font color=red></font>
+				    <#else>
+						${lists.SCDATE!}
+					</#if>
+				    </td>
+				   <#if !((((produce.DHZT)!) == '003') || (((produce.DHZT)!) == '002'))>
+				    <td><a href="javascript:;" class="deleteProduceRKD"><#if lists_index !=0 >[删除]</#if></a></td>
+				   </#if>
+				 </tr>
+				</#list>
+			<#else>
+				<tr >
+				    <td>
+				      	<select name="deviceMap" id="sbmc.0" class="labelselect deviceid" style="width:180px;">
+							<option value="">请选择</option>
+							<#if statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall?exists>
+								<#list statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.keySet() as key>
+							<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(key)}</option>
+								</#list>
+							</#if>
+						</select>
+				    </td>
+				    <td><input name="numMap" type="text" class="numMap" id="num.0" class="produceNumber" /></td>
+				    <td><input class="Wdate" id="SCDATEArray.0" name="SCDATEArray" type="text" onClick="WdatePicker()" /> <font color=red></font></td>
+				 	<td></td>
+				 </tr>
+			</#if>
+				</table> 
+				</fieldset>
+				<div class="buttonArea">
+					
+					<#if !((((produce.DHZT)!) == '003') || (((produce.DHZT)!) == '002'))>
+					<input type="button" class="formButton" value="设备入库" hidefocus="true" onclick="mySubmit()"/>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="button" class="formButton" value="保存草稿" hidefocus="true" onclick="changeDHZT()"/>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					</#if>
+					<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

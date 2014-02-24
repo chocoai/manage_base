@@ -1,0 +1,70 @@
+package cn.com.jandar.kit;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import cn.com.jandar.model.User;
+import cn.com.jandar.plugin.DicPlugin;
+
+import com.jfinal.plugin.activerecord.Record;
+
+public class Constant {
+	
+	//用户菜单生成
+	public static User createManagerMenu(String roleStr,User user){
+		Map<String,List<Record>> map = new LinkedHashMap<String,List<Record>>();//
+		Map<String,String> codemap = new LinkedHashMap<String,String>();//
+		Map<String,String> valuemap = new LinkedHashMap<String,String>();//
+		Map<String,String> imagemap = new LinkedHashMap<String,String>();//
+		codemap.put("首页", "0");
+		imagemap.put("首页", "index0.png");
+		List<Record> list = new ArrayList<Record>();
+		String rname = "";
+		for(Record e:DicPlugin.menuList){
+			String name = DbUtil.readDbString(e.getStr("NAME"));
+			String code = DbUtil.readDbString(e.getInt("CODE"));
+			String url = DbUtil.readDbString(e.getStr("URL"));
+			String images = DbUtil.readDbString(e.getStr("IMAGES"));
+			System.out.println("NAME:"+name);
+			System.out.println("CODE:"+code);
+			System.out.println("URL:"+url);
+			System.out.println("IMAGES:"+images);
+			if(!"".equals(url)&&roleStr.indexOf(url)!=-1){
+				if(codemap.get(name)==null){
+					codemap.put(name, code);
+					valuemap.put(code, name);
+					imagemap.put(name, images);
+				}
+				if("".equals(rname)){
+					rname = name;
+					list.add(e);
+					map.put(rname, list);
+				}else if(name.equals(rname)){
+					list.add(e);
+				}else{
+					rname = name;
+					if(map.get(rname)==null){
+						list = new ArrayList<Record>();
+						list.add(e);
+						map.put(rname, list);
+					}else{
+						list.add(e);
+					}
+				}
+			}
+		}
+		user.put("menuMap", map);//
+		user.put("menucodeMap", codemap);//{网站首页=0, 设备管理=2, 信息维护=3, 日志管理=5, 系统管理=9}
+		user.put("valueMap", valuemap);//{2=设备管理, 3=信息维护, 5=日志管理, 9=系统管理}
+		user.put("imageMap", imagemap);//图片信息
+		
+		System.out.println("list:"+map.toString());	
+		System.out.println("value=code:"+codemap.toString());
+		System.out.println("code=value:"+valuemap.toString());
+		System.out.println("图片信息:"+imagemap.toString());
+		return user;
+	}
+	
+}

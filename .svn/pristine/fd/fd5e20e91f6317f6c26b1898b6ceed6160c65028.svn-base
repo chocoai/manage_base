@@ -1,0 +1,85 @@
+package cn.com.jandar.action.admin;
+
+import java.util.List;
+
+import cn.com.jandar.model.Code;
+import cn.com.jandar.model.Role;
+import cn.com.jandar.model.User;
+import cn.com.jandar.plugin.DicPlugin;
+
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/admin/code",resource="字典维护")
+public class CodeController extends AdminBaseController{
+	@ButtonBind(buttonname="查询")
+	public void index(){
+		//Page<Code> page = Code.getCodePage(getParaToInt("pageNumber", 1), getParaToInt("pageSize", PAGESIZE), getPara("orderBy", "ts_code.TYPENAME"+","+"ts_code.CODE"), getPara("order", ""), getPara("filter_LIKES_name"));
+		//List<Record> list = Db.find("select * from ts_code order by TYPENAME,CODE");
+		List<Record> list = Code.getCodeList(getPara("filter_LIKES_name"));
+		//keepPara("filter_LIKES_name");
+		setAttr("codeList", list);
+		//setAttr("page", page);
+		render("code_list.html");
+	}
+	@ButtonBind(buttonname="删除")
+	public void delete(){
+		String ids[] = getParaValues("ids");
+		renderJson("status", Code.delete(ids));
+	}
+	@ButtonBind(buttonname="新增")
+	public void add(){
+		render("code_input.html");
+	}
+	@ButtonBind(buttonname="新增")
+	public void save(){
+		Code code = getModel(Code.class);
+		//String[] codeList = getParaValues("codeList");		
+		setAttr("msg", Code.save(code));
+		setAttr("redirectionUrl", "/admin/code");
+		render("../common/success.html");
+	}
+	@ButtonBind(buttonname="更新")
+	public void edit(){
+		Code code = Code.getCodeById(getPara("id"));
+		setAttr("code", code);
+		render("code_input.html");
+	}
+	@ButtonBind(buttonname="更新")
+	public void update(){
+		Code code = getModel(Code.class);
+		setAttr("msg", Code.update(code));
+		setAttr("redirectionUrl", "/admin/code");
+		render("../common/success.html");
+	}
+	@ButtonBind(buttonname="校验code")
+	public void checkCode(){
+		Code code = getModel(Code.class);
+		renderText(Code.isExitByCode(code.getStr("CODE")));
+	}
+	@ButtonBind(buttonname="编辑状态")
+	public void editzt(){
+		String id = getPara("id");
+		String qybz = getPara("zt");
+		Record cd = Db.findById("ts_code", id);
+		
+		if("001".equals(qybz)){
+			cd.set("QYBZ", "002");//设置停用
+		}else{
+			cd.set("QYBZ", "001");//设置启用
+		}
+		Boolean boo = Db.update("ts_code", cd);
+		if(boo){
+			DicPlugin.loadJkZidianDb();//重新加载用户字典
+			setAttr("msg", "设置成功");
+		}
+		setAttr("redirectionUrl", "/admin/code");
+		render("../common/success.html");
+	}
+	
+}

@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>下拉测试</title>
+<style>
+ .focus{background-color:blue;color:White}
+ .unfocus{background-color:White;color:Black}
+</style>
+<#include "/admin/common/include.html" />
+<script type="text/javascript">
+var obj;
+var to;//setTimeout时间变量，对于输入快时可以延迟查询
+function makeid(id){
+	return document.getElementById(id);
+}
+function getD(e,va){
+  e=e||event;
+  if(e.keyCode==38||e.keyCode==40||e.keyCode==13)return;
+  if(to) clearTimeout(to);
+  to=setTimeout("getData('"+va+"')",500);//延迟500毫秒后再查询
+}
+function getData(va){
+	$.ajax({
+		type: "POST",
+		url: '${base}/manage/demo/ssuo/ajax_baidu',
+		dataType: "json",
+		data:'cs='+va,
+		success: function(result){
+			var aaa=result.aaa;
+			var dv=makeid('dvContent');
+            dv.innerHTML=aaa;
+            dv.style.display="block";
+		  	CurrentIndex=-1;//重新设置焦点项
+		},
+		error: function(msg){
+			alert("数据读取错误！"+msg);
+		}
+	});
+}
+
+
+function setContent(data,IsKey){
+  makeid('kw').value=data;
+  if(!IsKey){
+    makeid('dvContent').style.display="none";
+    CurrentIndex=-1;
+  }
+}
+function setPosition(){
+  var dv=makeid('dvContent');
+  dv.style.left=getPos("x");
+  dv.style.top=getPos("y")+makeid('kw').offsetHeight+1;
+  dv.style.width=makeid('kw').offsetWidth;
+}
+function getPos(type){
+  var p;
+  var o=makeid('kw');
+  if(type=="x")p=o.offsetLeft;
+  else p=o.offsetTop;
+  while(o=o.offsetParent){
+    if (type=="x") p+=o.offsetLeft; 
+    else p+=o.offsetTop;
+  }
+  return p;
+}
+var CurrentIndex=-1;
+document.onkeydown=function(e){
+  e=e||event;
+  var DC=makeid("dvContent");
+  if(DC.style.display=="none")return;//不显示时不响应按键
+  var items=DC.getElementsByTagName("div");
+  var itemLength=items.length;
+  if(itemLength<1) return;//没有匹配的内容时不响应按键
+
+  if(items[CurrentIndex])items[CurrentIndex].className="unfocus";
+  if(e.keyCode==38){//上  
+    if(CurrentIndex==-1) CurrentIndex=0;
+    else CurrentIndex--;
+    if(CurrentIndex<0)  CurrentIndex=itemLength-1;    
+  }
+  else if(e.keyCode==40){//下  
+    if(CurrentIndex==-1) CurrentIndex=0;
+    else CurrentIndex++;
+    if(CurrentIndex>itemLength-1)CurrentIndex=0;  
+  }
+  else if(e.keyCode==13)setContent(items[CurrentIndex].innerHTML);
+  if(CurrentIndex!=-1){
+     items[CurrentIndex].className="focus";
+     setContent(items[CurrentIndex].innerHTML,true);
+  }
+}
+
+</script>
+</head>
+<body onload="setPosition()">
+<h1>测试</h1>
+<br /><br /><br />
+智能搜索：<input type="text" style="width:200px" id="kw" name="kw" onkeyup="getD(event,this.value)"/><br/>
+<div id="dvContent" style="display:none;position:absolute;border:solid 1px black;"></div><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<h1><a href="${base}/manage/demo/ssuo/tots">提示</a></h1>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<h1><a href="${base}/manage/demo/ssuo/todemo_znss">智能提示3</a></h1>
+</body>
+</html>

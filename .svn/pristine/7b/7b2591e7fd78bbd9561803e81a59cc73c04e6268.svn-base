@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>菜单维护</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+		
+<#if !(menu.id)??>
+	<#assign isAdd = true />
+<#else>
+	<#assign isAdd = false />
+</#if>
+	</head>
+	<body class="input" onload="showMsg('${errMsg}')">
+		<div class="ctrttop cy143w">
+			<#if isAdd>添加菜单<#else>编辑菜单</#if>
+		</div>
+		<div class="body">
+			<form id="validateForm"  action="<#if isAdd>${base}/admin/xtmenu/save<#else>${base}/admin/xtmenu/update</#if>" method="post">
+				<input type="hidden" name="id" value="${(menu.id)!}" />
+				<table class="inputTable">
+				<tr>
+					<th>
+						编号:
+					</th>
+					<td>
+						<input type="text"  name="code" class="formText {required: true ,positiveInteger: true}" value="${(menu.code)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+					<tr>
+					<th>
+						菜单名称:
+					</th>
+					<td>
+						<input type="text"  name="name" class="formText {required: true }" value="${(menu.name)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+					<tr>
+					<th>
+						功能:
+					</th>
+					<td>
+						<input type="text"  name="function" class="formText {required: true}" value="${(menu.function)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+					<tr>
+					<th>
+						url:
+					</th>
+					<td>
+						<input type="text"  name="url" class="formText {required: true }" value="${(menu.url)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+					<tr>
+					<th>
+						排序序号:
+					</th>
+					<td>
+						<input type="text"  name="sort" class="formText {required: true ,positiveInteger: true}" value="${(menu.sort)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						图片名称:
+					</th>
+					<td>
+						<input type="text"  name="images" class="formText {required: true}" value="${(menu.images)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+					<tr>
+					<th>
+						启用状态:
+					</th>
+					<td>
+						<label><input type="radio" name="stat" value="1"<#if (isAdd || menu.stat == 1)!> checked</#if> />是</label>
+						<label><input type="radio"name="stat" value="0"<#if ( menu.stat == 0)!> checked</#if> />否</label>
+					</td>
+				</tr>
+				</table>
+				<div class="buttonArea">
+					<input type="submit" class="formButton" value="确  定" hidefocus="true" />
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

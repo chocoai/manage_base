@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>客户查看</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+
+	</head>
+	<body class="input" onload="showMsg('${errMsg}')">
+		<div class="ctrttop cy143w">
+			客户查看
+		</div>
+		<div class="body">
+			<form id="validateForm"  action="#" method="post">
+				
+				<table class="inputTable">
+					<tr>
+						<th>客户名称:</th>
+						<td>
+						<!-- 
+						<input type="text" name="customer.CNAME" value="${(customer.CNAME)!}" class="formText {required: true,minlength: 1, maxlength: 20}" title="厂商名称长度只允许在1-20之间" readonly="readonly"/><label class="requireField">*</label>
+						-->
+						<label>${(customer.CNAME)!}</label>
+						</td>
+					</tr>
+					<tr>
+						<th>客户简称:</th>
+						<td>
+						<!-- 
+						<input type="text" name="customer.CSNAME" value="${(customer.CSNAME)!}"  class="formText {required: true,minlength: 1, maxlength: 10}" title="客户简称长度只允许在1-10之间" readonly="readonly"/><label class="requireField">*</label>
+						-->
+						<label>${(customer.CSNAME)!}</label>
+						</td>
+					</tr>
+					<tr>
+						<th>联系人:</th>
+						<td>
+							<!--<input type="text" name="customer.LXR" value="${(customer.LXR)!}"  class="formText {required: true,minlength: 2, maxlength: 8}" title="联系人长度只允许在2-8之间" readonly="readonly"/><label class="requireField">*</label>
+							-->
+							<label>${(customer.LXR)!}</label>
+						</td>
+					</tr>
+					<tr>
+						<th>联系电话:</th>
+						<td>
+						<!--
+						<input type="text" name="customer.LXDH" value="${(customer.LXDH)!}"  class="formText {required: true,phone:true}" readonly="readonly"/><label class="requireField">*</label>
+						-->
+						<label>${(customer.LXDH)!}</label>
+						</td>
+					</tr>
+					<tr>
+						<th>手机:</th>
+						<td>
+						<!--  
+						<input type="text" name="customer.PHONE" value="${(customer.PHONE)!}"  class="formText {required: true,mobile:true}" readonly="readonly"/><label class="requireField">*</label>
+						-->
+						<label>${(customer.PHONE)!}</label>
+						</td>
+					</tr>
+					<tr>
+						<th>传真:</th>
+						<td>
+						<!--  
+						<input type="text" name="customer.FOX" value="${(customer.FOX)!}"  class="formText {required: true}" readonly="readonly"/><label class="requireField">*</label>
+						-->
+						<label>${(customer.FOX)!}</label>
+						</td>
+					</tr>
+					<tr>
+						<th>邮箱:</th>
+						<td>
+						<!--  
+						<input type="text" name="customer.EMAIL" value="${(customer.EMAIL)!}"  class="formText {required: true,email:true}" readonly="readonly"/><label class="requireField">*</label>
+						-->
+						<label>${(customer.EMAIL)!}</label>
+						</td>
+					</tr>
+					<tr>
+						<th>地址:</th>
+						<td>
+						<!--  
+						<input type="text" name="customer.ADDR" value="${(customer.ADDR)!}"  class="formText {required: true}" readonly="readonly"/><label class="requireField">*</label>
+						-->
+						<label>${(customer.ADDR)!}</label>
+						</td>
+					</tr>
+					<tr>
+						<th>邮政编码:</th>
+						<td>
+						<!--  
+						<input type="text" name="customer.YZBM" value="${(customer.YZBM)!}"  class="formText {required: true,zipCode:true}" readonly="readonly"/><label class="requireField">*</label>
+						-->
+						<label>${(customer.YZBM)!}</label>
+						</td>
+					</tr>
+					<tr>
+						<th>客户区域:</th>
+						<td>
+						<!--  
+						 <input type="text" name="customer.BAREA" value="${(customer.BAREA)!}"  class="formText {required: true}" readonly="readonly"/><label class="requireField">*</label>				
+						-->
+						<label>${(customer.BAREA)!}#${(statics["cn.com.jandar.plugin.DicPlugin"].ts_area.get(customer.BAREA))!}</label>
+						
+						</td>
+					</tr>
+					<tr>
+						<th>备注:</th>
+						<td>
+						<!-- <textarea class="formTextarea" name="customer.BZ"  value="${(customer.BZ)!}" readonly="readonly">${(customer.BZ)!}</textarea>
+						-->
+						<label>${(customer.BZ)!}</label>
+						</td>
+						
+				    </tr>
+				    <tr>
+					<th>是否有效:</th>
+					<td>
+						<#if customer.YXBZ=="001" >
+						<!--  
+						<input type="text" name="customer.BAREA" value="${(customer.YXBZ)!}"  class="formText {required: true}" readonly="readonly"/><label class="requireField">*</label>		
+							-->	
+							<label>有效</label>
+						<#else>
+						<!--  
+						<input type="text" name="customer.BAREA" value="${(customer.YXBZ)!}"  class="formText {required: true}" readonly="readonly"/><label class="requireField">*</label>				
+							-->
+							<label>无效</label>
+						</#if>
+					</td>
+					
+				</tr>
+				</table>
+				<div class="buttonArea">
+					
+					<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

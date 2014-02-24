@@ -1,0 +1,11 @@
+package cn.com.jandar.action.admin;
+
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/admin/area",resource="地区维护")
+public class AreaController extends AdminBaseController{
+	public void index(){
+		renderText("地区维护");
+	}
+}

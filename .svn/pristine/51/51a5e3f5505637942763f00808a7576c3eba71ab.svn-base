@@ -1,0 +1,99 @@
+package cn.com.jandar.action.manage.base;
+
+
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.render.Render;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.model.Customer;
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/base/customer",resource="客户登记")
+public class CustomerController extends AdminBaseController{
+	
+	/**
+	 * 分页显示客户
+	 */
+	@ButtonBind(buttonname="查询")
+	public void index(){
+		Page<Customer> page =  Customer.getCustomerPage(getParaToInt("pageNumber",1),getParaToInt("pageSize",PAGESIZE),getPara("orderBy","b_customer.ID"),getPara("order","desc"),getPara("filter_LIKES_name"));
+		keepPara("filter_LIKES_name");
+		setAttr("page", page);
+		render("customer_list.html");
+	}
+	
+	/**
+	 * 添加客户页面
+	 */
+
+	@ButtonBind(buttonname="新增")
+	public void add(){
+		render("customer_input.html");
+	}
+	
+	/**
+	 * 保存客户
+	 */
+	@ButtonBind(buttonname="新增")
+	public void save(){
+		Customer customer = getModel(Customer.class);
+		setAttr("msg", Customer.save(customer,this));
+		setAttr("redirectionUrl", "/manage/base/customer");
+		render("/admin/common/success.html");
+	}
+	
+	/**
+	 * 编辑客户页面
+	 */
+	@ButtonBind(buttonname="更新")
+	public void edit(){
+		Customer customer = Customer.getCustomerById(getPara("id"));
+		setAttr("customer", customer);
+		render("customer_input.html");
+	}
+	
+	@ButtonBind(buttonname="查看")
+	public void seek(){
+		Customer customer = Customer.getCustomerById(getPara("id"));
+		setAttr("customer", customer);
+		render("customer_seek.html");
+	}
+	
+	/**
+	 * 更新客户
+	 */
+	@ButtonBind(buttonname="更新")
+	public void update(){
+		Customer customer = getModel(Customer.class);
+		setAttr("msg", Customer.update(customer,this));
+		setAttr("redirectionUrl", "/manage/base/customer");
+		render("/admin/common/success.html");
+	}
+	
+//	@ButtonBind(buttonname="删除")
+//	public void delete(){
+//		String[] ids=getParaValues("ids");
+//		renderJson("status", Customer.delete(ids));
+//	}
+	
+//	@ButtonBind(buttonname="更改客户状态")
+//	public void changeState(){
+//		Customer customer  = Customer.getCustomerById(getPara("id"));
+//		customer.set("YXBZ", getPara("YXBZ"));
+//		Customer.update(customer,this);
+//		setAttr("msg", "变更用户状态成功");
+//		setAttr("redirectionUrl", "/manage/base/customer");
+//		render("/admin/common/success.html");
+//	}
+	
+	/**
+	 * 联动下拉列表(Ajax请求)
+	 */
+	public void queryCustomByArea(){
+		String areaid = getPara("areaid");
+		renderJson(Customer.gerCustomerByArea(areaid));
+	}
+	
+}

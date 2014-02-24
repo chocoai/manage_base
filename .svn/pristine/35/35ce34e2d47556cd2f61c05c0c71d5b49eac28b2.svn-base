@@ -1,0 +1,151 @@
+package cn.com.jandar.action.manage.ruku;
+
+import java.util.List;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.model.Produce;
+import cn.com.jandar.model.ProduceDetail;
+import cn.com.jandar.model.ProduceDetailDraft;
+import cn.com.jandar.model.User;
+
+import com.google.common.collect.Lists;
+import com.jfinal.aop.Before;
+import com.jfinal.plugin.activerecord.CPI;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+@ControllerBind(controllerKey = "/manage/ruku/ykd", resource = "移库单")
+public class YkdController extends AdminBaseController {
+	@ButtonBind(buttonname = "查询")
+	public void index() {
+		String sbzt = "006";// 单据类型
+		String dhzt = "003"; // 单据状态
+		String typeCode = "1";
+		if (this.getPara("dhzt") != null) {
+			dhzt = this.getPara("dhzt");
+			if (dhzt.equals("001")) {
+				typeCode = "2";
+			} else if (dhzt.equals("003")) {
+				typeCode = "1";
+			}
+		}
+
+		if (this.getPara("sbzt") != null) {
+			sbzt = this.getPara("sbzt");
+		}
+
+		Page<Produce> page = Produce.getProduceList(
+				getParaToInt("pageNumber", 1),
+				getParaToInt("pageSize", PAGESIZE),
+				getPara("orderBy", "c_produce.dh"), getPara("order", "asc"),
+				sbzt, dhzt);
+
+		setAttr("page", page);
+		setAttr("typeCode", typeCode);
+
+		render("ykd_list.html");
+	}
+
+	// 根据单据类型查找该类型单据最大的单据号
+	@ButtonBind(buttonname = "新增")
+	public void add() {
+		setAttr("produce", new Produce().set("SBZT", "006"));
+		setAttr("SBZT", "移库单");
+		setAttr("produceDetail", new ProduceDetail());
+
+		render("ykd_input.html");
+	}
+
+	// 已复核单据查看
+	@ButtonBind(buttonname = "查看明细")
+	public void query() {
+		// 得到单号
+		String dh = this.getPara("dh");
+		Produce produce = Produce.getProduceByDh(dh);
+		List<Record> recordList = ProduceDetail.getYkdProduceDetailByDH(dh);
+
+		setAttr("produce", produce);
+		setAttr("SBZT", "移库单");
+		setAttr("recordList", recordList);
+		setAttr("onlyQuery", true);
+
+		render("ykd_input.html");
+	}
+
+	// 查询草稿
+	@ButtonBind(buttonname = "编辑")
+	public void edit() {
+		String dh = this.getPara("dh");
+		Produce produce = Produce.getProduceByDh(dh);
+		List<Record> recordList = ProduceDetailDraft
+				.getProduceDetailDraftByDH(dh);
+
+		setAttr("SBZT", "移库单");
+		setAttr("onlyQuery", true);
+		setAttr("produce", produce);
+		setAttr("recordList", recordList);
+
+		render("ykd_input.html");
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "新增")
+	public void save() {
+		Produce produce = this.getModel(Produce.class);
+		String[] deciveArray = this.getParaValues("deviceMap");
+		String[] numArray = this.getParaValues("numMap");
+		List<Record> records = Lists.newArrayList();
+
+		for (int i = 0; i < deciveArray.length; i++) {
+			Record e = new Record();
+			e.set("deviceid", deciveArray[i]);
+			e.set("num", numArray[i]);
+			records.add(e);
+		}
+		User user = getSessionAttr(User.LOGIN_USER);
+		String msg = Produce.saveAll(user, produce, records);
+
+		if (Produce.SUCCESS.equals(msg)) {
+			this.setAttr("msg", Produce.SUCCESS);
+			this.setAttr("redirectionUrl", "/manage/ruku/ykd");
+			this.render("../../../admin/common/success.html");
+		} else {
+			this.setAttr("msg", msg);
+			this.setAttr("redirectionUrl", "/manage/ruku/ykd");
+			this.render("../../../admin/common/error.html");
+		}
+
+	}
+
+	// 明细从单据中得到信息
+	private void getAttrFromProduce(Produce produce, int i) {
+		if (i == 0) {
+			ProduceDetailDraft produceDetailDraft = new ProduceDetailDraft();
+			produceDetailDraft.setAttrs(CPI.getAttrs(produce));
+			// 另外的setter补充
+			produceDetailDraft.set("num", 1);
+			produceDetailDraft.set("CHNUM", -1);
+		} else {
+			ProduceDetail produceDetail = new ProduceDetail();
+			produceDetail.setAttrs(CPI.getAttrs(produce));
+			// 另外的setter补充
+			produceDetail.set("num", 1);
+			produceDetail.set("CHNUM", -1);
+		}
+	}
+
+	@ButtonBind(buttonname = "更新")
+	public void update() {
+
+	}
+
+	// 作废
+	public void stop() {
+
+	}
+
+}

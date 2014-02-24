@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>模型详细列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html"/>
+<script type="text/javascript">
+var productImageIndex = 1;
+	productImageIndex = '${detaillist?size}';
+
+	$().ready( function() {
+		//添加事件
+		$("#addModelDetail").click(function() {
+			var select = '<input type="hidden" name="modeldetailid" id="modeldetailid" value="-1"/>';
+			    select += '<select name="DEVICEID" id="device.' + productImageIndex + '" class="labelselect" style="width: 180px" >';				
+				select += '<#if statics["cn.com.jandar.plugin.DicPlugin"].b_device001?exists>';
+				select += '<#list statics["cn.com.jandar.plugin.DicPlugin"].b_device001.keySet() as key>';		
+				select += '<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_device001.get(key)}</option>';			
+				select += '</#list>';
+				select += '</#if>';
+				select += '</select>';
+			var dnum = '<input type="text" name="DNUM" value="1" id="num.' + productImageIndex + '" class="fromText {required: true}" />';
+  				dnum +=	'<label class="requiredField">*</label>';
+  			/* var sm ='<input type="text" name="SM" id="sm.' + productImageIndex + '" class="fromText" value="无"/><label class="requiredField">*</label>'; */
+			var trHtml = '<tr> <td>'+select+'</td><td>'+dnum+'</td><td> <a href="javascript:;" class="deleteProductImage">[删除]<\/a> <\/td> <\/tr>';		
+			$("#productImageTable").append(trHtml);
+			productImageIndex ++;
+		});
+			//刪除
+		$("a.deleteProductImage").live("click", function() {
+			var $this = $(this);
+			$.dialog({
+				type: "warn",
+				content: "您确定要删除吗？",
+				ok: "确 定", 
+				cancel: "取 消",
+				close: true, 
+				modal: true, 
+				okCallback: function() {
+					$this.closest("tr").remove();
+					productImageIndex--;
+				}
+			});
+		});
+	});
+	
+function aa(){
+	var reg = new RegExp("^[0-9]*$");
+	var devs = "null";
+		if(productImageIndex>0){
+			for(var i=0;i<productImageIndex;i++){
+				console.info(i+"---");
+				var dev = document.getElementById("device."+i).value;
+				var numo = document.getElementById("num."+i);
+			/* 	var smo = document.getElementById("sm."+i); */
+				if(devs.indexOf(dev)!=-1){
+						alert("请勿重复选择设备!");
+				          return false;
+				}
+				devs  =devs+ document.getElementById("device."+i).value;
+				if(numo!=null/* &&smo!=null */){
+					var num = numo.value;
+					/* var sm  = smo.value; */
+					 /* if(sm==""){ 
+			        	alert("请填写说明");return false;
+			        }else */ if(num==""){ 
+			        	alert("请输入设备数量");return false;
+			        }else if(!reg.test(num)){
+			        	  alert("数量只能为数字!");
+				          return false;
+			        }
+				}
+			}
+		}
+		$("#validateForm").submit();
+	}
+</script>
+</head>
+
+<body class="input list" onload="showMsg('${errMsg}')">
+	<div class="ctrttop cy143w">
+	 	查看模型详情
+    </div>
+    <div class="body">
+    	<form id="validateForm" action="${base}/manage/scd/mxsc/update" method="post">
+    		<input type="hidden" name="modelid" id="modelid" value="${model.ID}"/>
+    		<fieldset>
+				<legend>模型信息</legend>
+				<table class="inputTable" title="模型信息">
+    		<!--  
+    			<tr>
+    				<th>
+    					 模型ID:
+    				</th>
+    				<td>
+    					${model.ID}
+    				</td>
+    			</tr>
+    		-->
+    			<tr>
+    				<th>
+    					 模型名称:
+    				</th>
+    				<td>
+    					${(model.MODLENAME)!}
+    				</td>
+    			</tr>
+
+				    			
+    			<tr>
+    				<th>
+    					 有效标志
+    				</th>
+    				<td>
+    					<select name="yxbz"  class="labelselect">
+    						<#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("YXBS") as qybz> 							
+  							<option value="${qybz.code}" <#if model.YXBZ == qybz.code>selected="selected" </#if>>${qybz.value}</option>
+    						</#list>
+    					</select>
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>
+    					 备注
+    				</th>
+    				<td>
+    					<textarea name="bz" class="formTextarea {required: true}">${(model.BZ)!}</textarea>
+  						<label class="requiredField">*</label>
+    				</td>
+    			</tr>
+    		</table>
+    		</fieldset>
+    		<fieldset>
+				<legend>单据明细</legend>
+		    	 <table class="listTable" id="productImageTable">
+    			 <tr>
+					<td colspan="4" align="right">
+					<input type="button" class="formButton" id="addModelDetail" value="添加细节"/>  
+    		       </td>
+				</tr>
+  				<tr>
+    				<th>
+    					<span class="sort">设备名称</span>
+    				</th>
+    				<th>
+    					<span class="sort">数量</span>
+    				</th>
+    				<!-- <th>
+    					<span class="sort">说明</span>
+    				</th> -->
+    				<th>
+    					<span class="sort">操作</span>
+    				</th>
+    			</tr>
+  				<#if detaillist>
+    			<#list detaillist as alist>
+    			<tr>
+    				<td>
+    				<input type="hidden" name="modeldetailid" id="modeldetailid" value="${alist.ID}"/>
+    					
+    				<select name="DEVICEID" id="device.${alist_index}" class="labelselect" style="width: 180px" >
+    					<#if statics["cn.com.jandar.plugin.DicPlugin"].b_device001?exists>
+							<#list statics["cn.com.jandar.plugin.DicPlugin"].b_device001.keySet() as key>
+								<option value="${key}" <#if key==alist.DEVICEID>selected="selected"</#if>>${statics["cn.com.jandar.plugin.DicPlugin"].b_device001.get(key)}</option>		
+							</#list>
+						</#if>
+					</select>
+    				</td>
+    				<td>
+						<input type="text" name="DNUM" id="num.${alist_index}" class="fromText {required: true}" value="${(alist.DNUM)!}"/>
+  						<label class="requiredField">*</label>
+    				</td>
+    				<!-- <td>
+   						<input type="text" name="SM" id="sm.${detaillist_index+1}" class="fromText" value="${(alist.SM)!}"/>
+   						<label class="requiredField">*</label>
+    				</td> -->
+    				<td>
+    					<a href="javascript:;" class="deleteProductImage">[删除]</a>
+    				</td>
+    			</tr>
+    			</#list>
+    			</#if>
+    		</table>
+    		</fieldset>
+    		<div class="buttonArea">
+				<input type="button" class="formButton" value="确  定" onclick="aa()" hidefocus="true" />&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus />			</div>
+    		
+    	</form>
+    </div>
+</body>
+</html>

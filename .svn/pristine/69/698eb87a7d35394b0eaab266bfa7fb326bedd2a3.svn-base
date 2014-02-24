@@ -1,0 +1,12 @@
+package cn.com.jandar.action.manage.bxgl;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/bxgl/bxdhf",resource="报修单回复")
+public class BxdhfController extends AdminBaseController{
+	public void index(){
+		renderText("报修单回复");
+	}
+}

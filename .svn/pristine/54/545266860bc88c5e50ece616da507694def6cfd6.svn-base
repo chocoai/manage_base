@@ -1,0 +1,147 @@
+package cn.com.jandar.action.manage.ruku;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.kit.Constant;
+import cn.com.jandar.model.Produce;
+import cn.com.jandar.model.ProduceDetail;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/ruku/rkd",resource="入库单")
+public class RudController extends AdminBaseController{
+	
+	public void index(){
+		Page<Produce> page =  Produce.getProducePage(getParaToInt("pageNumber",1),getParaToInt("pageSize",PAGESIZE),getPara("orderBy","c_produce.ID"),getPara("order","desc"),getPara("filter_LIKES_RKCKBH"),getPara("filter_LIKES_DHZT"));
+		System.out.println(getPara("filter_LIKES_DHZT"));
+		keepPara("filter_LIKES_RKCKBH");
+		keepPara("filter_LIKES_DHZT");
+		setAttr("page", page);
+		render("rkd_list.html");
+	}
+	/**
+	 * 添加入库单
+	 */
+	public void add(){
+		
+		render("rkd_input.html");
+	}
+	
+	/**
+	 * 保存入库单
+	 */
+	public void save(){
+		Produce produce = getModel(Produce.class);
+
+		String DH = Constant.findb_goods_dh("001");
+		produce.set("DH", DH);
+		
+		String[] deviceID =  getParaValues("deviceID");
+		String[] deviceNum =  getParaValues("deviceNum");
+		for(int i=0;i<deviceID.length;i++){
+			int count = Integer.parseInt(deviceNum[i]);
+			for(int j=0;j<count;j++){
+				Map<String,Object> attrs = new HashMap<String,Object>();
+				ProduceDetail detail = new ProduceDetail();
+				attrs.put("DH", produce.getStr("DH"));
+				attrs.put("SBZT", produce.getStr("SBZT"));
+				attrs.put("DEVICEID", getParaValues("deviceID")[i]);
+				attrs.put("FACTORYID", produce.getInt("FACTORYID"));
+				attrs.put("CHNUM", 1);
+				attrs.put("DHZT", produce.getStr("DHZT"));
+				attrs.put("NUM", 1);
+				attrs.put("SZCK", produce.getStr("RKCKBH"));
+				attrs.put("BZ", produce.getStr("BZ"));
+				detail.setAttrs(attrs);
+				ProduceDetail.save(detail);
+				
+			}
+		
+		}
+		
+		setAttr("msg", Produce.save(produce,this));
+		setAttr("redirectionUrl", "/manage/ruku/rkd");
+		render("/admin/common/success.html");
+	}
+	
+	/**
+	 * 编辑入库单页面
+	 */
+	public void edit(){
+		Produce produce = Produce.getProduceById(getPara("id"));
+		List<Record> record= ProduceDetail.getProduceDetailByDH(getPara("DH"));
+//		if(record!=null&&record.size()>0){
+//			for(Record r : record){
+//				System.out.println("sum1="+r.get("sums"));
+//				System.out.println("sum2="+r.get("sums"));
+//				System.out.println("------------------");
+//				System.out.println("sum3="+r.getBigDecimal("sums"));
+//			}
+//		}
+		setAttr("produce", produce);
+		setAttr("record", record);
+		render("rkd_input.html");
+	}
+	
+	/**
+	 * 更新入库单
+	 */
+	public void update(){
+		
+		Produce produce = getModel(Produce.class);
+		
+		//编辑的时候，首先删除设备详情
+		ProduceDetail.deleteByDH(produce.getStr("DH"));
+		
+		String[] deviceID =  getParaValues("deviceID");
+		String[] deviceNum =  getParaValues("deviceNum");
+		for(int i=0;i<deviceID.length;i++){
+			int count = Integer.parseInt(deviceNum[i]);
+			for(int j=0;j<count;j++){
+				Map<String,Object> attrs = new HashMap<String,Object>();
+				ProduceDetail detail = new ProduceDetail();
+				attrs.put("DH", produce.getStr("DH"));
+				attrs.put("SBZT", produce.getStr("SBZT"));
+				attrs.put("DEVICEID", getParaValues("deviceID")[i]);
+				attrs.put("FACTORYID", produce.getInt("FACTORYID"));
+				attrs.put("CHNUM", 1);
+				attrs.put("DHZT", produce.getStr("DHZT"));
+				attrs.put("NUM", 1);
+				attrs.put("SZCK", produce.getStr("RKCKBH"));
+				attrs.put("BZ", produce.getStr("BZ"));
+				detail.setAttrs(attrs);
+				ProduceDetail.save(detail);
+			}
+		
+		}
+		
+		setAttr("msg", Produce.update(produce,this));
+		setAttr("redirectionUrl", "/manage/ruku/rkd");
+		render("/admin/common/success.html");
+	}
+	
+	/**
+	 * 删除入库单
+	 */
+	public void delete(){
+		String[] ids=getParaValues("ids");
+		renderJson("status", Produce.delete(ids));
+	}
+	/**
+	 * 更改入库单状态
+	 */
+	public void changeState(){
+		Produce produce  = Produce.getProduceById(getPara("id"));
+		produce.set("DHZT", getPara("DHZT"));
+		Produce.update(produce,this);
+		setAttr("msg", "变更单号状态成功");
+		setAttr("redirectionUrl", "/manage/ruku/rkd");
+		render("/admin/common/success.html");
+	}
+}

@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>添加/编辑文章分类</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+
+</head>
+
+<body class="input" onload="showMsg('${errMsg}')">
+	<div class="bar">生产单</div>
+	<form id="validateForm" action="" method="post">
+	<div class="body">
+	<fieldset>
+	    <legend>${sbscd_form_name}</legend>
+
+			<input type="hidden" name="scd.id" value="${(scd.id)!}" /> 
+			<input type="hidden" name="scd.DHZT" id="scd_dhzt" value="${(scd.DHZT)!}">
+			<input type="hidden" name="scd.DDZT" id="scd_ddzt" value="${(scd.DDZT)!}">
+				<table class="inputTable" title="生产单">
+					<tr>
+						<#if (scd.dh)??>
+							<th>单号:</th>
+							<td>${(scd.dh)!}
+							</td>
+						</#if>	
+						<th>出库仓库:</th>
+						<td> 
+						  ${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get("${scd.CKCKBH}")}
+						</td>
+					</tr>
+				
+					<tr>
+						<th>模型:</th>
+						<td>
+						${statics["cn.com.jandar.plugin.DicPlugin"].p_model.get("${scd.MODELID}")}
+						</td>
+						<th>设备数量:</th>
+						<td>${(scd.SBNUM)!}
+						</td>
+					</tr>
+					
+					<tr>
+						<th>客户:</th>
+						<td>
+						${statics["cn.com.jandar.plugin.DicPlugin"].b_customer.get("${scd.CUSTOMERID}")}
+						</td>
+					</tr>
+					<tr>
+						<th>联系人:</th>
+						<td>${(scd.LXR)!}
+						</td>
+						<th>联系电话:</th>
+						<td>${(scd.LXDH)!}
+						</td>
+					</tr>
+					
+					<tr>
+						<th>备注:</th>
+						<td colspan="3">${(scd.bz)!}</textarea>
+						</td>
+					</tr>
+
+				</table>
+		</fieldset>
+		<#if detaillist>
+  			<fieldset>
+				<legend>明细</legend>
+		    	 <table class="listTable" id="scd_detail_table">
+    			 
+  				<tr>
+    				<th>
+    					<span class="sort" style="float: left;">设备名称</span>
+    				</th>
+    				<th>
+    					<span class="sort" style="float: left;">数量</span>
+    				</th>
+    				<th>
+    					<span class="sort" style="float: left;">厂商</span>
+    				</th>
+    			</tr>
+    			<#list detaillist as alist>
+    			<tr>
+    				<td>
+    				${statics["cn.com.jandar.plugin.DicPlugin"].b_device001.get("${alist.DEVICEID}")}
+    				</td>
+    				<td>
+    				 ${(alist.DNUM)!}
+    				</td>
+    				<td>
+    				${statics["cn.com.jandar.plugin.DicPlugin"].b_factoryall.get("${alist.FACTORYID}")}
+    				</td>
+    			</tr>
+    			</#list>
+    		</table>
+    		</fieldset>
+			</#if>
+			
+			<div class="buttonArea" align="right">
+				<input type="button" class="formButton" 
+					onclick="window.history.back(); return false;" value="返  回"
+					hidefocus="true" />
+			</div>
+		</form>
+	</div>
+</body>
+</html>

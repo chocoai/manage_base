@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>单号类型维护</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<#include "/admin/common/include.html" /> <#if !(goods.id)??> <#assign
+isAdd = true /> <#else> <#assign isAdd = false /> </#if>
+
+</head>
+<body class="input" onload="showMsg('${errMsg}')">
+	<div class="ctrttop cy143w"><#if isAdd>添加单号类型<#else>编辑单号类型</#if>
+	</div>
+	<div class="body">
+		<form id="validateForm"
+			action="<#if isAdd>${base}/admin/goods/save<#else>${base}/admin/goods/update</#if>"
+			method="post">
+			<input type="hidden" name="goods.id" value="${(goods.id)!}" />
+			<table class="inputTable">
+				<tr>
+					<th>名称:</th>
+					<td>
+					 <input type="text"
+						name="goods.d_name" value="${(goods.d_name)!}" />
+				    <!-- 单号名称重复判断		
+					  <#if isAdd> <input type="text" name="goods.d_name"
+						class="formText {d_name: true, remote: '${base}/admin/goods/checkGoodsName', minlength: 2, maxlength: 20, messages: {remote: '用户名已存在,请重新输入!'}}" />
+						<#else>  </#if> -->
+					</td>
+				</tr>
+
+				<tr>
+					<th>类型:</th>
+					<td><input type="text" name="goods.d_type"
+						value="${(goods.d_type)!}" /> 
+					</td>
+				</tr>
+				<tr>
+					<th>说明:</th>
+					<td>
+					  <textarea class="formTextarea" name="goods.sm">${(goods.sm)!}</textarea>
+					</td>
+				</tr>
+				<tr>
+					<th>单号长度:</th>
+					<td><input type="text" name="goods.dhcd"
+						value="${(goods.dhcd)!}" /> 
+					</td>
+				</tr>
+                 <tr>
+					<th>单号前缀:</th>
+					<td><input type="text" name="goods.dhqz"
+						value="${(goods.dhqz)!}" /> 
+					</td>
+				</tr>
+                <tr>
+					<th>单号格式:</th>
+					<td><input type="text" name="goods.dhgs"
+						value="${(goods.dhgs)!}" /> 
+					</td>
+				</tr>
+				 <tr>
+					<th>单号生成日期:</th>
+					<td><input type="text" name="goods.dhscrq"
+						value="${(goods.dhscrq)!dhscrq}" readonly="readonly"/> 
+					</td>
+				</tr>
+                <tr>
+					<th>
+						是否启用:
+					</th>
+					<td>
+						<label><input type="radio" name="goods.yxbz" value="001"<#if (isAdd || store.yxbz == "001")!> checked</#if> />是</label>
+						<label><input type="radio" name="goods.yxbz" value="002"<#if (store.yxbz == "002")!> checked</#if> />否</label>
+					</td>
+				</tr>
+				
+			</table>
+			<div class="buttonArea">
+				<input type="submit" class="formButton" value="确  定"
+					hidefocus="true" /> &nbsp;&nbsp;&nbsp;&nbsp; <input type="button"
+					class="formButton" onclick="window.history.back(); return false;"
+					value="返  回" hidefocus="true" />
+			</div>
+		</form>
+	</div>
+</body>
+</html>

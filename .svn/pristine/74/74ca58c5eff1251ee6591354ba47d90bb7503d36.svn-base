@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>报修单回复维护</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+		
+<#if !(bxd.CLZT)??||bxd.CLZT==001>
+	<#assign isAdd = true />
+<#else>
+	<#assign isAdd = false />
+</#if>
+	</head>
+	<body class="input" onload="showMsg('${errMsg}')">
+		<div class="ctrttop cy143w">
+			<#if isAdd>报修单回复<#else>查看报修单回复</#if>
+		</div>
+		<div class="body">
+				<fieldset>
+				<legend>报修单详情</legend>
+				<table class="inputTable" title="报修单详情">
+				    <tr hidden="true">
+				      <th>单号状态</th>
+				      <td><input name="bxd.DHZT" value="003"></td>
+				    </tr>
+				    <tr >
+				      <th>单号类型：</th>
+				      <td>${"报修单回复"}</td>
+					  <th>客户名称:</th>
+					  <td>
+						<#if statics["cn.com.jandar.plugin.DicPlugin"].b_customerall?exists>
+							<#list statics["cn.com.jandar.plugin.DicPlugin"].b_customerall.keySet() as key>
+								<#if key=="${(bxd.CUSTOMERID)!}">
+						${statics["cn.com.jandar.plugin.DicPlugin"].b_customerall.get(key)}
+								</#if>
+							</#list>
+						</#if>
+					 </td>
+					 </tr>
+					  <tr>
+						<th>故障部件类型:</th>
+						<td>
+							<#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("SBLX") as sblx>
+								<#if sblx.code=="${(bxd.SBLX)!}">
+								  ${sblx.value}
+								</#if>
+							</#list>
+					   </td>
+					  <th>博泰报修单号:</th>
+					  <td>${(bxd.BTBXDH)!}</td>
+				    </tr>
+					<tr>
+						<th>故障说明:</th>
+						<td ><textarea class="formTextarea" name="bxd.GZSM" disabled="disabled" value="${(bxd.GZSM)!}" >${(bxd.GZSM)!}</textarea></td>
+						<th>备　　注:</th>
+						<td><textarea class="formTextarea" name="bxd.BZ"  disabled="disabled" value="${(bxd.BZ)!}" >${(bxd.BZ)!}</textarea></td>
+				    </tr>
+				</table>
+				</fieldset>
+				
+				<form id="validateForm"  action="${base}/manage/bxgl/bxdhf/relpy" method="post">
+				<input type="hidden" name="bxd.id" value="${(bxd.id)!}" />	
+				
+				<fieldset>
+				<legend>回复</legend>
+				<table class="inputTable" title="回复">
+				   <tr>
+				     <th>处理状态:</th>
+				     <td>
+				        <#if !isAdd&&bxd.CLZT=="001">
+				           ${"处理中"}
+				        <#elseif !isAdd&&bxd.CLZT=="002">
+				           ${"处理完成"}
+				        <#else>
+						   <label><input type="radio" name="bxd.CLZT" value="002"<#if (((bxd.CLZT=="002")||isAdd) == true)!> checked</#if> />处理完成</label>
+						   <label><input type="radio" name="bxd.CLZT" value="001"<#if ((bxd.CLZT=="001") == true)!> checked</#if> />处理中</label>
+				        </#if>
+				     </td>
+				   </tr>
+				   <tr>
+				     <th>回复信息:</th>
+				     <td>
+				         <#if isAdd>
+				           <textarea class="formTextarea" name="bxd.CLJGHZ"   value="${(bxd.CLJGHZ)!}" >${(bxd.CLJGHZ)!}</textarea>
+				         <#else>
+				           <textarea class="formTextarea" name="bxd.CLJGHZ"  disabled="disabled" value="${(bxd.CLJGHZ)!}" >${(bxd.CLJGHZ)!}</textarea>
+				         </#if>
+				        </td>
+				   </tr>
+				</table>
+				</fieldset>
+				
+				<div class="buttonArea">
+				  <#if isAdd>
+					<input type="submit" class="formButton" value="确  定" hidefocus="true" />
+					&nbsp;&nbsp;&nbsp;&nbsp;
+				  </#if>
+					<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

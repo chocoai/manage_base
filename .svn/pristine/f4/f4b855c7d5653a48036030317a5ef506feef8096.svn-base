@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>模型详细列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html"/>
+</head>
+<body class="input list" onload="showMsg('${errMsg}')">
+	<div class="ctrttop cy143w">
+	 	查看模型详情
+    </div>
+    <div class="body">
+    	<form id="validateForm" action="${base}/manage/scd/mxsc/update" method="post">
+    		<input type="hidden" name="modelid" id="modelid" value="${model.ID}"/>
+    		<fieldset>
+				<legend>模型信息</legend>
+				<table class="inputTable" title="模型信息">
+    			<tr>
+    				<th>
+    					 模型名称:
+    				</th>
+    				<td>
+    					${(model.MODLENAME)!}
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>
+    					 有效标志
+    				</th>
+    				<td>
+   						<#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("YXBS") as qybz> 							
+ 							<#if model.YXBZ == qybz.code>
+ 						       ${qybz.value}
+ 							</#if>
+   						</#list>
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>
+    					 备注
+    				</th>
+    				<td>
+    				${(model.BZ)!}
+    				</td>
+    			</tr>
+    		</table>
+    		</fieldset>
+    		<fieldset>
+				<legend>单据明细</legend>
+		    	 <table class="listTable" id="productImageTable">
+  				<tr>
+    				<th>
+    					<span class="sort">设备名称</span>
+    				</th>
+    				<th>
+    					<span class="sort">数量</span>
+    				</th>
+    			</tr>
+  				<#if detaillist>
+    			<#list detaillist as list>
+    			<tr>
+    				<td>
+    				  ${(list.DEVICEID)!}#${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(list.DEVICEID + "")}
+    				<td>
+    				  ${(list.DNUM)!}
+    				</td>
+    			</tr>
+    			</#list>
+    			</#if>
+    		</table>
+    		</fieldset>
+    		<div class="buttonArea">
+				<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus />	
+			</div>
+    	</form>
+    </div>
+</body>
+</html>

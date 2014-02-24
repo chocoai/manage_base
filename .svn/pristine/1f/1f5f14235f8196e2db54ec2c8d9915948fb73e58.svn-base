@@ -1,0 +1,15 @@
+<script type="text/javascript">
+$().ready( function() {
+
+	$("#pager").pager({
+		pagenumber: ${page.pageNumber},
+		pagecount: ${page.totalPage},
+		buttonClickCallback: $.gotoPage
+	});
+
+})
+</script>
+<span id="pager"></span>
+<input type="hidden" name="pageNumber"id="pageNumber"  value="${page.pageNumber}">
+<input type="hidden" name="orderBy" id="orderBy" value="${orderBy!}" />
+<input type="hidden" name="order" id="order" value="${order!}" />

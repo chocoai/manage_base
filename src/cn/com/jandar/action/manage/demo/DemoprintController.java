@@ -1,0 +1,291 @@
+package cn.com.jandar.action.manage.demo;
+
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.OrderedMap;
+import org.apache.commons.collections.map.LinkedMap;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+
+import com.jfinal.kit.PathKit;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Record;
+
+import cty.kit.route.ControllerBind;
+
+@ControllerBind(controllerKey="/manage/demo/print",resource="测试搜索")
+public class DemoprintController extends AdminBaseController {
+	public void index(){
+		render("fl.html");
+	}
+	public void head(){
+		render("flhead.html");
+	}
+	
+	public void printtest(){
+		Map report_param = new HashMap();
+		report_param.put("TITLE", "test");
+    	
+    	//报表列表数据源
+		List report_dataSourceList=new ArrayList();
+		OrderedMap row = new LinkedMap();
+		row.put("name", "xuxiang");
+		row.put("duty", "designer");
+		row.put("age", 33);
+		report_dataSourceList.add(row);
+		
+		row = new LinkedMap();
+		row.put("name", "陈文平");
+		row.put("duty", "软件工程师");
+		row.put("age", 24);
+		report_dataSourceList.add(row);
+		
+		//报表信息
+		String report_jasperUrl=PathKit.getWebRootPath()+"/report/test.jasper";
+		String report_imageServletUrl=PathKit.getWebRootPath()+"/report/images/";
+		String report_fileName="test";
+		String report_fileExt= getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList, report_imageServletUrl, report_fileName, report_fileExt);
+	}
+	/**
+	 * 报修单
+	 */
+	@SuppressWarnings("unchecked")
+	public void printrepair(){
+		Map report_param = new HashMap();
+		report_param.put("OPDATE", "2013/08/12");  //报修日期
+		report_param.put("DH", "DH102");     //报修编号(单号)
+		report_param.put("SBLX", "坏了");		//故障配件类型
+		
+    	
+    	//报表列表数据源
+		List report_dataSourceList=new ArrayList();
+		OrderedMap row = new LinkedMap();			//
+		row.put("GZSHM", "黑屏");			//故障现象说明
+		row.put("BZ", "");		//备注
+		row.put("CSNAME", "杭州客户");		//客户名称，使用客户id获得
+		report_dataSourceList.add(row);				
+		//报表信息
+		String report_jasperUrl=PathKit.getWebRootPath()+"/report/repairreport/repairreport.jasper";
+		String report_imageServletUrl=PathKit.getWebRootPath()+"/report/images/";
+		String report_fileName="test3";
+		String report_fileExt= getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList, report_imageServletUrl, report_fileName, report_fileExt);
+	}
+	/**
+	 *  入库单
+	 */
+	public void printruku(){
+		Map report_param = new HashMap();
+		report_param.put("DH", "001");         //编号即为单号
+		report_param.put("CKMC", "102");		//仓库，通过仓库id获得
+		
+		
+		report_param.put("OPERATOR", "");			//入库人
+		report_param.put("FHR", "");			//复核人
+		report_param.put("FZRXM", "");			//库管员
+    	
+    	//报表列表数据源
+		List report_dataSourceList=new ArrayList();
+		OrderedMap row = new LinkedMap();
+		row.put("JLDW", "11");		//产品代码，产品id得到
+		row.put("DNAME", "DNAME");		//产品名称  
+		row.put("FNAME", "显示器");	//厂商， 厂商id得到
+		row.put("SBXH", "设备型号");  //设备型号
+		row.put("SBSM", "说明说明");		//产品说明， 也用产品id得到
+ 		row.put("OPDATE", "2013/08/01");	//产品生产日期
+		row.put("NUM", 21);			//	数量
+		row.put("BZ", "备注");			 //备注
+		report_dataSourceList.add(row);
+		
+		
+		//报表信息
+		String report_jasperUrl=PathKit.getWebRootPath()+"/report/rukureport/ruku.jasper";
+		String report_imageServletUrl=PathKit.getWebRootPath()+"/report/images/";
+		String report_fileName="test5";
+		String report_fileExt= getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList, report_imageServletUrl, report_fileName, report_fileExt);
+	}
+	
+	
+	/**
+	 * 移库单
+	 */
+	public void printyiku(){
+		Map report_param = new HashMap();
+		report_param.put("DH", "001");              //编号即为单号
+		report_param.put("OPDATE", "2013/08/11");         //移库日期
+		report_param.put("CKCKMC", "");		//出库仓库名称，通过仓库CKCKBH获得
+		report_param.put("RKCKMC", "");		//入库仓库名称，通过仓库RKCKBH获得
+		report_param.put("BZ", "备注");
+		
+		report_param.put("OPERATOR", "");			//操作员
+		report_param.put("FHR", "");			//复核人
+		
+    	//报表列表数据源
+		List report_dataSourceList=new ArrayList();
+		OrderedMap row = new LinkedMap();
+		row.put("JLDW", "11");		//产品代码，产品id得到
+		row.put("DNAME", "DNAME");		//产品名称  
+		row.put("FNAME", "显示器");	//厂商， 厂商id得到
+		row.put("SBXH", "设备型号");  //设备型号
+		row.put("SBSM", "说明说明");		//产品说明， 也用产品id得到
+ 		row.put("OPDATE", "2013/08/01");	//产品生产日期
+		row.put("NUM", 21);			//	数量
+		row.put("BZ", "备注");			 //备注
+		report_dataSourceList.add(row);
+		
+		
+		//报表信息
+		String report_jasperUrl=PathKit.getWebRootPath()+"/report/yikureport/yiku.jasper";
+		String report_imageServletUrl=PathKit.getWebRootPath()+"/report/images/";
+		String report_fileName="test5";
+		String report_fileExt= getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList, report_imageServletUrl, report_fileName, report_fileExt);
+	}
+	
+	/**
+	 * 出库打印
+	 */
+	public void printchuku(){     
+		Map report_param = new HashMap();
+		report_param.put("DHLX", "出库类型1");     //出库类型。即为单号类型
+		report_param.put("DH", "NO102");		  //出库单号
+		//report_param.put("CHECKDATE", "");				//出库日期
+		report_param.put("OPERATOR", "fu群骎");			//业务员，操作员
+		report_param.put("WLDH", "NO204");			//发货单号，物流单号
+		report_param.put("CSNAME", "浙江客户");		//客户名称，
+		report_param.put("CKMC", "仓库一");			//仓库名称,仓库编号获得
+		
+		report_param.put("bumen", "");
+		report_param.put("zdr", "");					//制单人
+		report_param.put("shr", "");					//审核人
+    	
+    	//报表列表数据源
+		List report_dataSourceList=new ArrayList();
+		OrderedMap row = new LinkedMap();
+		row.put("JLDW", "产品代码001");				//产品代码（数据库中的jldw字段）
+		row.put("DNAME", "三星");					//设备名称
+		row.put("FNAME", "萧山工厂");				//厂商名称
+		row.put("SBXH", "显示器");				   //设备型号
+		row.put("SBSM", "说明说明");					//设备说明
+		row.put("NUM", 21);						//数量
+		row.put("BZ", "备注");						//备注
+		report_dataSourceList.add(row);		
+		
+		
+		//报表信息
+		String report_jasperUrl=PathKit.getWebRootPath()+"/report/chukureport/chuku.jasper";
+		String report_imageServletUrl=PathKit.getWebRootPath()+"/report/images/";
+		String report_fileName="test5";
+		String report_fileExt= getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList, report_imageServletUrl, report_fileName, report_fileExt);
+	}
+	/**
+	 * 生产单
+	 */
+	public void printshengchan(){
+		Map report_param = new HashMap();
+		report_param.put("cklx", "出库类型1");  		//出库类型
+		report_param.put("ckdh", "NO102");			//出库单号
+		report_param.put("cname", "浙江客户");		//客户名称
+		report_param.put("ck", "仓库一");			//仓库
+		report_param.put("dbz", "这是备注~备注~");	//备注
+		
+		report_param.put("zdr", "");	//制单人
+		report_param.put("shr", "");	//审核人
+    	
+    	//报表列表数据源
+		List report_dataSourceList=new ArrayList();
+		OrderedMap row = new LinkedMap();
+		row.put("jldw", "产品代码");					//产品代码
+		row.put("dname", "三星");				//设备名称
+		row.put("fname", "萧山工厂");			//厂商
+		row.put("sblx", "显示器");			//型号
+		row.put("sm", "说明说明");				//说明
+		
+		row.put("num", "21");				//数量
+		row.put("bz", "备注");			
+		report_dataSourceList.add(row);
+		
+		
+		//报表信息
+		String report_jasperUrl=PathKit.getWebRootPath()+"/report/shengchan/sbscreport.jasper";
+		String report_imageServletUrl=PathKit.getWebRootPath()+"/report/images/";
+		String report_fileName="test5";
+		String report_fileExt= getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList, report_imageServletUrl, report_fileName, report_fileExt);
+	}
+	
+	
+	/**
+	 * 订单打印
+	 */
+	public void printdingdan(){
+		Map report_param = new HashMap();
+		report_param.put("CKMC", "出库仓库");  		//出库类型名称，由仓库编号得到
+		report_param.put("DH", "NO102");			//订单单号
+		report_param.put("DDZT", "订单状态");			//订单状态
+		report_param.put("MODLENAME", "模型名称");   //模型名称
+		report_param.put("CSNAME", "浙江客户");		//客户名称
+		report_param.put("LXR", "联系人");		//客户名称
+		report_param.put("LXDH", "联系方式/电话");		//客户名称
+		report_param.put("SBNUM", "110");			//设备数量
+		report_param.put("OPDATE", "2013/08/27");			//订单生成日期
+		report_param.put("BZ", "这是备注~备注~");	//备注
+		
+		report_param.put("zdr", "");	//制单人
+		report_param.put("shr", "");	//审核人
+    	
+    	//报表列表数据源
+		List report_dataSourceList=new ArrayList();
+		OrderedMap row = new LinkedMap();
+		row.put("JLDW", "产品代码");					//产品代码
+		row.put("DNAME", "三星");				//设备名称
+		row.put("FNAME", "萧山工厂");			//厂商
+		row.put("SBXH", "显示器");			//型号
+		row.put("SBSM", "说明说明");				//设备说明
+		
+		row.put("DNUM", "21");				//数量
+		row.put("BZ", "备注");			
+		report_dataSourceList.add(row);
+		
+		
+		//报表信息
+		String report_jasperUrl=PathKit.getWebRootPath()+"/report/dingdan/dingdan.jasper";
+		String report_imageServletUrl=PathKit.getWebRootPath()+"/report/images/";
+		String report_fileName="test5";
+		String report_fileExt= getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList, report_imageServletUrl, report_fileName, report_fileExt);
+	}
+	
+	
+	
+	public void imgid(){
+		String str = "<tr>" +
+				"<td width=100><img width=98 height=121 src=\"/kiosk_bjyy/kiosk/pluginsLibrary/yy/comm/img/%1$s\"></td>" +
+				"<td width=100>%2$s</td><td width=100>%3$s</td><td width=500>%4$s</td><td width=200>%5$s</td><td width=100>%6$s</td></tr>";
+		StringBuffer sb = new StringBuffer("<TABLE>");
+		List<Record> list = Db.find("select t.* from tk_ysxx t ");
+		for(Record record:list){
+			String stmp = String.format(str, record.getStr("IMGID"),record.getStr("NAME"),record.getStr("ZW"),record.getStr("YSXX"),record.getStr("BJYYJZSJ"),record.getStr("ZHEERJZSJ"));
+			sb.append(stmp);
+		}
+		sb.append("</TABLE>");
+		PrintWriter out;
+		getResponse().setCharacterEncoding("GBK");
+		try {
+			out = getResponse().getWriter();
+			out.println(sb.toString());
+			out.flush();
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}

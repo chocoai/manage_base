@@ -1,0 +1,301 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="${base}/template/admin/css/index_public.css" type="text/css" rel="stylesheet"/>
+<link href="${base}/template/admin/css/index_right.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="${base}/template/Highcharts/jquery.min.js"></script>
+<script type="text/javascript" src="${base}/template/Highcharts/highcharts.js"></script>
+<title>right</title>
+<style >
+body{overflow-y: hidden;overflow-x: hidden;}
+</style>
+<script language="JavaScript">
+$(function () {
+    $('#container').highcharts({
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false
+        },
+        title: {
+            text: ''
+        },
+        tooltip: {
+        	percentageDecimals: 1
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    color: '#000000',
+                    connectorColor: '#000000',
+                    formatter: function() {
+                        return '<b>'+ this.point.name +'</b>: '+ this.percentage.toFixed(2) +' %';
+                    }
+                }
+            }
+        },
+        series: [{
+            type: 'pie',
+            name: '比例',
+            data: ${ywfb}
+        }]
+    });
+});
+
+
+var browserOK = false;
+var pics;
+browserOK = true;
+pics = new Array();
+var objCount = 0; 
+
+function preload(name, first, second) {
+  if (browserOK) {     
+     pics[objCount] = new Array(3);
+     pics[objCount][0] = new Image();
+     pics[objCount][0].src = first;
+     pics[objCount][1] = new Image();
+     pics[objCount][1].src = second;
+     pics[objCount][2] = name;
+     objCount++;
+   }
+}
+function on(name){
+  if (browserOK) {
+     for (i = 0; i < objCount; i++) {
+      if (document.images[pics[i][2]] != null)
+        if (name != pics[i][2]) { 
+    
+          if (pics[i][0].complete)     
+             document.images[pics[i][2]].src = pics[i][0].src;
+         } else {
+            
+            if (pics[i][1].complete)
+               document.images[pics[i][2]].src = pics[i][1].src;
+         }
+     }
+   }
+}
+function off(){
+  if (browserOK) {
+     for (i = 0; i < objCount; i++) {
+      if (document.images[pics[i][2]] != null) 
+        if (pics[i][0].complete)
+             document.images[pics[i][2]].src = pics[i][0].src;
+     }
+   }
+}
+preload("img1", "${base}/template/admin/imgs/index_23_05.jpg", "${base}/template/admin/imgs/index_24_05.jpg");
+preload("img2", "${base}/template/admin/imgs/index_23_07.jpg", "${base}/template/admin/imgs/index_24_07.jpg");
+preload("img3", "${base}/template/admin/imgs/index_23_11.jpg", "${base}/template/admin/imgs/index_24_11.jpg");
+preload("img4", "${base}/template/admin/imgs/index_23_12.jpg", "${base}/template/admin/imgs/index_24_12.jpg");
+preload("img5", "${base}/template/admin/imgs/index_23_15.jpg", "${base}/template/admin/imgs/index_24_15.jpg");
+preload("img6", "${base}/template/admin/imgs/index_23_16.jpg", "${base}/template/admin/imgs/index_24_16.jpg");
+
+function kjfs(url){
+	window.location.href="${base}"+url;
+}
+
+
+</script>
+</head>
+<body  style="width: 100%">
+	<div class="ctrt">
+        <div class="ctrttop cy143w">欢迎使用银医自助运行管理平台！</div>
+        <div class="ctrtct">
+        	<table border="0" cellspacing="0" width="100%">
+            	<tr>
+                	<td width="191" height="470" valign="top">
+                    	<!--用户信息-->
+                    	<div class="ctrtctlf1">
+                        	<div class="ctrtctlf1top">
+                            	<span class="ctrtctlf1tplf">用户信息</span>
+                                <span class="ctrtctlf1tprt"><a href="${base}/admin/user/edit_only?id=${(session.loginUser.id)!}"><img src="${base}/template/admin/imgs/index_21.jpg" /></a></span>
+                            </div>
+                            <div class="ctrtctlf1ct">
+                            	<div class="ctrtctlf1ctlf"><img src="${base}/template/admin/imgs/index_20.jpg" /></div>
+                                <div class="ctrtctlf1ctrt">
+                                	<ul>
+                                    	<li>用户名：<span class="cy43">${(session.loginUser.username)!}</span></li>
+                                        <li class="ctrtctlf1ctrtli1">姓名：<span class="cy43">${(session.loginUser.name)!}</span></li>
+                                        <li class="ctrtctlf1ctrtli2">上次登录：</li>
+                                        <li class="cy99 ctrtctlf1ctrtli3">${(session.loginUser.last_login_time)!}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="ctrtctlf1bt"><img src="${base}/template/admin/imgs/index_22.jpg" /></div>
+                        </div>
+                        <!--快捷访问-->
+                        <div class="ctrtctlf2">
+                        	<div class="ctrtctlf1top">
+                            	<span class="ctrtctlf1tplf">快捷访问</span>
+                                <span class="ctrtctlf1tprt"><a href="#"><img src="${base}/template/admin/imgs/index_21.jpg" /></a></span>
+                            </div>
+                            <div class="ctrtctlf2ct">
+                            	<div class="ctrtctlf2ct1">
+                                	<div class="ctrtctlf2ct1lf" onMouseOver="this.style.fontWeight='bold'" onMouseOut="this.style.fontWeight=''">
+                                    	<ul>
+                                        	<li class="ctrtctlf2ct1lfli"><a href="#" onclick="kjfs('${kjfs1}')" onMouseOver="on('img1')" onMouseOut="off()"><img name="img1" src="${base}/template/admin/imgs/index_23_05.jpg" /></a></li>
+                                            <li class="cy5d9"><a href="#" onclick="kjfs('${kjfs1}')" onMouseOver="on('img1')" onMouseOut="off()">终端监控</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="ctrtctlf2ct1rt" onMouseOver="this.style.fontWeight='bold'" onMouseOut="this.style.fontWeight=''">
+                                    	<ul>
+                                        	<li class="ctrtctlf2ct1lfli"><a href="#" onclick="kjfs('${kjfs2}')" onMouseOver="on('img2')" onMouseOut="off()"><img name="img2" src="${base}/template/admin/imgs/index_23_07.jpg" /></a></li>
+                                            <li class="cy5d9"><a href="#" onclick="kjfs('${kjfs2}')" onMouseOver="on('img2')" onMouseOut="off()">业务量统计</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="ctrtctlf2ct2">
+                                	<div class="ctrtctlf2ct1lf" onMouseOver="this.style.fontWeight='bold'" onMouseOut="this.style.fontWeight=''">
+                                    	<ul>
+                                        	<li class="ctrtctlf2ct1lfli"><a href="#" onclick="kjfs('${kjfs3}')" onMouseOver="on('img3')" onMouseOut="off()"><img name="img3" src="${base}/template/admin/imgs/index_23_11.jpg" /></a></li>
+                                            <li class="cy5d9"><a href="#" onclick="kjfs('${kjfs3}')" onMouseOver="on('img3')" onMouseOut="off()">图表统计</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="ctrtctlf2ct1rt" onMouseOver="this.style.fontWeight='bold'" onMouseOut="this.style.fontWeight=''">
+                                    	<ul>
+                                        	<li class="ctrtctlf2ct1lfli"><a href="#" onclick="kjfs('${kjfs4}')" onMouseOver="on('img4')" onMouseOut="off()"><img name="img4" src="${base}/template/admin/imgs/index_23_12.jpg" /></a></li>
+                                            <li class="cy5d9"><a href="#" onclick="kjfs('${kjfs4}')" onMouseOver="on('img4')" onMouseOut="off()">业务日志</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="ctrtctlf2ct2">
+                                	<div class="ctrtctlf2ct1lf" onMouseOver="this.style.fontWeight='bold'" onMouseOut="this.style.fontWeight=''">
+                                    	<ul>
+                                        	<li class="ctrtctlf2ct1lfli"><a href="#" onclick="kjfs('${kjfs5}')" onMouseOver="on('img5')" onMouseOut="off()"><img name="img5" src="${base}/template/admin/imgs/index_23_15.jpg" /></a></li>
+                                            <li class="cy5d9"><a href="#" onclick="kjfs('${kjfs5}')" onMouseOver="on('img5')" onMouseOut="off()">交易日志</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="ctrtctlf2ct1rt" onMouseOver="this.style.fontWeight='bold'" onMouseOut="this.style.fontWeight=''">
+                                    	<ul>
+                                        	<li class="ctrtctlf2ct1lfli"><a href="#" onclick="kjfs('${kjfs6}')" onMouseOver="on('img6')" onMouseOut="off()"><img name="img6" src="${base}/template/admin/imgs/index_23_16.jpg" /></a></li>
+                                            <li class="cy5d9"><a href="#" onclick="kjfs('${kjfs6}')" onMouseOver="on('img6')" onMouseOut="off()">通知发布</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ctrtctlf1bt"><img src="${base}/template/admin/imgs/index_25.jpg" /></div>
+                        </div>
+                    </td>
+                    
+                    <!--当日医院业务量分布-->
+                    <td valign="top" style=" padding-left:10px">
+                        <div class="ctrtctcttop">
+                        	<table width="100%" border="0" cellspacing="0" cellpadding="0">
+      					    	<tr>
+        							<td width="20" height="28"><img src="${base}/template/admin/imgs/index_26_3.jpg" /></td>
+        							<td class="cy43n">当日医院业务量分布</td>
+       							    <td width="10" height="28"><span class="ctrtctctrt2"><a href="${base}/hospital/sjtj/tbtj"><img src="${base}/template/admin/imgs/index_26_2.jpg" /></a></span></td> 
+								    <td width="10" height="28"><img src="${base}/template/admin/imgs/index_28_1.jpg" /></td>
+      							</tr>
+    						</table>
+                        </div>
+                        <div class="ctrtctctct">
+                        	<table width="100%" border="0" cellspacing="0" cellpadding="0">
+                            	<tr>
+                                	<td width="16" height="431" style="border-left:1px solid #dde1ea">&nbsp;</td>
+                                    <td style="max-width: 620px" width="620">
+										${drywlfba}<div id="container" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
+									</td>
+									<td height="431"></td>
+                                    <td width="11" height="431" style="border-right:1px solid #dde1ea"></td>
+                                </tr>
+                                <tr>
+                                	<td width="16" height="9" background="${base}/template/admin/imgs/index_29.jpg"></td>
+                                    <td width="620" height="9" background="${base}/template/admin/imgs/index_30.jpg" ></td>
+                                    <td height="9" background="${base}/template/admin/imgs/index_30.jpg" ></td>
+                                    <td width="11" height="9" background="${base}/template/admin/imgs/index_31.jpg"></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                    <td width="191" height="470" valign="top" style=" padding-left:10px;">
+                    	<!--当日业务量-->
+                    	<div class="ctrtctrt1">
+                        	<div class="ctrtctlf1top">
+                            	<span class="ctrtctlf1tplf">当日业务量</span>
+                                <span class="ctrtctlf1tprt"><a href="${base}/hospital/sjtj/ansjtj"><img src="${base}/template/admin/imgs/index_21.jpg" /></a></span>
+                            </div>
+                            <div class="ctrtctrt1ct" id="coleediv" style="OVERFLOW: hidden;HEIGHT: 163px">
+	                            <div id="coleediv1">
+		                          <ul>
+							    		${sb_drywlHtml}
+							      </ul>
+						      	</div>
+					      		<div id="coleediv2"></div>
+					      	</div>
+                            <div class="ctrtctrt1bt"><span class="ctrtctrt1tplf">总计</span><span class="ctrtctrt1tprt">${conut_drywl}</span></div>
+                        </div>
+                        <!--设备分布-->
+                        <div class="ctrtctrt2">
+                        	<div class="ctrtctlf1top">
+                            	<span class="ctrtctlf1tplf">设备分布</span>
+                                <span class="ctrtctlf1tprt"><a href="${base}/hospital/monitor/sbxx"><img src="${base}/template/admin/imgs/index_21.jpg" /></a></span>
+                            </div>
+                            <div class="ctrtctrt1ct" id="colee" style="OVERFLOW: hidden;HEIGHT: 163px">
+	                            <div id="colee1">
+		                          <ul>
+							    		${sbxxHtml}
+							      </ul>
+						      	</div>
+					      		<div id="colee2"></div>
+					      	</div>
+                            <div class="ctrtctrt1bt"></div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+      </div>
+    </div>
+</body>
+<script type="text/javascript">
+var speed=80;
+var colee2=document.getElementById("colee2");
+var colee1=document.getElementById("colee1");
+var colee=document.getElementById("colee");
+var notice_element=colee1.getElementsByTagName("li");
+if(notice_element.length>5){
+	colee2.innerHTML=colee1.innerHTML; //克隆colee1为colee2
+	function Marquee1(){
+		//当滚动至colee1与colee2交界时
+		if(colee2.offsetTop-colee1.offsetTop-colee.scrollTop<=0){
+			colee.scrollTop-=colee1.offsetHeight+160; //colee跳到最顶端
+		}else{
+			colee.scrollTop++;
+		}
+	}
+	var MyMar1=setInterval(Marquee1,speed)//设置定时器
+	//鼠标移上时清除定时器达到滚动停止的目的
+	colee.onmouseover=function() {clearInterval(MyMar1)}
+	//鼠标移开时重设定时器
+	colee.onmouseout=function(){MyMar1=setInterval(Marquee1,speed)}
+}
+
+
+var coleediv2=document.getElementById("coleediv2");
+var coleediv1=document.getElementById("coleediv1");
+var coleediv=document.getElementById("coleediv");
+var notice_element=coleediv1.getElementsByTagName("li");
+if(notice_element.length>5){
+	coleediv2.innerHTML=coleediv1.innerHTML; //克隆coleediv1为coleediv2
+	function Marquee2(){
+		//当滚动至coleediv1与coleediv2交界时
+		if(coleediv2.offsetTop-coleediv1.offsetTop-coleediv.scrollTop<=0){
+			coleediv.scrollTop-=coleediv1.offsetHeight+160; //coleediv跳到最顶端
+		}else{
+			coleediv.scrollTop++;
+		}
+	}
+	var MyMar2=setInterval(Marquee2,speed)//设置定时器
+	//鼠标移上时清除定时器达到滚动停止的目的
+	coleediv.onmouseover=function() {clearInterval(MyMar2)}
+	//鼠标移开时重设定时器
+	coleediv.onmouseout=function(){MyMar2=setInterval(Marquee2,speed)}
+}
+</script>
+</html>

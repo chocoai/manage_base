@@ -1,0 +1,12 @@
+package cn.com.jandar.action.manage.base;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/base/factory",resource="厂商登记")
+public class FactoryController extends AdminBaseController{
+	public void index(){
+		renderText("厂商登记");
+	}
+}

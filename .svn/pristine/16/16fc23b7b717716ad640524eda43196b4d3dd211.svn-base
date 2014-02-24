@@ -1,0 +1,54 @@
+package cn.com.jandar.action.admin;
+
+
+import cn.com.jandar.model.ArticleCategory;
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+@ControllerBind(controllerKey="/admin/articleCategory",resource="属性样例")
+public class ArticleCategoryController extends AdminBaseController {
+	//article_category相关方法
+	@ButtonBind(buttonname="新增")
+	public void index(){
+		setAttr("articleCategoryTreeList", ArticleCategory.getArticleCategoryTreeList());
+		render("articleCategory_list.html");
+	}
+	@ButtonBind(buttonname="删除")
+	public void delete(){
+		setAttr("errorMessages", ArticleCategory.deleteNodeById(getPara("id")));
+		removeSessionAttr("articleCategoryTreeList");
+		setAttr("redirectionUrl", "/admin/articleCategory");
+		render("../common/success.html");
+	}
+	@ButtonBind(buttonname="新增")
+	public void add(){
+		setAttr("articleCategoryTreeList", ArticleCategory.getArticleCategoryTreeList());
+		render("articleCategory_input.html");
+	}
+	@ButtonBind(buttonname="新增")
+	public void save(){
+	    ArticleCategory articleCategory=getModel(ArticleCategory.class);
+		setAttr(errMsg, ArticleCategory.save(articleCategory));
+		removeSessionAttr("articleCategoryTreeList");
+		setAttr("redirectionUrl", "/admin/articleCategory");
+		render("../common/success.html");
+	}
+	@ButtonBind(buttonname="更新")
+	public void edit(){
+	    ArticleCategory articleCategory=ArticleCategory.getArticleCategory(getPara("id"));
+		setAttr("articleCategory", articleCategory);
+		if((articleCategory=ArticleCategory.getArticleCategory(articleCategory.getLong("parent_id")))!=null){
+			setAttr("parentName", articleCategory.get("name"));
+		}
+		render("articleCategory_input.html");
+	}
+	@ButtonBind(buttonname="更新")
+	public void update(){
+	    ArticleCategory articleCategory=getModel(ArticleCategory.class);
+		setAttr(errMsg, ArticleCategory.update(articleCategory));
+		removeSessionAttr("articleCategoryTreeList");
+		setAttr("redirectionUrl", "/admin/articleCategory");
+		render("../common/success.html");
+	}
+	//END article_category相关方法
+}

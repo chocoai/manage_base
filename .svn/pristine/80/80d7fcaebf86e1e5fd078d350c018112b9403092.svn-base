@@ -1,0 +1,63 @@
+package cn.com.jandar.model;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.jfinal.core.Controller;
+import com.jfinal.ext.plugin.tablebind.TableBind;
+import com.jfinal.kit.StringKit;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Model;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+
+/**
+ * @author 
+ */
+@TableBind(tableName="c_produce_detail")
+public class ProduceDetail extends Model<ProduceDetail> {
+    private static final long serialVersionUID = -2063970373324095312L;
+    public static final ProduceDetail dao = new ProduceDetail();
+    
+    
+    /**
+     * 保存入库单,操作员默认为操作者的姓名
+     */
+    public static boolean save(ProduceDetail detail) {
+    	detail.set("SBZT", "001"); //001代表设备状态为入库单
+		String DHZT =  detail.getStr("DHZT");
+		if(DHZT.equals("003")){     //002代表单号状态为已复核
+			detail.set("CHECKDATE", new Timestamp(System.currentTimeMillis()));
+		}
+		
+        return detail.save();
+    }
+    
+    /**
+     * @param DH
+     * @return
+     * 编辑与查看详情时显示设备详情
+     * 
+     */
+    public static List<Record> getProduceDetailByDH(String DH){
+    	String sql =  "select *,sum(NUM)sums from c_produce_detail d  where DH = '"+DH+"' group by d.DEVICEID";
+        return Db.find(sql);
+    }
+    
+    /**
+     * 编辑时批量删除原来的设备详情
+     */
+    public static String deleteByDH(String DH) {
+    	String sql =  "select * from c_produce_detail   where DH = '"+DH+"'";
+    	List<ProduceDetail> list = ProduceDetail.dao.find(sql);
+    	if(list!=null&&list.size()>0){
+    		for(ProduceDetail p : list){
+    			ProduceDetail.dao.deleteById(p.getInt("ID"));
+    		}
+    	}
+        return "success";
+    }
+ 
+}

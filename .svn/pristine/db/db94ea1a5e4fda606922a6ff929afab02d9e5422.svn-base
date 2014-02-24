@@ -1,0 +1,43 @@
+package cn.com.jandar.interceptor;
+
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.model.User;
+
+import com.jfinal.aop.Interceptor;
+import com.jfinal.core.ActionInvocation;
+
+
+/**
+ * 判断用户是否已经登入
+ * 
+ * @author 
+ *
+ */
+public class AdminLoginInterceptor implements Interceptor{
+
+	public void intercept(ActionInvocation ai) {
+//		String viewPath = ai.getViewPath();
+//		AdminBaseController c = (AdminBaseController) ai.getController();
+//		if(ai.getActionKey().startsWith("/admin")||ai.getActionKey().startsWith("/manage")){
+//			if(User.isLogin(c)){//判断是否登录
+//				User user= c.getSessionAttr(User.LOGIN_USER);
+//				viewPath = viewPath.substring(0, viewPath.length()-1);
+//				if(user.getStr("roleStr").indexOf(viewPath)==-1&&!"/admin".equals(viewPath)&&!"/admin/user/edit_only".equals(ai.getActionKey())&&!"/admin/user/update_only".equals(ai.getActionKey())){
+//					c.setAttr("msg", "没有权限！");
+//					c.setAttr("redirectionUrl", "/admin/main");
+//					c.render("/admin/common/error.html");
+//				}else{
+//					ai.invoke();
+//					return;
+//				}
+//			}else{
+//				c.render("/admin/user/login.html");
+//			}
+//		}else{
+//			ai.invoke();
+//		}
+		ai.invoke();
+	}
+
+}

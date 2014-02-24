@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>管理员维护</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+		
+<#if !(user.id)??>
+	<#assign isAdd = true />
+<#else>
+	<#assign isAdd = false />
+</#if>
+	</head>
+	<body class="input" onload="showMsg('${errMsg}')">
+		<div class="ctrttop cy143w">
+		修改密码
+		</div>
+		<div class="body">
+			<form id="validateForm"  action="${base}/admin/user/pwd_save" method="post">
+				<input type="hidden" name="user.id" value="${(user.id)!}" />
+				<table class="inputTable">
+					<tr>
+						<th>
+							登入账号:
+						</th>
+						<td>
+							${(user.username)!}
+						</td>
+					</tr>
+					<tr>
+						<th>
+							姓名:
+						</th>
+						<td>
+							${(user.name)!}
+						</td>
+					</tr>
+						<tr>
+						<th>
+							原密码:
+						</th>
+						<td>
+							<input type="password" name="old_password" class="formText {required: true, remote: '${base}/admin/user/checkUserPassword', minlength: 4, maxlength: 20, messages: {remote: '密码错误，请重新输入！'}}" title="密码长度只允许在4-20之间" />
+							<label class="requireField">*</label>
+						</td>
+					</tr>
+				<tr>
+					<tr>
+						<th>
+							新密码:
+						</th>
+						<td>
+							<input type="password" name="user.password" id="password" class="formText {required: true, minlength: 4, maxlength: 20}" title="密码长度只允许在4-20之间" />
+							<label class="requireField">*</label>
+						</td>
+					</tr>
+				<tr>
+					<th>
+						重复密码:
+					</th>
+					<td>
+						<input type="password" name="rePassword" class="formText {equalTo: '#password', messages: {equalTo: '两次密码输入不一致!'}}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>	
+				</table>
+				<div class="buttonArea">
+					<input type="submit" class="formButton" value="确  定" hidefocus="true" />
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

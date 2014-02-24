@@ -1,0 +1,12 @@
+package cn.com.jandar.action.manage.bxgl;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/bxgl/cjwxck",resource="厂家维修出库单")
+public class CjwxckController extends AdminBaseController{
+	public void index(){
+		renderText("厂家维修出库单");
+	}
+}

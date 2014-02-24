@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>移库列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" /> <#assign xlh =
+((page.pageNumber-1)*page.pageSize + 1) />
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+		整机信息维护列表nbsp;<span class="pageInfo">总记录数:
+			${page.totalRow}(共${page.totalPage}页)</span>
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/manage/ruku/ykd/index"
+			method="post">
+			<div class="listBar">
+				<label>地区：</label> <label class="searchText"> <select
+					name="areaId" id="areaId" class="labelselect" style="width: 180px">
+						<option value="">请选择</option> <#if
+						statics["cn.com.jandar.plugin.DicPlugin"].b_storeall?exists>
+						<#list
+						statics["cn.com.jandar.plugin.DicPlugin"].b_storeall.keySet() as
+						key>
+						<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_storeall.get(key)}</option>
+						</#list> </#if>
+				</select> </label> 
+				<label>厂商：</label> 
+				<label class="searchText"> <select
+					name="factoryId" id="factoryId" class="labelselect" style="width: 180px">
+						
+				</select> </label> 
+				<input type="button" hidefocus="" value="搜 索" class="formButton"
+					id="searchButton"> <label>每页显示:</label> <select
+					name="pageSize" id="pageSize">
+					<option value="10"<#if page.pageSize ==
+						10>selected="selected" </#if>> 10</option>
+					<option value="20"<#if page.pageSize ==
+						20>selected="selected" </#if>> 20</option>
+					<option value="50"<#if page.pageSize ==
+						50>selected="selected" </#if>> 50</option>
+					<option value="100"<#if page.pageSize ==
+						100>selected="selected" </#if>> 100</option>
+				</select>
+			</div>
+			<table class="listTable">
+				<tr>
+					<!-- <th class="check">
+						<input type="checkbox" class="allCheck" />
+					</th> -->
+					<th><span class="sort" name="ID">序号</span></th>
+					<th><span class="sort" name="DH">单号</span></th>
+					<th><span class="sort" name="SBZT">设备出入库单类型</span></th>
+					<th><span class="sort" name="CHECKDATE">出入库时间</span></th>
+					<th><span class="sort" name="RKCKBH">入库仓库</span></th>
+					<th><span class="sort" name="CKCKBH">出库仓库</span></th>
+					<th><span class="sort" name="DHZT">单号状态</span></th>
+					<th><span class="sort" name="BZ">备注</span></th>
+					<th>操作</th>
+				</tr>
+				<#list page.list as list>
+				<tr>
+					<!-- <td>
+							<input type="checkbox" name="ids" value="${list.id}" />
+						</td> -->
+					<td>${xlh} <#assign xlh = xlh+1 /></td>
+					<td>${list.DH}</td>
+					<td>${(list.SBZT)!}</td>
+					<td>${(list.CHECKDATE)!}</td>
+					<td>
+						${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(list.RKCKBH)}
+					</td>
+					<td>
+						${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(list.CKCKBH)}
+					</td>
+					<td><#if list.DHZT == "003"> 已复核 <#else> 草稿 </#if></td>
+					<td><#if list.BZ?length lt
+						30>${list.BZ}<#else>${list.BZ[0..15]}...</#if></td>
+					<td><#if list.DHZT == "003"> <a
+						href="${base}/manage/ruku/ykd/query?dh=${list.DH}" title="查看">[查看]</a>
+						<#else> <a href="${base}/manage/ruku/ykd/edit?dh=${list.DH}"
+						title="编辑">[编辑]</a> </#if></td>
+				</tr>
+				</#list>
+			</table>
+			<#if (page?size > 0)>
+			<div class="pagerBar">
+				<div class="pager"><#include "/admin/common/pager.html" /></div>
+				<div>
+					<#else>
+					<div class="noRecord">没有找到任何记录!</div>
+					</#if>
+		</form>
+	</div>
+
+	<script type="text/javascript">
+		function selectProduct() {
+			console.info("---dh---120---"
+					+ document.getElementById("searchText").value);
+
+			var dh = document.getElementById("searchText").value;
+			if (dh != 0 && dh != undefined) {
+				$.ajax({
+					url : '${base}/manage/ruku/ykd/edit?edit_dh=' + dh,
+					success : function(data) {
+						var produce = data.produce;
+						console.info("----------");
+					}
+				});
+			}
+
+		}
+	</script>
+</body>
+</html>

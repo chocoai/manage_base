@@ -1,0 +1,58 @@
+package cn.com.jandar.action.manage.demo;
+
+import java.util.List;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.kit.Constant;
+import cn.com.jandar.kit.DbUtil;
+
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Record;
+
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/demo/ssuo",resource="测试搜索")
+public class DemoController extends AdminBaseController{
+	public void index(){
+		render("demobaid.html");
+	}
+	public void ajax_baidu(){
+		System.out.println("ajax_baidu");
+		String cs = DbUtil.readDbString(getPara("cs"));
+		if("".equals(cs)){
+			renderJson("aaa","");
+			return;
+		}
+		String fields[] =  {"name"};
+		String yj = Constant.getSqlLikeAndCn(fields,cs);
+		List<Record> list = Db.find("select * from ts_menu_copy where "+yj);
+			StringBuffer sb = new StringBuffer();
+			for(int i =0;i<list.size();i++){
+				Record r = list.get(i);
+				sb.append(r.get("name")+"<br>");
+			}
+		renderJson("aaa",sb.toString());
+	}
+	
+	public void tots(){
+		render("ts.html");
+	}
+	public void ajax_ts(){
+		System.out.println("ajax_ts");
+		String cs = DbUtil.readDbString(getPara("cs"));
+		if("".equals(cs)){
+			renderJson("aaa","");
+			return;
+		}
+		String fields[] =  {"name"};
+		String yj = Constant.getSqlLikeAndCn(fields,cs);
+		List<Record> list = Db.find("select * from ts_menu_copy where "+yj);
+			StringBuffer sb = new StringBuffer();
+			for(int i =0;i<list.size();i++){
+				Record r = list.get(i);
+				sb.append(r.get("name")+"|");
+			}
+		renderJson("aaa",sb.toString());
+	}
+}

@@ -1,0 +1,284 @@
+package cn.com.jandar.action.manage.scd;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.interceptor.StartXtInterceptor;
+import cn.com.jandar.kit.Constant;
+import cn.com.jandar.kit.DateUtil;
+import cn.com.jandar.kit.DbUtil;
+import cn.com.jandar.model.Produce;
+import cn.com.jandar.model.Scd;
+import cn.com.jandar.model.Scdsb;
+import cn.com.jandar.model.Scdsbmx;
+import cn.com.jandar.model.User;
+
+import com.google.common.collect.Lists;
+import com.jfinal.aop.Before;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+@Before(StartXtInterceptor.class)
+@ControllerBind(controllerKey = "/manage/scd/sbscd", resource = "设备生产单")
+public class SbscdController extends AdminBaseController {
+	private static String CKDH = null;
+
+	@ButtonBind(buttonname = "查询")
+	public void index() {
+		String dhzt = "003"; // 单据状态
+		if (this.getPara("dhzt") != null) {
+			dhzt = this.getPara("dhzt");
+		}
+
+		Page<Scd> page = Scd.getScdList(getParaToInt("pageNumber", 1),getParaToInt("pageSize", PAGESIZE),
+				getPara("orderBy", "p_scd.dh"), getPara("order", "asc"), dhzt,
+				getPara("SEARCH_LIKES_CUSTOMER"),
+				getPara("SEARCH_LIKES_DATETIME_BEGIN"),
+				getPara("SEARCH_LIKES_DATETIME_END"));
+		
+		keepPara("SEARCH_LIKES_CUSTOMER");
+		keepPara("SEARCH_LIKES_DATETIME_BEGIN");
+		keepPara("SEARCH_LIKES_DATETIME_END");
+		
+		setAttr("page", page);
+		setAttr("dhzt", dhzt);
+
+		render("sbscd_list.html");
+	}
+
+	@ButtonBind(buttonname = "新增")
+	public void add() {
+		setAttr("scd", new Scd());
+		setAttr("dhzt", true);
+		setAttr("sbscd_form_name", "生产单->新增");
+		render("sbscd_input.html");
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "新增")
+	public void save() throws Exception {
+		boolean result = true;
+		String saveResult = null;
+		Scd scd = this.getModel(Scd.class);
+		String dhzt = DbUtil.readDbString(scd.getStr("dhzt"));
+
+		User user = getSessionAttr(User.LOGIN_USER);
+		if ("".equals(dhzt)) {
+			return;
+		}
+
+		String dh = DbUtil.readDbString(scd.getStr("dh"));
+		List<Scdsb> newScdsbList = new ArrayList<Scdsb>();
+		if ("001".equals(dhzt)) {
+			newScdsbList = this.saveInScd(dh, user, scd);
+		}
+		if ("003".equals(dhzt)) {// 保存已复核
+			List<Record> detailList = Db
+					.find("select * from p_model_detail where p_model_detail.MODELID=?",
+							scd.getInt("MODELID"));
+			int num = scd.get("SBNUM");
+			Produce produce = getProduce(scd);
+
+			List<Record> records = Lists.newArrayList();
+
+			// 产品以及对应数量封装
+			for (Record record : detailList) {
+				Record e = new Record();
+				e.set("deviceid", record.get("DEVICEID"));
+				int dnum = record.get("DNUM");
+				int total = 0;
+				total = dnum * num;
+				e.set("num", total);
+				records.add(e);
+			}
+
+			saveResult = Produce.saveAll(user, produce, records);
+			if (saveResult.equals(Produce.SUCCESS)) {
+				scd.set("CKDH", CKDH);
+				scd.set("DDZT", "001");
+				this.saveInScd(dh, user, scd);
+			}
+
+		} else if ("002".equals(dhzt)) {// 保存未复核
+
+		}
+
+		if ((saveResult == null) || saveResult.equals(Produce.SUCCESS)) {
+			this.setAttr("msg", Produce.SUCCESS);
+			this.setAttr("redirectionUrl", "/manage/scd/sbscd");
+			this.render("../../../admin/common/success.html");
+		} else {
+			this.setAttr("msg", saveResult);
+			this.setAttr("redirectionUrl", "/manage/scd/sbscd");
+			this.render("../../../admin/common/error.html");
+		}
+
+	}
+
+	public List<Scdsb> saveInScd(String dh, User user, Scd scd) {
+		List<Scdsb> newScdsbList = new ArrayList<Scdsb>();
+
+		if ("".equals(dh)) {
+			String str = Constant.findb_goods_dh("030");
+			scd.set("DH", str);
+			// 产品生产信息表
+			Scd.save(user, scd);
+
+			// 产品信息设备表
+			Scdsb.save(user, scd);
+
+			scd = Scd.getscdByDh(str);
+			newScdsbList = Scdsb.query(scd);
+			// 根据所选模型保存产品信息明细表
+			Scdsbmx.save(user, newScdsbList, scd.getInt("MODELID"));
+
+		} else {
+			Scd.update(user, scd);
+			List<Scdsb> oldScdsbList = Scdsb.query(scd);
+			/**
+			 * 先删除
+			 * */
+			Scdsbmx.delete(oldScdsbList);
+			Scdsb.delete(scd);
+
+			/**
+			 * 再保存，在原来操作人，新建时间基础上加更新员和更新时间
+			 * */
+			Scdsb.save(user, scd);
+			newScdsbList = Scdsb.query(scd);
+
+			Scdsbmx.save(user, newScdsbList, scd.getInt("MODELID"));
+		}
+
+		return newScdsbList;
+	}
+
+	// 已复核单据查看
+	@ButtonBind(buttonname = "查看明细")
+	public void queryDetail() {
+		// 得到单号
+		String dh = this.getPara("dh");
+		Scd scd = Scd.getscdByDh(dh);
+		List<Record> detaillist = Db.find(
+				"select * from p_model_detail where  p_model_detail.MODELID=?",
+				scd.get("MODELID"));
+		setAttr("detaillist", detaillist);
+		setAttr("scd", scd);
+		setAttr("sbscd_form_name", "单据");
+		render("order_detail.html");
+	}
+
+	// 查询草稿
+	@ButtonBind(buttonname = "修改")
+	public void edit() {
+		// 得到单号
+		String dh = this.getPara("dh");
+		Scd scd = Scd.getscdByDh(dh);
+
+		setAttr("scd", scd);
+		setAttr("dhzt", true);
+		setAttr("sbscd_form_name", "草稿修改");
+		render("sbscd_input.html");
+	}
+
+	// 订单编辑
+	@ButtonBind(buttonname = "编辑")
+	public void editOrder() {
+		// 得到单号
+		String dh = this.getPara(0);
+		int type = this.getParaToInt(1);
+		Scd scd = Scd.getscdByDh(dh);
+
+		setAttr("scd", scd);
+		setAttr("type", type);
+		switch (type) {
+		case 1:
+			setAttr("sbscd_form_name", "发货编辑");
+			break;
+		case 2:
+			setAttr("sbscd_form_name", "发货编辑");
+			break;
+		case 3:
+			setAttr("sbscd_form_name", "确认收货编辑");
+			break;
+		case 4:
+			setAttr("sbscd_form_name", "开始生产编辑");
+			break;
+		case 5:
+			setAttr("sbscd_form_name", "发往客户编辑");
+			break;
+		default:
+			break;
+		}
+
+		render("order_input.html");
+	}
+
+	// 订单保存
+	@ButtonBind(buttonname = "保存")
+	public void saveOrder() {
+		Scd scd = this.getModel(Scd.class);
+		int type = this.getParaToInt("type");
+		User user = this.getSessionAttr(User.LOGIN_USER);
+		switch (type) {
+		case 1:
+			scd.set("FH007", user.get("id"));
+			scd.set("FH008", DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			scd.set("DDZT", "002");
+			break;
+		case 2:
+			scd.set("QRSH003", user.get("id"));
+			scd.set("QRSH001", DateUtil.getStdDateTime(scd.get("QRSH001")
+					.toString(), "yyyy-MM-dd HH:mm:ss"));
+			scd.set("QRSH004", DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			scd.set("DDZT", "003");
+			break;
+		case 3:
+			scd.set("KSSC004", user.get("id"));
+			scd.set("KSSC005", DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			scd.set("DDZT", "004");
+			break;
+		case 4:
+			scd.set("FWKH008", user.get("id"));
+			scd.set("FWKH009", DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			scd.set("DDZT", "005");
+			break;
+		case 5:
+			scd.set("QRJS003", user.get("id"));
+			scd.set("QRJS004", DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			scd.set("DDZT", "006");
+			break;
+		default:
+			break;
+		}
+
+		if (Scd.update(user, scd)) {
+			this.setAttr("msg", "保存成功！");
+			this.setAttr("redirectionUrl", "/manage/scd/sbscd");
+			this.render("../../../admin/common/success.html");
+		} else {
+			this.setAttr("msg", "保存失败，请检查数据是否正确...多次保存失败请联系管理员!");
+			this.setAttr("redirectionUrl", "/manage/scd/sbscd");
+			this.render("../../../admin/common/error.html");
+		}
+	}
+
+	public Produce getProduce(Scd scd) {
+		// Record record = Db.findById("p_scd", scdId);
+		Produce produce = new Produce();
+		CKDH = Constant.findb_goods_dh("003");
+
+		produce.set("dh", CKDH);
+		produce.set("DHLX", "003"); // 默认出库单
+		produce.set("DHZT", scd.getStr("DHZT"));
+		produce.set("CKCKBH", scd.getStr("CKCKBH"));
+		produce.set("BZ", scd.getStr("BZ"));
+
+		return produce;
+	}
+}

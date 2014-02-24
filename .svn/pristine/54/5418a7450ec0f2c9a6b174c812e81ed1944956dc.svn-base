@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>库存查询</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<script type="text/javascript">
+$().ready( function() {
+	$("#showAllButton").click( function() {
+		window.location.href="${base}/manage/pancun/adlxcx/index";
+	});
+	
+	
+	$("#searchButton").click(function(e){
+		var startTime = $("#startTime").attr("value");
+		var endTime = $("#endTime").attr("value");
+		
+		if((startTime != "") && (endTime != "")) {
+			if(startTime > endTime) {
+				alert("起始日期不能比结束日期晚，请重新设置!");
+			}
+			$("#startTime").attr("value","");
+			$("#endTime").attr("value","");
+			e.preventDefault();
+		}
+	});
+	
+});
+
+</script>
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+			库存列表&nbsp;<span class="pageInfo">总记录数: ${producePage?size}</span>
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/manage/pancun/adlxcx/index" method="post" name="listForm">
+			<div class="listBar">
+				<label>根据出入库单类型:</label>
+				<label class="searchText">
+					<select name="filter_LIKES_DHLX" id="searchTextaa"  class="labelselect">
+						<option value="">请选择</option>
+						<#list statics["cn.com.jandar.plugin.DicPlugin"].b_goodsall.keySet() as key>
+						<#if ((filter_LIKES_DHLX)!) == key>
+							<option value="${key}" selected="selected">
+						<#else >
+							<option value="${key}" >
+						</#if>
+							${statics["cn.com.jandar.plugin.DicPlugin"].b_goodsall.get(key)}
+						</option>
+						</#list>
+					</select>
+				</label>
+				&nbsp;				
+				<label>=</label>
+				<label class="searchText">
+					<input class="Wdate" id="startTime" name="filter_LIKES_startTime" type="text" onClick="WdatePicker()" /> <font color=red></font>
+				</label>
+				&nbsp;
+				<label>=</label>
+				<label class="searchText">
+					<input class="Wdate" id="endTime" name="filter_LIKES_endTime" type="text" onClick="WdatePicker()" /> <font color=red></font>
+				</label>				
+			
+				<input type="button" hidefocus="" value="搜 索" class="formButton" id="searchButton">
+				<input type="button" hidefocus="" value="显示全部" class="formButton" id="showAllButton">
+				<input type="button" target="_blank" value="打印"  class="formButton"  id="printButton"/>
+			
+			</div>
+			<table class="listTable">
+				<tr>		
+					<th>
+						<span class="sort" name="DH">单号</span>
+					</th>
+				</tr>
+				<#list producePage.list as list>
+					<tr>		
+						<td>
+							${list.DH}
+						</td>
+					</tr>
+				</#list>
+			</table>
+		</form>
+	</div>
+</body>
+</html>

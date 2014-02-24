@@ -1,0 +1,86 @@
+package cn.com.jandar.model;
+
+import java.util.List;
+
+import com.jfinal.ext.plugin.tablebind.TableBind;
+import com.jfinal.kit.StringKit;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Model;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+/**
+ * 
+ * @author fuqunqin
+ *
+ */
+@TableBind(tableName="ts_code")
+public class Code extends Model<Code>{
+
+	private static final long serialVersionUID = 1700019844387414062L;
+	public static final Code dao = new Code();
+	
+	/**
+	 * 获得字典列表
+	 * @return
+	 */
+	public static List<Record> getCodeList(String search){
+		StringBuffer sqlBuffer = new StringBuffer("select * from ts_code ");
+		if (!StringKit.isBlank(search)){
+			sqlBuffer.append("where ts_code.TYPENAME like '%"+search+"%' ");
+			}
+		sqlBuffer.append("order by ts_code.TYPENAME"+","+"ts_code.CODE");
+		List<Record> codelist = Db.find(sqlBuffer.toString());	
+		return codelist;
+	}
+	/**
+	 * 通过id获得字典
+	 * @return
+	 */
+	public static Code getCodeById(String id){
+		return Code.dao.findById(id);	
+	}
+	
+	public static List<Code> getCodeByIds(String ids){
+		List<Code> codeList = Code.dao.find("select * from ts_code where id in ("+ids+")");
+		return codeList;
+	}
+	
+    public static String delete(String[] ids) {
+        for (String id : ids) {
+            if (!Code.dao.deleteById(id)) {
+                return "error";
+            }
+        }
+        return "success";
+    }
+    
+    public static Page<Code> getCodePage(int sPageNum, int sPageSize, String orderBy, String order, String search) {
+        StringBuffer sqlBuffer = new StringBuffer("FROM ts_code ");
+        if (!StringKit.isBlank(search)) {
+            sqlBuffer.append("where ts_code.CODE like '%" + search + "%' ");
+        }
+        sqlBuffer.append(" order by ").append(orderBy).append(" ").append(order);
+        Page<Code> codePage = (Page<Code>) Code.dao.paginate(sPageNum, sPageSize, "SELECT * ",
+                                                                         sqlBuffer.toString());
+        return codePage;
+    }
+    
+    public static String save(Code code){
+    	code.save();
+    	return "保存成功";
+    }
+    
+    public static String update(Code code){
+    	code.update();
+    	return "更新成功";
+    }
+    public static String isExitByCode(String code) {
+        Code code1 = Code.dao.findFirst("select * from ts_code where ts_code.CODE = ?",code);
+        if(code1 == null){
+            return "true";
+        }
+        return "false";
+    }
+	
+}

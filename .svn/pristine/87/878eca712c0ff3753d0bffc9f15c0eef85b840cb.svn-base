@@ -1,0 +1,269 @@
+package cn.com.jandar.action.admin;
+
+import java.util.List;
+
+import cn.com.jandar.plugin.DicPlugin;
+
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Record;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/admin/xtmenu",resource="菜单管理")
+public class MenuController extends AdminBaseController{
+	@ButtonBind(buttonname="查询")
+	public void index(){
+		List<Record> list = Db.find("select * from ts_menu order by path");
+		setAttr("menuList",list);
+		render("menu_list.html");
+	}
+	//删除
+	@ButtonBind(buttonname="删除")
+	public void delete(){
+		String[] ids=getParaValues("ids");
+		for (String id : ids) {
+			if (!Db.deleteById("ts_menu",id)) {
+				renderJson("status","error");
+			}else{
+				DicPlugin.loadMenuDb();
+				renderJson("status","success");
+			}
+		}
+
+	}
+	//编辑菜单
+	@ButtonBind(buttonname="编辑")
+	public void edit(){
+		Record r = Db.findById("ts_menu", getPara("id"));
+		String cdlx= getPara("cdlx");
+		setAttr("menu", r);
+		if("001".equals(cdlx)){//目录
+			render("menu_input_ml.html");
+		}
+		if("002".equals(cdlx)){//菜单
+			render("menu_input_cd.html");
+		}
+		if("003".equals(cdlx)){//按钮
+			render("menu_input_bt.html");
+		}
+	}
+	//添加目录
+	@ButtonBind(buttonname="新增目录")
+	public void addml(){
+		render("menu_input_ml.html");
+	}
+	//添加菜单
+	@ButtonBind(buttonname="新增菜单")
+	public void addcd(){
+		Record r = Db.findById("ts_menu", getPara("id"));
+		setAttr("sjflid", r.get("id"));
+		setAttr("sjflname", r.get("name"));
+		render("menu_input_cd.html");
+	}
+	@ButtonBind(buttonname="新增菜单")
+	public void savecd(){
+		Record cd = new Record();
+		String id =getPara("cdid");
+		Record r = Db.findById("ts_menu", id);
+		cd.set("code", getPara("code"));
+		cd.set("name",  getPara("name"));
+		cd.set("url",  getPara("url"));
+		cd.set("qybz", getPara("qybz"));
+		cd.set("parent_id",  r.get("code"));
+		cd.set("cdlx", "002");
+		Db.save("ts_menu_c", cd);
+		cd.set("path", r.get("path")+","+getPara("code")+"-"+cd.get("id"));
+		if(Db.update("ts_menu", cd)){
+			DicPlugin.loadMenuDb();
+			setAttr("msg","保存成功" );
+		}
+		setAttr("redirectionUrl", "/admin/xtmenu");
+		render("../common/success.html");
+	}
+	//添加按钮
+	public void addbt(){
+		Record r = Db.findById("ts_menu", getPara("id"));
+		setAttr("sjflid", r.get("id"));
+		setAttr("sjflname", r.get("name"));
+		render("menu_input_bt.html");
+	}
+	public void savebt(){
+		Record cd = new Record();
+		String id =getPara("btid");
+		Record r = Db.findById("ts_menu", id);
+		cd.set("code", getPara("code"));
+		cd.set("name",  getPara("name"));
+		cd.set("url",  getPara("url"));
+		cd.set("qybz", getPara("qybz"));
+		cd.set("cdlx", "003");
+		cd.set("parent_id", r.get("code"));
+		Db.save("ts_menu", cd);
+		cd.set("path", r.get("path")+","+getPara("code")+"-"+cd.get("id"));
+		if(Db.update("ts_menu", cd)){
+			DicPlugin.loadMenuDb();
+			setAttr("msg","保存成功" );
+		}
+		setAttr("redirectionUrl", "/admin/xtmenu");
+		render("../common/success.html");
+	}
+	@ButtonBind(buttonname="更新菜单")
+	public void updatecd(){
+		Record re = Db.findById("ts_menu", getPara("id"));
+		String oldpath = re.get("path");//菜单path
+		String oldcode = re.get("code")+"";//菜单原code
+		String hpath = re.get("code")+"-"+re.get("id");//菜单自身path
+		re.set("code", getPara("code"));
+		re.set("name",  getPara("name"));
+		re.set("url",  getPara("url"));
+		re.set("qybz", getPara("qybz"));
+		String newpath =getPara("code")+"-"+getPara("id");//菜单新path
+		String path = oldpath.replace(hpath, newpath);
+		re.set("path",path);
+		if(Db.update("ts_menu", re)){
+			List<Record> list = Db.find("select * from ts_menu where parent_id = ?",oldcode);//菜单下的按钮
+			if(list.size()>0){
+				for(Record cd : list){
+					String childpath = cd.get("path");//按钮原path
+					String childcode = cd.get("code")+"";//按钮原code
+					String newchildcode =getPara("code")+childcode.substring(oldcode.length());//按钮新的code
+					String oldchildpath = cd.get("code")+"-"+cd.get("id");//原菜单自身path
+					cd.set("code", newchildcode);
+					cd.set("parent_id", getPara("code"));
+					String newchildpath = childpath.replace(oldpath, path);//替换
+					String newchildpath1 = newchildpath.replace(oldchildpath, newchildcode+"-"+cd.get("id"));
+					cd.set("path", newchildpath1);
+					Db.update("ts_menu",cd);
+				}
+			}
+			DicPlugin.loadMenuDb();
+			setAttr("msg","更新成功" );
+		}
+		setAttr("redirectionUrl", "/admin/xtmenu");
+		render("../common/success.html");
+	}
+	public void updatebt(){
+		Record re = Db.findById("ts_menu", getPara("id"));
+		String oldpath = re.get("path");
+		String hpath = re.get("code")+"-"+re.get("id");
+		re.set("code", getPara("code"));
+		re.set("name",  getPara("name"));
+		re.set("url",  getPara("url"));
+		re.set("qybz", getPara("qybz"));
+		String newpath =getPara("code")+"-"+getPara("id");
+		String path = oldpath.replace(hpath, newpath);
+		re.set("path",path);
+		if(Db.update("ts_menu", re)){
+			DicPlugin.loadMenuDb();
+			setAttr("msg","更新成功" );
+		}
+		setAttr("redirectionUrl", "/admin/xtmenu");
+		render("../common/success.html");
+	}
+	@ButtonBind(buttonname="新增目录")
+	public void saveml(){
+		Record cd = new Record();
+		cd.set("code", getPara("code"));
+		cd.set("name",  getPara("name"));
+		cd.set("qybz", getPara("qybz"));
+		cd.set("images", getPara("images"));
+		cd.set("cdlx", "001");
+		Db.save("ts_menu_c", cd);
+		cd.set("path", getPara("code")+"-"+cd.get("id"));
+		if(Db.update("ts_menu", cd)){
+			DicPlugin.loadMenuDb();
+			setAttr("msg","保存成功" );
+		}
+		setAttr("redirectionUrl", "/admin/xtmenu");
+		render("../common/success.html");
+	}
+	@ButtonBind(buttonname="编辑状态")
+	public void editzt(){
+		String id = getPara("id");
+		String qybz = getPara("zt");
+		Record cd = Db.findById("ts_menu", id);
+		String code = cd.get("code")+"";
+		String qyzt="";
+		if("1".equals(qybz)){//启用
+			cd.set("qybz", "0");//设置为”停用“
+			qyzt="0";
+		}else{
+			cd.set("qybz", "1");//设置为”启用“
+			qyzt="1";
+		}
+		int i = Db.update("update ts_menu set qybz = ? where parent_id = ? or code = ? ",qyzt,code,code);
+		if(i>0){
+			DicPlugin.loadMenuDb();
+			setAttr("msg","设置成功！" );
+		}
+		setAttr("redirectionUrl", "/admin/xtmenu");
+		render("../common/success.html");
+	}
+	@ButtonBind(buttonname="更新目录")
+	public void updateml(){
+		Record re = Db.findById("ts_menu", getPara("id"));
+		String oldcode = re.get("code")+"";
+		String oldpath = re.get("path");
+		re.set("code", getPara("code"));
+		re.set("name",  getPara("name"));
+		re.set("qybz", getPara("qybz"));
+		re.set("images", getPara("images"));
+		String newpath =getPara("code")+"-"+getPara("id");
+		re.set("path",newpath);
+		if(Db.update("ts_menu_c", re)){
+			List<Record> list = Db.find("select * from ts_menu where parent_id = ? ",oldcode);//查目录下的菜单
+			if(list.size()>0){
+				for(Record cd : list){
+					String childpath = cd.get("path");//菜单path
+					String childcode = cd.get("code")+"";//菜单原code
+					String newchildcode =getPara("code")+childcode.substring(1);//菜单新的code
+					String oldchildpath = cd.get("code")+"-"+cd.get("id");//原菜单自身path
+					cd.set("code", newchildcode);
+					cd.set("parent_id", getPara("code"));
+//					Db.update("update ts_menu_c set parent_id = ? where parent_id = ?",getPara("code"),oldcode);//更新目录下的菜单的父id
+					String newchildpath = childpath.replace(oldpath, newpath);//替换
+					String newchildpath1 = newchildpath.replace(oldchildpath, newchildcode+"-"+cd.get("id"));
+					cd.set("path", newchildpath1);
+					List<Record> listbt = Db.find("select * from ts_menu where parent_id = ? ",childcode);//查菜单下的按钮
+					if(listbt.size()>0){
+//						Db.update("update ts_menu_c set parent_id = ? where parent_id = ?",newchildcode,childcode);//更新菜单下的按钮的父id
+						for(Record rd : listbt){
+							String btchildpath = rd.get("path");//按钮path
+							String btchildcode = rd.get("code")+"";//按钮code
+							String btnewchildcode =getPara("code")+btchildcode.substring(1);//按钮新的code
+							String btoldchildpath = rd.get("code")+"-"+rd.get("id");//原菜单自身path
+							rd.set("code", btnewchildcode);
+							rd.set("parent_id", newchildcode);
+							String btnewchildpath = btchildpath.replace(childpath, newchildpath1);//替换
+							String btnewchildpath1 = btnewchildpath.replace(btoldchildpath, btnewchildcode+"-"+rd.get("id"));
+							rd.set("path", btnewchildpath1);
+							Db.update("ts_menu",rd);
+							}
+						}
+					Db.update("ts_menu",cd);
+				}
+			}
+			DicPlugin.loadMenuDb();
+			setAttr("msg","更新成功" );
+		}
+		setAttr("redirectionUrl", "/admin/xtmenu");
+		render("../common/success.html");
+	
+	}
+	@ButtonBind(buttonname="校验code")
+	public void checkMenuCode(){
+		String code = getPara("code");
+		String newcode = getPara("newcode","");
+		if(code.equals(newcode)){
+			renderText("true");
+		}else{
+			List<Record> list=Db.find("select * from ts_menu where code = ? ",code );
+			if(list.size()>0){
+				renderText("false");
+			}else{
+				renderText("true");
+			}
+		}
+	}
+}

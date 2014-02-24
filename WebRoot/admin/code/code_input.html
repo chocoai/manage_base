@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>字典维护</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+<#if !(type)??>
+	<#assign isAdd = true />
+<#else>
+	<#assign isAdd = false />
+</#if>
+  </head>
+ 
+  <body class="list input" onload="showMsg('${errMsg}')">
+  	<div class="ctrttop cy143w">
+  		<#if isAdd>类型添加<#else>类型编辑</#if>
+  	</div>
+  	<div class="body">
+  		<form id="validateForm"  action="<#if isAdd>${base}/admin/code/save<#else>${base}/admin/code</#if>" method="post">
+  			<#if isAdd>
+	  			<table class="inputTable">
+	  				<tr>
+	  					<th>类别</th>
+	  					<td><input type="text" name="type" value="${(type)!}"/><label class="requireField">*</label></td>
+	  				</tr>
+	  				<tr>
+	  					<th>类别名称</th>
+	  					<td><input type="text" name="typename" value="${(typename)!}"/><label class="requireField">*</label></td>
+	  				</tr>
+	  			</table>
+	  			<div class="buttonArea" >
+  					<input type="submit" class="formButton" value="确  定" hidefocus />
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus />
+  				</div>
+  			<#else>
+  			<div class="listBar">
+    			<#if (session.loginUser.roleStr?index_of("/admin/code/zidianadd")>0) >
+    				<input type="button" class="formButton" onclick="location.href='${base}/admin/code/zidianadd?type=${type}'" value="添加字典"/>  						
+    			</#if>
+    		</div>
+  			
+  			
+  			<table class="inputTable">
+  				<tr>
+  					<th>类别</th>
+  					<td><input type="text" name="type" disabled="disabled" value="${(type)!}"/><label class="requireField">*</label></td>
+  				</tr>
+  				<tr>
+  					<th>类别名称</th>
+  					<td><input type="text" name="typename" disabled="disabled" value="${(typename)!}"/><label class="requireField">*</label></td>
+  				</tr>
+  			</table>
+  			
+  			<table	class="listTable">
+  				<tr>
+  					<th>编码
+  					</th>
+ 
+  					<th>
+  						名称
+  					</th>
+
+  					<th>
+  						SORT
+  					</th>
+					
+  					<th>
+  						操作
+  					</th>
+
+  				</tr>
+  				<#list codes as code>
+  				<#if code.CODE>
+  				<tr>
+  					<td>
+  						${(code.CODE)!}
+  						<input type="hidden" name="code.CODE" class="fromText {required: true}" value="${(code.CODE)!}"/>	
+  					</td>
+  					<td>
+  						${(code.VALUE)!}
+  						<input type="hidden" name="code.VALUE" class="fromText {required: true}" value="${(code.VALUE)!}"/>				
+  					</td>	
+  					<td>
+  						${(code.SORT)!}
+  						<input type="hidden" name="code.SORT" class="fromText {required: true}" value="${(code.SORT)!}"/>
+  					</td>
+  					
+  					<td>
+  					<#if (session.loginUser.roleStr?index_of("/admin/code/zidianedit")>0) >
+  						<a href="${base}/admin/code/zidianedit?id=${code.ID}" title="编辑">[编辑]</a>
+  					</#if>
+  					</td>
+  				</tr>
+  				</#if>
+  				</#list>
+  			</table>
+  			
+  			<div class="buttonArea" >
+  					<input type="submit" class="formButton" value="返  回" hidefocus />
+  			</div>
+  			</#if>
+  			
+  		</form>
+  	</div>
+  </body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>管理员列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+			仓库列表&nbsp;
+	</div>
+	<div class="body">
+		<div class="listBar">
+		<#if (session.loginUser.roleStr?index_of("/admin/store/add")>0) >
+		    <input type="button" class="formButton" onclick="location.href='${base}/admin/store/add'" value="添加" />
+		</#if>
+		</div>
+		<form id="listForm" action="${base}/admin/store/index" method="post">
+			<table class="listTable">
+				<tr>
+					<th class="check">
+						<input type="checkbox" class="allCheck" />
+					</th>
+					<th>
+						<span class="sort" name="CKLX">仓库类型</span>
+					</th>
+					<th>
+						<span class="sort" name="CKBH">仓库编号</span>
+					</th>
+					<th>
+						<span class="sort" name="CKMC">仓库名称</span>
+					</th>
+					<th>
+						<span class="sort" name="CKDZ">仓库地址</span>
+					</th>
+					<th>
+						<span class="sort" name="FZRXM">负责人姓名</span>
+					</th>
+				
+					<th>
+						<span class="sort" name="BZ">备注</span>
+					</th>
+					
+					<th>
+						<span class="sort" name="yxbz">有效标志</span>
+					</th>
+					
+					<th>
+						操作
+					</th>
+				</tr>
+				<#list storeList as list>
+					<tr>
+						<td>
+							<input type="checkbox" name="ids" value="${list.id}" />
+						</td>
+					
+						<td>
+						   <#if list.CKLX == "001">
+						             生产库
+						   <#else>
+						            备件库
+						   </#if>
+						</td>
+						<td>
+							${list.CKBH}
+						</td>
+						<td>
+						    <#if list.CKMC?length lt 20>${list.CKMC}<#else>${list.CKMC[0..20]}...</#if>
+						</td>
+						<td>
+							<#if list.CKDZ?length lt 20>${list.CKDZ}<#else>${list.CKDZ[0..20]}...</#if>
+						</td>
+						<td>
+							<#if list.FZRXM?length lt 15>${list.FZRXM}<#else>${list.FZRXM[0..15]}...</#if>
+						</td>
+						<td>
+							<#if list.BZ?length lt 30>${list.BZ}<#else>${list.FZRXM[0..15]}...</#if>
+						</td>
+						<td>
+						   <#if list.yxbz == "001">
+						            有效
+						   <#else>
+						           无效
+						   </#if>
+						</td>
+						<td>
+						<#if (session.loginUser.roleStr?index_of("/admin/store/edit")>0) >
+							<a href="${base}/admin/store/edit?id=${list.id}" title="编辑">[编辑]</a>
+						</#if>
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if (storeList?size <= 0)>
+				<div class="noRecord">没有找到任何记录!</div>
+			</#if>
+			<input type="hidden" name="orderBy" id="orderBy" value="${orderBy!}" />
+			<input type="hidden" name="order" id="order" value="${order!}" />
+		</form>
+	</div>
+</body>
+</html>

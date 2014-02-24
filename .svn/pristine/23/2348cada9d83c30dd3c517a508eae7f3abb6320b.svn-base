@@ -1,0 +1,6 @@
+#172.31.2.39
+jdbcUrl = jdbc\:mysql\://192.68.68.72\:3306/manage_base?characterEncoding\=UTF-8&zeroDateTimeBehavior\=convertToNull
+user = root
+password = root
+classdriver = com.mysql.jdbc.Driver
+devMode =true

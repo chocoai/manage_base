@@ -1,0 +1,19 @@
+.labelhead{
+	width: 60px;
+	text-align: right;
+}
+.labelbody{
+	width: 150px;
+}
+.labelbody2{
+	width: 200px;
+}
+.labelbody3{
+	width: 70px;
+}
+.labelbody4{
+	width: 120px;
+}
+select.labelselect{
+	width: 150px;
+}

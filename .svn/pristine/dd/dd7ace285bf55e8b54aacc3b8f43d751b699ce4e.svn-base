@@ -1,0 +1,250 @@
+package cn.com.jandar.action.manage.cuku;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.OrderedMap;
+import org.apache.commons.collections.map.LinkedMap;
+import org.joda.time.DateTime;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.interceptor.StartXtInterceptor;
+import cn.com.jandar.model.Customer;
+import cn.com.jandar.model.Device;
+import cn.com.jandar.model.Factory;
+import cn.com.jandar.model.Produce;
+import cn.com.jandar.model.ProduceDetail;
+import cn.com.jandar.model.ProduceDetailDraft;
+import cn.com.jandar.model.User;
+import cn.com.jandar.plugin.DicPlugin;
+
+import com.google.common.collect.Lists;
+import com.jfinal.aop.Before;
+import com.jfinal.kit.PathKit;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+@Before(StartXtInterceptor.class)
+@ControllerBind(controllerKey = "/manage/cuku/ckd", resource = "出库单")
+public class CkdController extends AdminBaseController {
+
+	@ButtonBind(buttonname = "查询")
+	public void index() {
+		String DHZT = getPara("DHZT");
+		String filter_LIKES_CKCKBH = getPara("filter_LIKES_CKCKBH");
+		if (filter_LIKES_CKCKBH == null) {
+			filter_LIKES_CKCKBH = "";
+		}
+		Page<Produce> page = Produce.getProducePage(
+				getParaToInt("pageNumber", 1),
+				getParaToInt("pageSize", PAGESIZE),
+				getPara("orderBy", "c_produce.id"), getPara("order", "asc"),
+				"", filter_LIKES_CKCKBH, DHZT, "003");
+
+		keepPara("filter_LIKES_CKCKBH");
+		keepPara("DHZT");
+		setAttr("page", page);
+		render("produce_list.html");
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "更新")
+	public void update() {
+		Produce produce = getModel(Produce.class);
+		String[] deciveArray = getParaValues("deviceMap");
+		String[] numArray = getParaValues("numMap");
+		List<Record> records = Lists.newArrayList();
+		for (int i = 0; i < deciveArray.length; i++) {
+			Record e = new Record();
+			e.set("deviceid", deciveArray[i]);
+			e.set("num", numArray[i]);
+			records.add(e);
+		}
+		User user = getSessionAttr(User.LOGIN_USER);
+		String msg = Produce.saveAll(user, produce, records);
+		if (msg.equals(Produce.SUCCESS)) {
+			setAttr("msg", Produce.SUCCESS);
+			setAttr("redirectionUrl", "/manage/cuku/ckd");
+			render("/admin/common/success.html");
+		} else {
+			setAttr("msg", msg);
+			setAttr("redirectionUrl", "/manage/cuku/ckd");
+			render("/admin/common/error.html");
+		}
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "新增")
+	public void save() {
+		Produce produce = getModel(Produce.class);
+		String[] deciveArray = getParaValues("deviceMap");
+		String[] numArray = getParaValues("numMap");
+		List<Record> records = Lists.newArrayList();
+		for (int i = 0; i < deciveArray.length; i++) {
+			Record e = new Record();
+			e.set("deviceid", deciveArray[i]);
+			e.set("num", numArray[i]);
+			records.add(e);
+		}
+		User user = getSessionAttr(User.LOGIN_USER);
+		String msg = Produce.saveAll(user, produce, records);
+		if (msg.equals(Produce.SUCCESS)) {
+			setAttr("msg", Produce.SUCCESS);
+			setAttr("redirectionUrl", "/manage/cuku/ckd");
+			render("/admin/common/success.html");
+		} else {
+			setAttr("msg", msg);
+			setAttr("redirectionUrl", "/manage/cuku/ckd");
+			render("/admin/common/error.html");
+		}
+	}
+
+	@ButtonBind(buttonname = "新增")
+	public void add() {
+		render("produce_input.html");
+	}
+
+	@ButtonBind(buttonname = "更新")
+	public void edit() {
+		Produce produce = Produce.getProduceById(getPara("id"));
+		String DHZT = produce.getStr("DHZT");
+		List<Record> result = null;
+		result = ProduceDetailDraft.getProduceDetailDraftByDh(produce
+				.getStr("DH"));
+		setAttr("ruku", getPara("ruku"));
+		setAttr("result", result);// produceDetails
+		setAttr("produce", produce);
+		render("produce_input.html");
+	}
+
+	@ButtonBind(buttonname = "查看")
+	public void chakan() {
+		Produce produce = Produce.getProduceById(getPara("id"));
+		String DHZT = produce.getStr("DHZT");
+		List<Record> result = null;
+		if (DHZT.equals("003")) {// 已复核
+			result = ProduceDetail.getProduceDetailByDH(produce.getStr("DH"));
+		} else if (DHZT.equals("002")) {// 草稿
+			result = ProduceDetailDraft.getProduceDetailDraftByDh(produce
+					.getStr("DH"));
+		}
+		setAttr("ruku", getPara("ruku"));
+		setAttr("result", result);// produceDetails
+		setAttr("produce", produce);
+		render("produce_input.html");
+	}
+
+	public void validateNum() {
+		Record record = new Record();
+		record.set("CKCKBH", getPara("CKCKBH"));
+		record.set("deviceid", getPara("deviceid"));
+		record.set("num", getPara("num"));
+		renderText(Produce.checkNUM(record));
+	}
+
+	@ButtonBind(buttonname = "出库")
+	public void cuku() {
+		Produce p = Produce.getProduceById(getPara("produce.id"));
+		p.set("DHZT", "003");
+		p.set("WLGS", getPara("produce.WLGS"));
+		p.set("WLDH", getPara("produce.WLDH"));
+		p.set("WHRYDH", getPara("produce.WHRYDH"));
+		p.set("WHRY", getPara("produce.WHRY"));
+		p.set("SJLXDH", getPara("produce.SJLXDH"));
+		p.set("SJXM", getPara("produce.SJXM"));
+		p.set("WHRY", getPara("produce.WHRY"));
+		List<Record> records = ProduceDetailDraft.getProduceDetailDraftByDh(p
+				.getStr("DH"));
+		for (int i = 0; i < records.size(); i++) {
+			records.get(i).set("num", records.get(i).get("sums"));
+		}
+		User user = getSessionAttr(User.LOGIN_USER);
+		String msg = Produce.saveAll(user, p, records);
+
+		if (msg.equals(Produce.SUCCESS)) {
+			setAttr("msg", Produce.SUCCESS);
+			setAttr("redirectionUrl", "/manage/cuku/ckd");
+			render("/admin/common/success.html");
+		} else {
+			setAttr("msg", msg);
+			setAttr("redirectionUrl", "/manage/cuku/ckd");
+			render("/admin/common/error.html");
+		}
+	}
+
+	@ButtonBind(buttonname = "出库")
+	public void tocuku() {
+		Produce produce = Produce.getProduceById(getPara("id"));
+		String DHZT = produce.getStr("DHZT");
+		List<Record> result = null;
+		result = ProduceDetailDraft.getProduceDetailDraftByDh(produce
+				.getStr("DH"));
+		setAttr("ruku", getPara("ruku"));
+		setAttr("result", result);// produceDetails
+		setAttr("produce", produce);
+		render("produce_input.html");
+	}
+
+	@ButtonBind(buttonname = "打印")
+	public void print() {
+		Produce p = Produce.getProduceById(getPara("id"));
+		User user = getSessionAttr(User.LOGIN_USER);
+
+		Map report_param = new HashMap();
+
+		report_param.put("DHLX", DicPlugin.b_goodssimgle.get(p.get("DHLX"))); // 出库类型。即为单号类型
+		report_param.put("DH", p.get("DH")); // 出库单号p.get("CHECKDATE")
+		report_param.put("CHECKDATE", p.get("CHECKDATE").toString()); // 出库日期
+		report_param.put("OPERATOR", ""); // 业务员，操作员
+		report_param.put("WLDH", p.get("WLDH")); // 发货单号，物流单号
+		report_param.put("CSNAME",
+				DicPlugin.b_customer.get(p.get("CUSTOMERID"))); // 客户名称，
+		report_param.put("CKMC", DicPlugin.b_storeall.get(p.get("CKCKBH"))); // 仓库名称,仓库编号获得
+
+		report_param.put("bumen", "");
+		report_param.put("zdr", user.get("username")); // 制单人
+		report_param.put("shr", ""); // 审核人
+
+		List<Record> result = null;
+		if (p.get("DHZT").equals("003")) {// 已复核
+			result = ProduceDetail
+					.getProduceDetailForReportByDH(p.getStr("DH"));
+		} else if (p.get("DHZT").equals("002")) {
+			result = ProduceDetailDraft.getProduceDetailDraftForReportByDH(p
+					.getStr("DH"));
+		}
+
+		// 报表列表数据源
+		List report_dataSourceList = new ArrayList();
+		OrderedMap row = null;
+		for (Record r : result) {
+			row = new LinkedMap();
+			row.put("JLDW", r.get("JLDW")); // 产品代码（数据库中的jldw字段）
+			row.put("DNAME", r.get("DNAME")); // 设备名称
+			row.put("FNAME",
+					DicPlugin.b_factorysimgle.get(r.get("FACTORYID") + "")); // 厂商名称
+			row.put("SBXH", r.get("SBXH")); // 设备型号
+			row.put("SBSM", r.get("SBSM")); // 设备说明
+			row.put("NUM", r.get("sums")); // 数量
+			row.put("BZ", r.get("BZ")); // 备注
+			report_dataSourceList.add(row);
+		}
+
+		// 报表信息
+		String report_jasperUrl = PathKit.getWebRootPath()
+				+ "/report/chukureport/chuku.jasper";
+		String report_imageServletUrl = PathKit.getWebRootPath()
+				+ "/report/images/";
+		String report_fileName = "出库单";
+		String report_fileExt = getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList,
+				report_imageServletUrl, report_fileName, report_fileExt);
+	}
+}

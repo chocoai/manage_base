@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>客户列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+			客户列表&nbsp;<span class="pageInfo">总记录数: ${page.totalRow}(共${page.totalPage}页)</span>
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/manage/base/customer/index" method="post">
+			<div class="listBar">
+				
+				<input type="button" class="formButton" onclick="location.href='${base}/manage/base/customer/add'" value="添加客户" />
+				<label>根据用厂商名称或联系人查找:</label>
+				<label class="searchText"><input id="searchText" type="text" name="filter_LIKES_name" value="${filter_LIKES_name!}" /></label>
+				<input type="button" hidefocus="" value="搜 索" class="formButton" id="searchButton">
+				<input type="button" hidefocus="" value="显示全部" class="formButton" id="showAllButton">
+				<label>每页显示:</label>  
+				<select name="pageSize" id="pageSize">
+					<option value="10" <#if page.pageSize == 10>selected="selected" </#if>>
+						10
+					</option>
+					<option value="20" <#if page.pageSize == 20>selected="selected" </#if>>
+						20
+					</option>
+					<option value="50" <#if page.pageSize == 50>selected="selected" </#if>>
+						50
+					</option>
+					<option value="100" <#if page.pageSize == 100>selected="selected" </#if>>
+						100
+					</option>
+				</select>
+			</div>
+			<table class="listTable">
+				<tr>
+					<th class="check">
+						<input type="checkbox" class="allCheck" />
+					</th>
+					<th>
+						<span class="sort" name="ID">流水号</span>
+					</th>
+					<th>
+						<span class="sort" name="CNAME">厂商名称</span>
+					</th>
+					<th>
+						<span class="sort" name="CSNAME">客户简称</span>
+					</th>
+					<th>
+						<span class="sort" name="LXR">联系人</span>
+					</th>
+					<th>
+						<span class="sort" name="LXDH">联系电话</span>
+					</th>
+					<th>
+						<span class="sort" name="PHONE">手机</span>
+					</th>
+					<th>
+						<span class="sort" name="FOX">传真</span>
+					</th>
+					<th>
+						<span class="sort" name="EMAIL">邮箱</span>
+					</th>
+					<th>
+						<span class="sort" name="ADDR">地址</span>
+					</th>
+					<th>
+						<span class="sort" name="YZBM">邮政编码</span>
+					</th>
+					<th>
+						<span class="sort" name="BAREA">客户区域</span>
+					</th>
+					<th>
+						<span class="sort" name="YXBZ">是否有效</span>
+					</th>
+				 <!--
+					<th>
+						<span class="sort" name="BZ">备注</span>
+					</th>
+			         <th>
+						<span class="sort" name="OPERATOR">操作员</span>
+					</th>
+			     -->
+					<th>
+						<span class="sort" name="OPDATE">新建时间</span>
+					</th>
+				<!--
+				     <th>
+						<span class="sort" name=UPOPERATOR>更新操作员</span>
+					</th>
+					<th>
+						<span class="sort" name="UPIPDATE">更新时间</span>
+					</th>
+				 -->
+					<th>
+						操作
+					</th>
+				</tr>
+				<#list page.list as list>
+					<tr>
+						<td>
+							<input type="checkbox" name="ids" value="${list.id}" />
+						</td>
+						<td>
+							${list.id}
+						</td>
+						<td>
+							<#if list.CNAME?length lt 30>${list.CNAME}<#else>${list.CNAME[0..30]}...</#if>
+						</td>
+						<td>
+							${list.CSNAME}
+						</td>
+						<td>
+							${list.LXR}
+						</td>
+						<td>
+							${list.LXDH}
+						</td>
+						<td>
+							${list.PHONE}
+						</td>
+						<td>
+							${list.FOX}
+						</td>
+						<td>
+							${list.EMAIL}
+						</td>
+						<td>
+							<#if list.ADDR?length lt 30>${list.ADDR}<#else>${list.ADDR[0..30]}...</#if>
+						</td>
+						<td>
+							${list.YZBM}
+						</td>
+						<td>
+					    	<#if statics["cn.com.jandar.plugin.DicPlugin"].ts_area?exists>
+								<#list statics["cn.com.jandar.plugin.DicPlugin"].ts_area.keySet() as key>
+							      <#if key == list.BAREA >
+							          ${statics["cn.com.jandar.plugin.DicPlugin"].ts_area.get(key)}
+							      </#if>
+								</#list>
+							</#if>
+							<!-- ${list.BAREA} -->
+						</td>
+						<td>
+						    <#if list.YXBZ == "001">${"有效"}<#else>${"无效"}</#if>
+						</td>
+					 <!-- 
+						<td>
+						    <#if list.BZ?length == 0>无<#elseif list.BZ?length lt 50>${list.BZ}<#else>${list.BZ[0..50]}...</#if>
+						</td>
+				     		
+				        <td>
+							${list.OPERATOR}
+						</td> 
+					  -->
+						<td>
+							${list.OPDATE}
+						</td>
+				      <!-- 		
+				        <td>
+							${list.UPOPERATOR}
+						</td>
+						<td>
+							${list.UPIPDATE}
+						</td> 
+					  -->
+						<td>
+							<a href="${base}/manage/base/customer/edit?id=${list.id}" title="编辑">[编辑]</a>
+						    <#if list.YXBZ == "001">
+							   <a href="${base}/manage/base/customer/changeState?YXBZ=002&id=${list.id}" title="停用">[停用]</a>
+							<#else> 
+							   <a href="${base}/manage/base/customer/changeState?YXBZ=001&id=${list.id}" title="启用">[启用]</a>
+							</#if>
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if (page.list?size > 0)>
+				<div class="pagerBar">
+				<!-- 	<div class="delete">
+						<input type="button" id="deleteButton" class="formButton" url="${base}/manage/base/customer/delete" value="删 除" disabled hidefocus />
+					</div> 
+				-->
+					<div class="pager">
+						<#include "/admin/common/pager.html" />
+					</div>
+				<div>
+			<#else>
+				<div class="noRecord">
+					没有找到任何记录!
+				</div>
+			</#if>
+		</form>
+	</div>
+</body>
+</html>

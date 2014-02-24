@@ -1,0 +1,47 @@
+@charset "utf-8";
+/* CSS Document */
+
+/*右边栏目*/
+.ctrt{ width:100%; height:100%; border:1px solid #122b53; overflow:hidden;}
+.ctrttop{ width:100%; height:34px; background:url(../imgs/index_18.jpg) repeat-x; border-bottom:1px solid #122b53; line-height:34px; padding-left:15px;}
+.ctrtct{  width:98%; height:600px; background:#fff; padding:10px;}
+
+/*用户信息*/
+.ctrtctlf1{ width:191px; height:152px;}
+.ctrtctlf1top{ width:191px; height:27px; background:url(../imgs/index_19.jpg) no-repeat; line-height:27px; color:#fff;}
+.ctrtctlf1tplf{ float:left; padding-left:20px;}
+.ctrtctlf1tprt{ float:right; padding-right:10px; padding-top:8px;}
+.ctrtctlf1ct{ background:#eeeff1; border:1px solid #dde1ea; border-top:none; border-bottom:none; width:164px; height:92px; padding-top:20px; padding-left:15px;padding-right:10px;}
+.ctrtctlf1ctlf{ width:44px; height:66px; float:left; }
+.ctrtctlf1ctrt{ width:110px; height:85px; float:right; color:#434343;}
+.ctrtctlf1ctrtli1{ padding-top:10px;}
+.ctrtctlf1ctrtli2{ padding-top:15px;}
+.ctrtctlf1ctrtli3{ padding-top:0px;}
+.ctrtctlf1bt{ width:191px; height:13px;}
+
+/*快捷访问*/
+.ctrtctlf2{ width:191px; height:310px; margin-top:10px;}
+.ctrtctlf2ct{ background:#ffffff; border:1px solid #dde1ea; border-top:none; border-bottom:none; width:159px; height:250px; padding-top:15px; padding-left:15px;padding-right:15px;}
+.ctrtctlf2ct1{ width:155px; height:70px;}
+.ctrtctlf2ct1lf{ width:62px; height:70px; float:left; text-align:center;}
+.ctrtctlf2ct1lfli{ padding-bottom:5px;}
+.ctrtctlf2ct1rt{ width:68px; height:70px; float:right; text-align:center;}
+.ctrtctlf2ct2{ width:155px; height:70px; padding-top:20px;}
+
+
+/*当日医院业务量分布*/
+.ctrtctcttop{ width:100%; height:28px; background:url(../imgs/index_27_1.jpg) repeat-x;}
+.ctrtctctct{ width:100%; height:444px; }
+.ctrtctctrt2{ float:right; padding-top:3px;}
+/*当日业务量*/
+.ctrtctrt1{width:191px; height:auto;}
+.ctrtctrt1ct{ background:#fff; border:1px solid #dde1ea; border-top:none; border-bottom:none; width:164px; height:163px; padding-top:10px; padding-left:15px;padding-right:10px;}
+.ctrtctrt1ctdiv{ width:145px; line-height:22px; color:#434343; height:22px;}
+.ctrtctrt1ctlf{ float:left}
+.ctrtctrt1ctrt{ float:right}
+.ctrtctrt1bt{ width:191px; height:29px; background:url(../imgs/index_32.jpg) no-repeat; line-height:29px; color:#434343; font-weight:bold;}
+.ctrtctrt1tplf{ float:left; padding-left:15px;}
+.ctrtctrt1tprt{ float:right; padding-right:10px; padding-right:20px;}
+
+/*设备分布*/
+.ctrtctrt2{width:191px; height:auto; margin-top:10px;}

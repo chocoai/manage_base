@@ -1,0 +1,19 @@
+package cn.com.jandar.action.manage.demo;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/demo/kj",resource="测试控件")
+public class DemokjController extends AdminBaseController{
+	public void index(){
+		render("fl.html");
+	}
+	
+	public void mt1(){
+		render("motai1.html");
+	}
+	public void mt2(){
+		render("motai2.html");
+	}
+}

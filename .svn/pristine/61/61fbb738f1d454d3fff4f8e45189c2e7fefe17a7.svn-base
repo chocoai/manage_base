@@ -1,0 +1,266 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>文章分类列表</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<script type="text/javascript">
+$(document).ready(function() {
+	
+	
+	var $allCheck = $(".listTable input.allCheck");// 全选复选框
+	//var $idsCheck = $(".listTable input.qxkz");// ID复选框
+	var $idsCheck = $(".listTable input[name='ids']");// ID复选框
+	var allpath="";
+	$idsCheck.parent().parent().parent().each(function(){
+		var path = $(this).attr("path");
+		var level = $(this).attr("level");
+		var url = $(this).attr("url");
+		var resource = "${role.resource}";
+		var reg=new RegExp(",","g"); //创建正则RegExp对象   
+		var newpath = path.replace(reg,"_");
+		$(this).find(":checkbox").attr("className",newpath);
+		if(url!=""){
+			if(resource.indexOf(url)!=-1)
+			{
+				$(this).find(":checkbox").attr("checked",true);
+			}
+		}
+	});
+	$idsCheck.parent().parent().parent().each(function(){
+		var level = $(this).attr("level");
+		var $thisCheckbox = $(this).find(":checkbox");
+		if(level==1){
+			$(this).nextAll("tr").each(function(){
+				var thisLevel = $(this).attr("level");
+				if (thisLevel == 1) {
+					return false;
+				}
+				if($(this).find(":checkbox").attr("checked")== true){
+					$thisCheckbox.attr("checked",true);
+				}
+			})
+			}
+		});
+	// 树折叠
+	$(".categoryName").click(function() {
+		var level = $(this).parent().attr("level");
+		var isHide;
+		$(this).parent().nextAll("tr").each(function() {
+			var thisLevel = $(this).attr("level");
+			if (thisLevel <= level) {
+				return false;
+			}
+			if (isHide == null) {
+				if ($(this).is(":hidden")) {
+					isHide = true;
+				} else {
+					isHide = false;
+				}
+			}
+			if (isHide) {
+				$(this).show();
+			} else {
+				$(this).hide();
+			}
+		});
+	});
+	$(".myzhed").click(function() {
+		var level = $(this).parent().parent().parent().attr("level");
+		var isHide;
+		$(this).parent().parent().parent().nextAll("tr").each(function() {
+			var thisLevel = $(this).attr("level");
+			if (thisLevel <= level) {
+				return false;
+			}
+			if (isHide == null) {
+				if ($(this).is(":hidden")) {
+					isHide = true;
+				} else {
+					isHide = false;
+				}
+			}
+			if (isHide) {
+				$(this).show();
+			} else {
+				$(this).hide();
+			}
+		});
+	});
+		$allCheck.click( function() {
+			if ($(this).attr("checked") == true) {
+				$idsCheck.attr("checked", true);
+				var $idsChecked = $(".listTable input[name='ids']:checked");
+				if($idsChecked.size()>0)
+				$deleteButton.attr("disabled", false);
+			} else {
+				$idsCheck.attr("checked", false);
+				$deleteButton.attr("disabled", true);
+			}
+		});
+		$idsCheck.click(function() {
+			var path = $(this).parent().parent().parent().attr("path");
+			var level = $(this).parent().parent().parent().attr("level");
+			var $this = $(this);
+			if($(this).attr("checked") == true){
+				$(this).parent().parent().parent().nextAll("tr").each(function() {
+					var thisLevel = $(this).attr("level");
+					if (thisLevel <= level) {
+						return false;
+					}
+					$(this).find(":checkbox").attr("checked",true);
+					$this.attr("checked",true);
+				})
+			}else{
+				$(this).parent().parent().parent().nextAll("tr").each(function() {
+					var thisLevel = $(this).attr("level");
+					if (thisLevel <= level) {
+						return false;
+					}
+					$(this).find(":checkbox").attr("checked",false);
+				})
+			}
+			if(level>1){
+				var paths = path.split(",");
+				var ml= paths[0];
+				var $mlcheckbox =$(".listTable input."+ml);//目录
+				var ml_level= $mlcheckbox.parent().parent().parent().attr("level");
+				if($(this).attr("checked") == true){//当前checkbox checked:true 选中
+					if(paths.length>2){
+						var cd = ml+"_"+ paths[1];
+						var m= "."+cd;
+						var $cdcheckbox =  $(m);
+						$cdcheckbox.attr("checked",true);
+					}
+					$mlcheckbox.attr("checked",true);
+				}else{//checkbox checked:false 未选中
+					if(level==3){
+					//按钮
+						var cd = ml+"_"+ paths[1];
+						var m= "."+cd;
+						var $cdcheckbox =  $(m);//菜单
+						var cd_level =$cdcheckbox.parent().parent().parent().attr("level");
+						var count=0;
+						$cdcheckbox.parent().parent().parent().nextAll("tr").each(function(){
+							var nextcdLevel = $(this).attr("level");
+							if (nextcdLevel <= cd_level) {
+								return false;
+							}
+							if($(this).find(":checkbox").attr("checked")==true){
+								count++;
+							}
+						});
+						if(count==0){//菜单下无选中按钮
+							$cdcheckbox.attr("checked",false);
+						}
+					}
+						var ct=0;
+						$mlcheckbox.parent().parent().parent().nextAll("tr").each(function(){
+							var nextLevel = $(this).attr("level");
+							//alert("nextLevel："+nextLevel)
+							if (nextLevel <= ml_level) {
+								return false;
+							}
+							if($(this).find(":checkbox").attr("checked")==true){
+								ct++;
+							}
+						});
+						if(ct==0){//目录下无选中菜单
+							$mlcheckbox.attr("checked",false);
+						}
+				}
+				if(level==3){
+					return ;
+				}
+			}
+			
+		
+		});
+		
+})
+</script>
+</head>
+<body class="list">
+	<div class="bar">
+		${role.name}:权限列表 &nbsp; 总记录数: ${menuList?size}
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/admin/role/saveqx" method="post">
+			<input type="hidden" name="role.id" value= "${(role.id)!}">
+			<table class="listTable" id="listTable">
+				<tr>
+				<!--  
+					<th class="check">
+						<input type="checkbox" class="allCheck" />
+					</th>
+				-->
+					<th>
+					<input type="checkbox" class="allCheck" />	分类名称&nbsp;
+					</th>
+					<th>
+						code
+					</th>
+					<th>
+						url
+					</th>
+					<th>
+						images
+					</th>
+					<th>
+						cdlx
+					</th>
+					<th>
+						path
+					</th>
+				</tr>
+				<#list menuList as list>
+					<tr level="${((list.path?split(','))?size)}" url="${(list.url)!}" path="${(list.path)!}">
+						<!--  
+						<td >
+							  <input type="checkbox" name="ids" value="${(list.url)!}"   class="${(list.path)!}" />
+						</td>
+						-->
+						<td >
+							<#if ((list.path?split(','))?size) == 0>
+								<span class="pointer firstCategory" style="margin-left: ${((list.path?split(','))?size) * 20}px;">
+									${list.name}
+								</span>
+							<#else>
+								<span class="pointer category" style="margin-left: ${((list.path?split(','))?size) * 20}px;">
+									 <input type="checkbox" name="ids" value="${(list.url)!}"   class="${(list.path)!}" />
+										<span class="myzhed" >${list.name}</span>
+								</span>
+							</#if>
+						</td>
+						<td>
+							${(list.code)!}
+						</td>
+						<td>
+							${(list.url)!}
+						</td>
+						<td>
+							${(list.images)!}
+						</td>
+						<td>
+							${statics["cn.com.jandar.plugin.DicPlugin"].jkzidian.get("CDLX").get("${(list.cdlx)!}")}
+						</td>
+						<td>
+							${(list.path)!}
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if menuList?size == 0>
+				<div class="noRecord">
+					没有找到任何记录!
+				</div>
+			</#if>
+			<div class="buttonArea">
+				<input type="submit" class="formButton" value="确  定" hidefocus />&nbsp;&nbsp;
+				<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus />
+			</div>
+		</form>
+	</div>
+</body>
+</html>

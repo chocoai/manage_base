@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>医生列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+			移库单列表&nbsp;<span class="pageInfo">总记录数: ${page?size}</span>
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/manage/ruku/ykd/index" method="post">
+		<div class="listBar">
+			<input type="button" class="formButton" onclick="location.href='${base}/manage/ruku/ykd/add'" value="新增" />
+			<label>草稿查看:</label>
+			    <select id="searchText" type="text" name="produce.dh"  class="labelselect">
+			       <option value="">请选择</option> 
+					<#if statics["cn.com.jandar.action.manage.ruku.YkdController"].produceCG?exists>
+						<#list statics["cn.com.jandar.action.manage.ruku.YkdController"].produceCG.keySet() as key>
+							 <option value="${key}">${statics["cn.com.jandar.action.manage.ruku.YkdController"].produceCG.get(key)}</option>
+						</#list>
+					</#if>
+			    </select>
+				<input type="button" hidefocus="" value="编辑" class="formButton" onclick="selectProduct();">
+			<label>每页显示:</label>  
+				<select name="pageSize" id="pageSize">
+					<option value="10" <#if page.pageSize == 10>selected="selected" </#if>>
+						10
+					</option>
+					<option value="20" <#if page.pageSize == 20>selected="selected" </#if>>
+						20
+					</option>
+					<option value="50" <#if page.pageSize == 50>selected="selected" </#if>>
+						50
+					</option>
+					<option value="100" <#if page.pageSize == 100>selected="selected" </#if>>
+						100
+					</option>
+				</select>
+		</div>	
+			<table class="listTable">
+				<tr>
+				<th class="check">
+						<input type="checkbox" class="allCheck" />
+					</th>
+					<th>
+						<span class="sort" name="DH">单号</span>
+					</th>
+					<th>
+						<span class="sort" name="SBZT">设备出入库单类型</span>
+					</th>
+					<th>
+						<span class="sort" name="CHECKDATE">出入库时间</span>
+					</th>
+					<th>
+						<span class="sort" name="RKCKBH">入库时间</span>
+					</th>
+					<th>
+						<span class="sort" name="CKCKBH">出库时间</span>
+					</th>
+					<th>
+						<span class="sort" name="DHZT">单号状态</span>
+					</th>
+					<th>
+						<span class="sort" name="BZ">备注</span>
+					</th>
+					<th>
+						操作
+					</th>
+				</tr>
+				<#list page.list as list>
+					<tr>
+						<td>
+							<input type="checkbox" name="ids" value="${list.id}" />
+						</td>
+						<td>
+						    ${list.DH}
+						</td>
+						<td>
+							${(list.SBZT)!}
+						</td>
+						<td>
+							${(list.CHECKDATE)!}
+						</td>
+						<td>
+							${(list.RKCKBH)!}
+						</td>
+						<td>
+							${(list.CKCKBH)!}
+						</td>
+						<td>
+							${(list.DHZT)!}
+						</td>	
+						<td>
+							<#if list.BZ?length lt 30>${list.BZ}<#else>${list.BZ[0..15]}...</#if>
+						</td>
+						<td>
+							<a href="${base}/manage/ruku/ykd/query?id=${list.DH}" title="查看">[查看]</a>
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if (page?size > 0)>
+				<div class="pagerBar">
+					<div class="pager">
+						<#include "/admin/common/pager.html" />
+					</div>
+				<div>
+			<#else>
+				<div class="noRecord">
+					没有找到任何记录!
+				</div>
+			</#if>
+		</form>
+	</div>
+	
+	<script type="text/javascript">
+	    function selectProduct(){
+	         var dh = $('#searchText').val();
+	         $.ajax({
+	            url : '${base}/manage/ruku/ykd/edit?edit_dh= '+ dh
+	         });
+	    }   
+	</script>
+</body>
+</html>

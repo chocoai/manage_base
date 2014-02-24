@@ -1,0 +1,12 @@
+package cn.com.jandar.action.manage.bxgl;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/bxgl/kbxd",resource="开报修单")
+public class KbxdController extends AdminBaseController{
+	public void index(){
+		renderText("开报修单");
+	}
+}

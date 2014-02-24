@@ -1,0 +1,192 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>设备管理列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<script type="text/javascript">
+$().ready( function() {
+	$("#owAllButton").click( function() {
+		$("#pageNumber").val("1");
+		window.location.href="${base}/manage/base/device/index";
+	});
+});
+</script>
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+			设备列表&nbsp;<span class="pageInfo">总记录数: ${page.totalRow}(共${page.totalPage}页)</span>
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/manage/base/device/index" method="post">
+			<div class="listBar">
+				<input type="button" class="formButton" onclick="location.href='${base}/manage/base/device/add'" value="添加设备" />
+				<label>根据厂商ID${(filter_LIKES_factoryid)!}:</label>
+				<label class="searchText">
+					<select name="filter_LIKES_factoryid" id="searchText"  class="labelselect" style="width: 100px">
+						<option value="">请选择</option>
+						<#list statics["cn.com.jandar.plugin.DicPlugin"].b_factorysimgle.keySet() as key>
+							<#if ((filter_LIKES_factoryid)!) == key>
+								<option value="${key}" selected="selected">
+							<#else >
+								<option value="${key}" >
+							</#if>
+								${statics["cn.com.jandar.plugin.DicPlugin"].b_factorysimgle.get(key)}
+							</option>
+						</#list>
+					</select>
+				</label>
+				&nbsp;				
+				<label>根据设备类型${(filter_LIKES_sblx)!}:</label>
+				<label class="searchText">
+					<select name="filter_LIKES_sblx" id="searchTextaa"  class="labelselect" >
+						<option value="">请选择</option>
+						<#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("SBLX") as sblx>
+						<#if ((filter_LIKES_sblx)!) == sblx.code>
+							<option value="${sblx.code}" selected="selected">
+						<#else >
+							<option value="${sblx.code}" >
+						</#if>
+							${sblx.value}
+						</option>
+						</#list>
+					</select>
+				</label>
+				&nbsp;
+				<label>根据设备状态${(filter_LIKES_sbzt)!}:</label>
+				<label class="searchText">
+					<select name="filter_LIKES_sbzt" id="searchTextbb"  class="labelselect" >
+						<option value="">请选择</option>
+						<#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("SBZT") as sbzt>
+						<#if ((filter_LIKES_sbzt)!) == sbzt.code>
+							<option value="${sbzt.code}" selected="selected">
+						<#else >
+							<option value="${sbzt.code}" >
+						</#if>
+							${sbzt.value}
+						</option>
+						</#list>
+					</select>
+				</label>
+				<input type="button" hidefocus="" value="搜 索" class="formButton" id="searchButton">
+				
+				<input type="button" hidefocus="" value="显示全部" class="formButton" id="owAllButton">
+				<label>每页显示:</label>  
+				<select name="pageSize" id="pageSize">
+					<option value="10" <#if page.pageSize == 10>selected="selected" </#if>>
+						10
+					</option>
+					<option value="20" <#if page.pageSize == 20>selected="selected" </#if>>
+						20
+					</option>
+					<option value="50" <#if page.pageSize == 50>selected="selected" </#if>>
+						50
+					</option>
+					<option value="100" <#if page.pageSize == 100>selected="selected" </#if>>
+						100
+					</option>
+				</select>
+			</div>
+			<table class="listTable">
+				<tr>
+					<th class="check">
+						<input type="checkbox" class="allCheck" />
+					</th>
+					<th>
+						<span class="sort" name="id">ID</span>
+					</th>
+					<th>
+						<span class="sort" name="FACTORYID">厂商ID</span>
+					</th>
+					<th>
+						<span class="sort" name="DNAME">设备名称</span>
+					</th>
+					<th>
+						<span class="sort" name="SBXH">设备型号</span>
+					</th>
+					<th>
+						<span class="sort" name="SBSM">设备说明</span>
+					</th>
+					<th>
+						<span class="sort" name="SBLX">设备类型</span>
+					</th>
+					<th>
+						<span class="sort" name="SBZT">设备状态</span>
+					</th>
+					<th>
+						操作
+					</th>
+				</tr>
+				<#list page.list as list>
+					<tr>
+						<td>
+							<input type="checkbox" name="ids" value="${list.id}" />
+						</td>
+						<td>
+							${list.id}
+						</td>
+						<td>
+							${statics["cn.com.jandar.plugin.DicPlugin"].b_factorysimgle.get(list.FACTORYID + "")}
+						</td>
+						<td>
+							${list.DNAME}
+						</td>
+						<td>
+							${list.SBXH}
+						</td>
+						<td>
+							${list.SBSM}
+							
+						</td>
+						<td>
+							<#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("SBLX") as sblx>
+								<#if list.SBLX == sblx.code>
+									${sblx.value}
+								</#if>
+							</#list>
+						</td>
+						<td>
+							<#if list.SBZT == '001'>
+								生产库、设备库启用
+							</#if>
+							<#if list.SBZT == '002'>
+								设备库启用
+							</#if>
+							<#if list.SBZT == '003'>
+								停用
+							</#if>
+						</td>
+						<td>
+							<#if list.SBZT == '001'>
+								<a href="${base}/manage/base/device/changeState?id=${list.id}&SBZT=002" title="备件库启用">[备件库启用]</a>
+								<a href="${base}/manage/base/device/changeState?id=${list.id}&SBZT=003" title="停用">[停用]</a>
+							</#if>
+							<#if list.SBZT == '002'>
+								<a href="${base}/manage/base/device/changeState?id=${list.id}&SBZT=001" title="生产库、备件库启用">[生产库、备件库启用]</a>
+								<a href="${base}/manage/base/device/changeState?id=${list.id}&SBZT=003" title="停用">[停用]</a>
+							</#if>
+							<#if list.SBZT == '003'>
+								<a href="${base}/manage/base/device/changeState?id=${list.id}&SBZT=001" title="生产库、备件库启用">[生产库、备件库启用]</a>
+								<a href="${base}/manage/base/device/changeState?id=${list.id}&SBZT=002" title="备件库启用">[备件库启用]</a>
+							</#if>
+							<a href="${base}/manage/base/device/edit?id=${list.id}" title="编辑">[编辑]</a>
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if (page.list?size > 0)>
+				<div class="pagerBar">
+					<div class="pager">
+						<#include "/admin/common/pager.html" />
+					</div>
+				<div>
+			<#else>
+				<div class="noRecord">
+					没有找到任何记录!
+				</div>
+			</#if>
+		</form>
+	</div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+package cn.com.jandar.action.manage.scd;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/scd/mxsc",resource="模型生成")
+public class MxscController extends AdminBaseController{
+	public void index(){
+		renderText("模型生成");
+	}
+}

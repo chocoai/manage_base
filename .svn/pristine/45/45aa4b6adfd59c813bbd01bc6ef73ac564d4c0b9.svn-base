@@ -1,0 +1,92 @@
+package cn.com.jandar.action.manage.ruku;
+
+
+import java.sql.Timestamp;
+import java.util.List;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.kit.Constant;
+import cn.com.jandar.kit.DbUtil;
+import cn.com.jandar.model.User;
+
+import com.google.common.collect.Lists;
+import com.jfinal.aop.Before;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/ruku/qcrk",resource="期初入库")
+public class QcrkController extends AdminBaseController{
+	@ButtonBind(buttonname="期初入库单")
+	public void index(){
+		List<Record> deviceList = Db.find("select * from b_device order by id");
+		setAttr("deviceList", deviceList);
+		List<Record> storeList = Db.find("select * from b_store order by id");
+		setAttr("storeList", storeList);
+		
+		render("qcrk_input.html");
+	}
+	
+	@ButtonBind(buttonname="提交")
+	@Before(Tx.class)
+	public void add() {
+		
+		List<Record> storeList = Db.find("select * from b_store order by id");
+		List<Record> deviceList = Db.find("select * from b_device order by id");
+		
+		for(Integer i=0;i<storeList.size();i++){
+			String[] str = getParaValues("number"+(i+1));
+			Integer[] num = new Integer[str.length];
+			for(int a = 0;a<str.length;a++){
+				num[a] = DbUtil.readDbInt(str[a]);
+			}
+			
+			String DanHao=Constant.findb_goods_dh("000");
+			List<Record> record2list = Lists.newArrayList();
+	        for(int j=0;j<num.length;j++){
+		      if(num[j]>0){
+				  for(int k=0;k<num[j];k++){
+					    Record record2 = new Record();
+						record2.set("DH",DanHao);
+						record2.set("SBZT", "000");
+						record2.set("DEVICEID", deviceList.get(j).get("ID"));
+						record2.set("FACTORYID", deviceList.get(j).get("FACTORYID"));
+						record2.set("CHECKDATE",  new Timestamp(System.currentTimeMillis()));
+						record2.set("DHZT", "003");
+						record2.set("NUM", "1");
+						record2.set("CHNUM", "1");
+						record2.set("SZCK", storeList.get(i).get("CKBH"));
+						record2.set("BZ", getPara("beizhu"));
+						record2list.add(record2);
+//						Db.save("c_produce_detail", record2);
+					}
+			     }
+		     }
+	        if(!record2list.isEmpty()){
+            	Db.batch(" insert into c_produce_detail(ID,DH,SBZT,DEVICEID,FACTORYID,CUSTOMERID,CHECKDATE,DHZT,TXM,NUM,CHNUM,SZCK,BZ) values(?,?,?,?,?,?,?,?,?,?,?,?,?)", "ID,DH,SBZT,DEVICEID,FACTORYID,CUSTOMERID,CHECKDATE,DHZT,TXM,NUM,CHNUM,SZCK,BZ", 
+            			record2list, record2list.size());
+            	}
+	       
+	        if(!record2list.isEmpty()){
+	        Record record1 = new Record();
+			record1.set("DH",DanHao);
+			record1.set("SBZT", "000");
+			record1.set("RKCKBH", storeList.get(i).get("CKBH"));
+			record1.set("CHECKDATE",  new Timestamp(System.currentTimeMillis()));
+			record1.set("DHZT", "003");
+			record1.set("BZ", getPara("beizhu"));
+			record1.set("OPERATOR",((User)getSessionAttr(User.LOGIN_USER)).get("username"));
+			record1.set("OPDATE",  new Timestamp(System.currentTimeMillis()));
+			Db.save("c_produce", record1);
+	        }
+	    } 
+		
+		setAttr("msg", "设备提交成功！");
+		setAttr("redirectionUrl", "/manage/ruku/qcrk");
+		render("/admin/common/success.html");
+	}
+}

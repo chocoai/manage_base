@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>添加/编辑文章分类</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+
+<script type="text/javascript">
+    //保存草稿
+    function submitCG(){
+    	$('#scd_ddzt').val("010");
+        $('#validateForm').submit();
+    }
+    
+    //设备入库
+    function submitSBRK(){
+      $('#scd_ddzt').val("001");
+      $('#validateForm').submit();
+    }
+</script>
+
+</head>
+
+<#if !(scd.id)??> <#assign isAdd = true /> <#else> <#assign isAdd =
+false /> </#if>
+<body class="input" onload="showMsg('${errMsg}')">
+	<div class="bar"><#if isAdd>生产单新增<#else>生产单编辑</#if></div>
+	<div class="body">
+		<form id="validateForm" action="${base}/manage/scd/sbscd/save" method="post">
+
+			<input type="hidden" name="scd.id" value="${(scd.id)!}" />
+			<input type="hidden" name="scd.DDZT" id="scd_ddzt" value="${(scd.DDZT)!}"> 
+			<fieldset>
+				<legend>单据</legend>
+				<table class="inputTable" title="生产单">
+					<tr>
+					   <#if (scd.dh)??>
+						<th>单号:</th>
+						<td><input type="text" name="scd.dh" value="${(scd.dh)!}"
+							readonly="readonly" /> 
+							<label class="requireField">*</label>
+						</td>
+						</#if>
+						<th>出库仓库:</th>
+						<td>
+						<select id="CKCKBH" name="scd.CKCKBH"
+							class="labelselect {required: true}" title="必填">
+								<option value="">请选择</option> <#if
+								statics["cn.com.jandar.plugin.DicPlugin"].b_store001?exists> <#list
+								statics["cn.com.jandar.plugin.DicPlugin"].b_store001.keySet() as
+								key> <#if key == "${scd.CKCKBH}">
+								<option value="${key}" selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(key)}</option>
+								<#else>
+								<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(key)}</option>
+								</#if> </#list> </#if>
+						</select>
+						
+						</td>
+					</tr>
+					<tr>
+						<th>模型:</th>
+						<td><select name="scd.MODELID"
+							class="labelselect {required: true}" title="必填">
+								<option value="">请选择</option> <#if
+								statics["cn.com.jandar.plugin.DicPlugin"].p_model?exists> <#list
+								statics["cn.com.jandar.plugin.DicPlugin"].p_model.keySet() as
+								key>
+									<#if key=="${scd.MODELID}"> 
+										<option value="${key}"  selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].p_model.get(key)}</option>
+									<#else>
+										<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].p_model.get(key)}</option>
+									</#if>
+								</#list> </#if>
+						</select> <label class="requireField">*</label></td>
+						<th>设备数量:</th>
+						<td><input type="text" name="scd.SBNUM"
+							class="formText {required: true,positiveInteger:true,max:11}" value="${(scd.SBNUM)!}" />
+							<label	class="requireField">*</label></td>
+					</tr>
+				
+					<tr>
+						<th>客户:</th>
+						<td>
+						<select type="text" name="scd.CUSTOMERID"
+							class="labelselect {required: true}" title="必填">
+							<option value="">请选择</option> <#if
+								statics["cn.com.jandar.plugin.DicPlugin"].b_customer?exists> <#list
+								statics["cn.com.jandar.plugin.DicPlugin"].b_customer.keySet() as
+								key>
+								<#if key=="${scd.CUSTOMERID}"> 
+							 	  <option value="${key}" selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].b_customer.get(key)}</option>
+								<#else>
+								  <option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_customer.get(key)}</option>
+								</#if>
+								
+								</#list>
+							 </#if>
+							 </select> 
+							<label	class="requireField">*</label></td>
+							<th>联系人:</th>
+						<td><input type="text" name="scd.LXR"
+							class="formText {required: true,maxlength:30}" title="必填" value="${(scd.LXR)!}" />
+							<label	class="requireField">*</label></td>
+					</tr>
+			
+					<tr>
+						<th>联系电话:</th>
+						<td><input type="text" name="scd.LXDH"
+							class="formText {required: true,maxlength:50}" value="${(scd.LXDH)!}"/>
+							<label class="requireField">*</label></td>
+				        <th>备注:</th>
+						<td><textarea class="formTextarea {maxlength:500}" name="scd.bz">${(scd.bz)!}</textarea></td>
+					</tr>
+				
+				</table>
+			</fieldset>
+			
+			<div class="buttonArea">
+				<#if (dhzt)??>
+				<input type="button" class="formButton" value="订单生成" hidefocus="true" onclick="submitSBRK();"/>&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="button" class="formButton" value="保存草稿" hidefocus="true" onclick="submitCG();" />&nbsp;&nbsp;&nbsp;&nbsp; 
+				</#if> 
+				<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+			</div>
+		</form>
+	</div>
+</body>
+</html>

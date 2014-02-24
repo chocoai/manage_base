@@ -1,0 +1,255 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>添加/编辑文章分类</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+
+</head>
+
+<#if !(scd.id)??> <#assign isAdd = true /> <#else> <#assign isAdd =
+false /> </#if>
+<body class="input" onload="showMsg('${errMsg}')">
+	<div class="bar"><#if isAdd>新增单据<#else>编辑单据</#if></div>
+	<div class="body">
+	<fieldset>
+			<legend>生产单</legend>
+		<form id="validateForm" action="${base}/manage/scd/sbscd/saveOrder"
+			method="post">
+
+			<input type="hidden" name="scd.id" value="${(scd.id)!}" /> <input
+				type="hidden" name="scd.DHZT" id="scd_dhzt" value="${(scd.DHZT)!}">
+			<input type="hidden" name="scd.DDZT" id="scd_ddzt"
+				value="${(scd.DDZT)!}">
+		
+				
+				<table class="inputTable" title="生产单">
+					<#if (scd.dh)??>
+					<tr>
+						<th>单号:</th>
+						<td><input type="text" name="scd.dh" value="${(scd.dh)!}"
+							readonly="readonly" /> <label class="requireField">*</label></td>
+					</tr>
+					</#if>
+					<tr>
+						<th>出库仓库:</th>
+						<td><select id="CKCKBH" name="scd.CKCKBH"
+							class="labelselect {required: true}"> <#if
+								statics["cn.com.jandar.plugin.DicPlugin"].b_store001?exists>
+								<#list
+								statics["cn.com.jandar.plugin.DicPlugin"].b_store001.keySet() as
+								key> <#if key == "${scd.CKCKBH}">
+								<option value="${key}" selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(key)}</option>
+								</#if> </#list> </#if>
+						</select>
+						</td>
+					</tr>
+					<tr>
+						<th>模型:</th>
+						<td><select name="scd.MODELID"
+							class="labelselect {required: true}"> <#if
+								statics["cn.com.jandar.plugin.DicPlugin"].p_model?exists> <#list
+								statics["cn.com.jandar.plugin.DicPlugin"].p_model.keySet() as
+								key> <#if key=="${scd.MODELID}">
+								<option value="${key}" selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].p_model.get(key)}</option>
+								</#if> </#list> </#if>
+						</select> <label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>设备数量:</th>
+						<td><input type="text" name="scd.SBNUM"
+							class="formText {required: true}" title="数量不能为空"
+							value="${(scd.SBNUM)!}" readonly="readonly" /> <label
+							class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>客户:</th>
+						<td><select type="text" name="scd.CUSTOMERID"
+							class="labelselect {required: true}" title="客户不能为空">
+								<#if
+								statics["cn.com.jandar.plugin.DicPlugin"].b_customer?exists>
+								<#list
+								statics["cn.com.jandar.plugin.DicPlugin"].b_customer.keySet() as
+								key> <#if key=="${scd.CUSTOMERID}">
+								<option value="${key}" selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].b_customer.get(key)}</option>
+								</#if> </#list> </#if>
+						</select> <label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>联系人:</th>
+						<td><input type="text" name="scd.LXR"
+							class="formText {required: true}" title="联系人不能为空"
+							value="${(scd.LXR)!}" /> <label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>联系电话:</th>
+						<td><input type="text" name="scd.LXDH"
+							class="formText {required: true}" title="联系电话不能为空"
+							value="${(scd.LXDH)!}" /> <label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>备注:</th>
+						<td><textarea name="scd.bz">${(scd.bz)!}</textarea>
+						</td>
+					</tr>
+
+					<#if type==1>
+					<tr>
+						<th>发货地址:</th>
+						<td><input type="text" name="scd.FH001"
+							class="formText {required: true}" title="发货地址能为空"
+							value="${(scd.FH001)!}" /> 
+							<input type="hidden" name="type" value="1">
+							<label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>物流公司:</th>
+						<td><input type="text" name="scd.FH002"
+							class="formText {required: true}" title="物流公司不能为空"
+							value="${(scd.FH002)!}" /> <label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>[发货]物流单号:</th>
+						<td><input type="text" name="scd.FH003"
+							class="formText {required: true}" title="物流单号不能为空"
+							value="${(scd.FH003)!}" /> <label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>[发货]司机:</th>
+						<td><input type="text" name="scd.FH004"
+							class="formText {required: true}" title="司机电话不能为空"
+							value="${(scd.FH004)!}" /> <label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>[发货]司机电话:</th>
+						<td><input type="text" name="scd.FH005"
+							class="formText {required: true}" title="联系电话不能为空"
+							value="${(scd.FH005)!}" />
+							<label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>[发货]说明:</th>
+						<td><textarea class="formTextarea" type="text" name="scd.FH006"
+							value="${(scd.FH006)!}" ></textarea> 
+						</td>
+					</tr>
+					</#if> <#if type == 2>
+					<tr>
+						<th>[确认收货]接收时间:</th>
+						<td><input type="text" name="scd.QRSH001"
+							class="Wdate formText {required: true}"  onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" title="接收时间不能为空"
+							value="${(scd.QRSH001)!}" /> 
+							<input type="hidden" name="type" value="2">
+							<label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>[确认收货]说明:</th>
+						<td><textarea class="formTextarea"  name="scd.QRSH002"
+							value="${(scd.QRSH002)!}"></textarea> </td>
+					</tr>
+
+					</#if> <#if type == 3>
+					<tr>
+						<th>[开始生产]接收时间:</th>
+						<td><input type="text" name="scd.KSSC001"
+							class="Wdate formText {required: true}" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" title="接收时间不能为空"
+							value="${(scd.KSSC001)!}" /> 
+							<input type="hidden" name="type" value="3">
+							<label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>[开始生产]计划完成时间:</th>
+						<td><input type="text" name="scd.KSSC002"
+							class="Wdate formText {required: true}" title="计划完成时间不能为空"
+							value="${(scd.KSSC002)!}" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" /> <label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>[确认收货]说明:</th>
+						<td><textarea class="formTextarea"  name="scd.KSSC003"
+						 value="${(scd.KSSC003)!}" ></textarea> 
+						</td>
+					</tr>
+
+					</#if> <#if type == 4>
+					<tr>
+						<th>[发往客户]预计到达时间:</th>
+						<td><input type="text" name="scd.FWKH001"
+							class="Wdate formText {required: true}" title="预计到达时间不能为空"
+							value="${(scd.FWKH001)!}" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})"/> 
+							<input type="hidden" name="type" value="4">
+							<label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>[发货]发货地址:</th>
+						<td><input type="text" name="scd.FWKH002"
+							class="formText {required: true}" title="联系电话不能为空"
+							value="${(scd.FWKH002)!}" /> <label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>[发货]物流公司:</th>
+						<td><input type="text" name="scd.FWKH003"
+							class="formText {required: true}" title="物流公司不能为空"
+							value="${(scd.FWKH003)!}" /> <label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>[发货]物流单号:</th>
+						<td><input type="text" name="scd.FWKH004"
+							class="formText {required: true}" title="物流单号不能为空"
+							value="${(scd.FWKH004)!}" /> <label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>[发货]司机:</th>
+						<td><input type="text" name="scd.FWKH005"
+							class="formText {required: true}" title="司机不能为空"
+							value="${(scd.FWKH005)!}" /> <label class="requireField">*</label>
+						</td>
+					</tr>
+
+					</#if> <#if type == 5>
+					<tr>
+						<th>[确认接收]接收时间:</th>
+						<td><input type="text" name="scd.QRJS001"
+							class="Wdate formText {required: true}" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" title="接收时间不能为空"
+							value="${(scd.QRJS001)!}" /> <label class="requireField">*</label>
+							<input type="hidden" name="type" value="5">
+						</td>
+					</tr>
+					<tr>
+						<th>[确认接收]说明:</th>
+						<td><textarea class="formTextarea"  name="scd.QRJS002"
+							value="${(scd.QRJS002)!}"></textarea> </td>
+					</tr>
+					</#if>
+
+				</table>
+		
+
+			<div class="buttonArea" align="right">
+				<input type="submit" class="formButton" value="保存" hidefocus="true" />&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="button" class="formButton" 
+					onclick="window.history.back(); return false;" value="返  回"
+					hidefocus="true" />
+			</div>
+		</form>
+			</fieldset>
+	</div>
+</body>
+</html>

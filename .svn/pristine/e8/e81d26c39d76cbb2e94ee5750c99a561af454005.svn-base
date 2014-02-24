@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>字典维护</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+<#if !(code.ID)??>
+	<#assign isAdd = true />
+<#else>
+	<#assign isAdd = false />
+</#if>
+  </head>
+  <body class="input" onload="showMsg('${errMsg}')">
+    <div class="ctrttop cy143w">
+  		<#if isAdd>字典添加<#else>字典编辑</#if>
+  	</div>
+  	<div class="body">
+  		<form id="validateForm" action="<#if isAdd>${base}/admin/code/zidiansave<#else>${base}/admin/code/zidianupdate</#if>" method="post">
+  			<input type="hidden" name="code.ID" value="${(code.ID)!}"/>
+  			<table class="inputTable">
+  				<tr>
+  					<th>类别</th>
+  					<td><input type="hidden" name="code.TYPE" value="${(code.TYPE)!}"/>
+  						${(code.TYPE)!}
+  						
+  					</td>
+  				</tr>
+  				<tr>
+  					<th>类别名称</th>
+  					<td><input type="hidden" name="code.TYPENAME" value="${(code.TYPENAME)!}"/>
+  						${(code.TYPENAME)!}
+  					
+  					</td>
+  				</tr>
+  				<#if isAdd>
+  				<tr>
+  					<th>编码</th>
+  					<td><input type="text" name="code.CODE" value="${(code.CODE)!}"/>
+  						<label class="requireField">*</label>
+  					</td>
+  				</tr>
+  				<#else>
+  				<tr>
+  					<th>编码</th>
+  					<td><input type="hidden" name="code.CODE" value="${(code.CODE)!}"/>
+  						${(code.CODE)!}
+  					</td>
+  				</tr>
+  				</#if>
+  				<tr>
+  					<th>名称</th>
+  					<td><input type="text" name="code.VALUE" value="${(code.VALUE)!}"/>
+  						<label class="requireField">*</label>
+  					</td>
+  				</tr>
+  				<tr>
+  					<th>SORT</th>
+  					<td><input type="text" name="code.SORT" value="${(code.SORT)!}"/>
+  						<label class="requireField">*</label>
+  					</td>
+  				</tr>
+  			</table>
+  			
+  			<div class="buttonArea" >
+  					<input type="submit" class="formButton" value="确  定" hidefocus />
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus />
+  			</div>
+  		</form>
+  	</div>
+  	
+  </body>
+</html>

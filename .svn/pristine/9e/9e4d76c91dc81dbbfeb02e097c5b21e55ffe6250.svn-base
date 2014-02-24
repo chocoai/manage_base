@@ -1,0 +1,52 @@
+package cn.com.jandar.model;
+
+import java.util.List;
+
+import com.jfinal.ext.plugin.tablebind.TableBind;
+import com.jfinal.plugin.activerecord.Model;
+
+/**
+ * @author
+ * 
+ */
+@TableBind(tableName = "b_goods")
+public class Goods extends Model<Goods> {
+	private static final long serialVersionUID = -2063970373324095312L;
+	public static final Goods dao = new Goods();
+
+	/**
+	 * 获得单号类型列表
+	 * 
+	 * @return
+	 */
+	public static List<Goods> getGoodsList(String orderBy, String order) {
+		StringBuffer sqlBuffer = new StringBuffer(
+				" select * from b_goods where 1=1 ");
+		sqlBuffer.append(" order by ").append(orderBy).append(" ")
+				.append(order);
+		List<Goods> goodsList = Goods.dao.find(sqlBuffer.toString());
+
+		return goodsList;
+	}
+
+	public static Goods getGoodsById(String id) {
+		return Goods.dao.findById(id);
+	}
+
+	public static String save(Goods Goods) {
+		Goods.save();
+		return "保存成功";
+	}
+
+	public static String update(Goods goods) {
+		goods.update();
+		return "更新成功";
+	}
+
+	/*
+	 * 单号名称重复判断 public static String isExitByDName(String dName) { Goods goods =
+	 * Goods.dao.findFirst( "select * from b_goods where d_name = ?", dName); if
+	 * (goods == null) { return "true"; } return "false"; }
+	 */
+
+}

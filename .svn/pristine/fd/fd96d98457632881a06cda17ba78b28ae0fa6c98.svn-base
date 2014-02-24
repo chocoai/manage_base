@@ -1,0 +1,33 @@
+@charset "utf-8";
+/* CSS Document */
+
+body{ padding:0 0; margin:0 0;  font-size:12px; font-family:"宋体"; background:url(../imgs/index_03.jpg) repeat-y;}
+a{ text-decoration:none}
+ul,li{ list-style:none; padding:0 0; margin:0 0;}
+img{border:none;}
+
+.cyffw{ font-size:12px; font-family:"微软雅黑"; color:#fff; font-weight:bold;}
+.cyffw a{ color:#fff;}
+.cyffw a:hover{ color:#bbf14c;}
+.cyff12{ font-size:12px; font-family:"微软雅黑"; color:#fff; }
+
+.cy143w{ color:#143a69; font-family:"微软雅黑"; font-weight:bold; font-size:14px;}
+.cy143{ color:#143a69; font-family:"微软雅黑";  font-size:12px;}
+.cyff{color:#fff; font-size:14px; font-family:"微软雅黑"; }
+.cyff a{color:#aac7f0;}
+.cyff a:hover{color:#fff;}
+
+.cyff2{color:#fff; font-size:14px; font-family:"微软雅黑"; }
+.cyff2 a{color:#fff;}
+.cyff2 a:hover{color:#bbf14c;}
+
+.cy43{ color:#434343; font-weight:bold;}
+.cy43n{color:#466291;}
+.cy43n a{ color:#434343;}
+.cy43n a:hover{ color:#434343; text-decoration:underline;}
+
+.cy99{ color:#999999;}
+.cy5d9{ color:#5d9ab6;}
+.cy5d9 a{  color:#5d9ab6;}
+
+.topifream{ width:99.7%; height:79px; }

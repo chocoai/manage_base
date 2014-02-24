@@ -1,0 +1,87 @@
+package cn.com.jandar.model;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.jfinal.ext.plugin.tablebind.TableBind;
+import com.jfinal.kit.StringKit;
+import com.jfinal.plugin.activerecord.Model;
+import com.jfinal.plugin.activerecord.Page;
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
+/** 
+ *@author
+ *
+ */
+
+@TableBind(tableName="b_factory")
+public class Factory extends Model<Factory> {
+	 public static final Factory dao = new Factory();
+	
+//	 public static List<Factory> getFactoryList() {
+//	        List<Factory> factoryList = Factory.dao.find("select * from b_factory order by ID");
+//	        return factoryList;
+//	    }
+	    
+	    public static Factory getFactoryById(String ID){
+	        return Factory.dao.findById(ID);
+	    }
+	    
+//	    public static String delete(String[] ids) {
+//	        for (String ID : ids) {
+//	            if (!Factory.dao.deleteById(ID)) {
+//	                return "error";
+//	            }
+//	        }
+//	        return "success";
+//	    } 
+ 
+	    public static Page<Factory> getFactoryPage(int sPageNum, int sPageSize, String orderBy, String order, String search) {
+	    	 List<Object> param = new ArrayList<Object>();
+	         StringBuffer sqlBuffer = new StringBuffer("FROM b_factory  ");
+	         if (!StringKit.isBlank(search)) {
+	             sqlBuffer.append("where (b_factory.FNAME like ? or b_factory.EMAIL like ?)");
+	             param.add("%"+search+"%");
+	             param.add("%"+search+"%");
+	         }
+	         sqlBuffer.append(" order by ").append(orderBy).append(" ").append(order);
+	         Page<Factory> factoryPage = (Page<Factory>) Factory.dao.paginate(sPageNum, sPageSize, "SELECT * ",
+	                                                                          sqlBuffer.toString(),param.toArray());
+	         return factoryPage;
+	    }
+	    
+	    public static String save(Factory factory) {
+	        factory.set("OPDATE", new Timestamp(System.currentTimeMillis()));
+	        factory.set("UPIPDATE", new Timestamp(System.currentTimeMillis()));
+	        factory.set("YXBZ", "001");
+	        factory.save();
+	        return "保存成功";
+	    }
+
+	    public static String update(Factory factory) {
+	        factory.set("UPIPDATE", new Timestamp(System.currentTimeMillis()));
+	        factory.update();
+	        return "更新成功";
+	    }
+	    
+	    public static String isExitByFactoryName(String factoryName){
+	    	Factory factory = Factory.dao.findFirst("select * from b_factory where b_factory.FNAME = ?",factoryName);
+	        if(factory == null){
+	            return "true";
+	        }
+	        return "false";
+	    }
+	    
+//	    /**
+//	     *  更改有效标志
+//	     */
+//	    public static String changeYXBZ(String ID){
+//	    	Factory factory = Factory.dao.findById(ID);
+//	    	if(!factory.getStr("YXBZ").equals("002")){
+//	    		 factory.set("YXBZ", "002").update();
+//	    	}
+//	    	else factory.set("YXBZ", "001").update();
+//	    	return "true";
+//	    }
+}

@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>管理员列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+			管理员列表&nbsp;<span class="pageInfo">总记录数: ${page.totalRow}(共${page.totalPage}页)</span>
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/admin/user/index" method="post">
+			<div class="listBar">
+				
+				<#if (session.loginUser.roleStr?index_of("/admin/user/add")>0) >
+					<input type="button" class="formButton" onclick="location.href='${base}/admin/user/add'" value="添加管理员" />
+			    </#if>
+				<label>根据用户登入账号或邮箱查找:</label>
+				<label class="searchText"><input id="searchText" type="text" name="filter_LIKES_name" value="${filter_LIKES_name!}" /></label>
+				<input type="button" hidefocus="" value="搜 索" class="formButton" id="searchButton">
+				<input type="button" hidefocus="" value="显示全部" class="formButton" id="showAllButton">
+				<label>每页显示:</label>  
+				<select name="pageSize" id="pageSize">
+					<option value="10" <#if page.pageSize == 10>selected="selected" </#if>>
+						10
+					</option>
+					<option value="20" <#if page.pageSize == 20>selected="selected" </#if>>
+						20
+					</option>
+					<option value="50" <#if page.pageSize == 50>selected="selected" </#if>>
+						50
+					</option>
+					<option value="100" <#if page.pageSize == 100>selected="selected" </#if>>
+						100
+					</option>
+				</select>
+			</div>
+			<table class="listTable">
+				<tr>
+					<th class="check">
+						<input type="checkbox" class="allCheck" />
+					</th>
+					<th>
+						<span class="sort" name="id">ID</span>
+					</th>
+					<th>
+						<span class="sort" name="username">账号</span>
+					</th>
+					<th>
+						<span class="sort" name="name">姓名</span>
+					</th>
+					<th>
+						<span class="sort" name="email">邮箱</span>
+					</th>
+					<th>
+						<span class="sort" name="photo">联系电话</span>
+					</th>
+					<th>
+						<span class="sort" name="address">地址</span>
+					</th>
+					<th>
+						<span class="sort" name="createDate">添加时间</span>
+					</th>
+					<th>
+						操作
+					</th>
+				</tr>
+				<#list page.list as list>
+					<tr>
+						<td>
+							<#if list.username !="admin">
+								<input type="checkbox" name="ids" value="${list.id}" />
+							</#if>
+						</td>
+						<td>
+							${list.id}
+						</td>
+						<td>
+							<#if list.username?length lt 30>${list.username}<#else>${list.username[0..30]}...</#if>
+						</td>
+						<td>
+							${list.name}
+						</td>
+						<td>
+							${list.email}
+						</td>
+						<td>
+							${list.phone}
+							
+						</td>
+						<td>
+							<#if list.address?length lt 50>${list.address}<#else>${list.address[0..50]}...</#if>
+						</td>
+						<td>
+							<span title="${list.createDate?string("yyyy-MM-dd HH:mm:ss")}">${list.createDate}</span>
+						</td>
+						<td>
+							<#if (session.loginUser.roleStr?index_of("/admin/user/edit")>0) >
+							<a href="${base}/admin/user/edit?id=${list.id}" title="编辑">[编辑]</a>
+							</#if>
+							<#if list.username!='admin'>
+								<#if (session.loginUser.roleStr?index_of("/admin/user/reset")>0) >
+							<a href="${base}/admin/user/reset?id=${list.id}" title="密码重置">[密码重置]</a>
+								</#if>
+							</#if>
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if (page.list?size > 0)>
+				<div class="pagerBar">
+					<div class="delete">
+						<#if (session.loginUser.roleStr?index_of("/admin/user/delete")>0) >
+							<input type="button" id="deleteButton" class="formButton" url="${base}/admin/user/delete" value="删 除" disabled hidefocus />
+						</#if>
+					</div>
+					<div class="pager">
+						<#include "/admin/common/pager.html" />
+					</div>
+				<div>
+			<#else>
+				<div class="noRecord">
+					没有找到任何记录!
+				</div>
+			</#if>
+		</form>
+	</div>
+</body>
+</html>

@@ -1,0 +1,195 @@
+package cn.com.jandar.action.manage.bxgl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.OrderedMap;
+import org.apache.commons.collections.map.LinkedMap;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.interceptor.StartXtInterceptor;
+import cn.com.jandar.model.Device;
+import cn.com.jandar.model.Factory;
+import cn.com.jandar.model.Produce;
+import cn.com.jandar.model.ProduceDetail;
+import cn.com.jandar.model.ProduceDetailDraft;
+import cn.com.jandar.model.Store;
+import cn.com.jandar.model.User;
+import cn.com.jandar.plugin.DicPlugin;
+
+import com.google.common.collect.Lists;
+import com.jfinal.aop.Before;
+import com.jfinal.kit.PathKit;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+@Before(StartXtInterceptor.class)
+@ControllerBind(controllerKey="/manage/bxgl/cjwxrk",resource="厂家维修入库单")
+public class CjwxrkController extends AdminBaseController{
+	
+	@ButtonBind(buttonname = "查询")
+	public void index() {
+		Page<Produce> page = Produce.getProducePage(
+				getParaToInt("pageNumber", 1),
+				getParaToInt("pageSize", PAGESIZE),
+				getPara("orderBy", "c_produce.ID"), getPara("order", "desc"),
+				getPara("filter_LIKES_RKCKBH"),"", getPara("filter_LIKES_DHZT"),
+				"012");
+		keepPara("filter_LIKES_RKCKBH");
+		keepPara("filter_LIKES_DHZT");
+		setAttr("page", page);
+		render("cjwxrk_list.html");
+	}
+
+	@ButtonBind(buttonname = "新增")
+	public void add() {
+
+		render("cjwxrk_input.html");
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "新增")
+	public void save() {
+		Produce produce = getModel(Produce.class);
+		String[] deciveArray = getParaValues("deviceMap");
+		String[] numArray = getParaValues("numMap");
+		List<Record> records = Lists.newArrayList();
+		for (int i = 0; i < deciveArray.length; i++) {
+			Record e = new Record();
+			e.set("deviceid", deciveArray[i]);
+			e.set("num", numArray[i]);
+			records.add(e);
+		}
+		User user = getSessionAttr(User.LOGIN_USER);
+		setAttr("msg", Produce.saveAll(user, produce, records));
+		setAttr("redirectionUrl", "/manage/bxgl/cjwxrk");
+		render("/admin/common/success.html");
+	}
+
+	@ButtonBind(buttonname = "更新")
+	public void edit() {
+
+		Produce produce = Produce.getProduceById(getPara("id"));
+		String DHZT = produce.getStr("DHZT");
+		List<Record> record = null;
+		if (DHZT != null && DHZT.equals("003")) {
+			record = ProduceDetail.getProduceDetailByDH(produce.getStr("DH"));
+		} else if (DHZT != null && !DHZT.equals("003")) {
+			record = ProduceDetailDraft.getProduceDetailDraftByDh(produce
+					.getStr("DH"));
+		}
+		setAttr("produce", produce);
+		setAttr("record", record);
+		render("cjwxrk_input.html");
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "更新")
+	public void update() {
+		Produce produce = getModel(Produce.class);
+		String[] deciveArray = getParaValues("deviceMap");
+		String[] numArray = getParaValues("numMap");
+		List<Record> records = Lists.newArrayList();
+		for (int i = 0; i < deciveArray.length; i++) {
+			Record e = new Record();
+			e.set("deviceid", deciveArray[i]);
+			e.set("num", numArray[i]);
+			records.add(e);
+		}
+		User user = getSessionAttr(User.LOGIN_USER);
+		setAttr("msg", Produce.saveAll(user, produce, records));
+
+		setAttr("redirectionUrl", "/manage/bxgl/cjwxrk");
+		render("/admin/common/success.html");
+	}
+
+	@ButtonBind(buttonname = "删除")
+	public void delete() {
+		String[] ids = getParaValues("ids");
+		renderJson("status", Produce.delete(ids));
+	}
+	
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "入库")
+	public void send(){
+		
+		Produce produce = Produce.getProduceById(getPara("id"));
+		produce.set("DHZT", "003");
+		
+		List<Record> records = ProduceDetailDraft.getProduceDetailDraftByDhSend(produce.getStr("DH"));;
+		User user = getSessionAttr(User.LOGIN_USER);
+		String msg =  Produce.saveAll(user, produce, records);
+		if (msg.equals(Produce.SUCCESS)) {
+			setAttr("msg", Produce.SUCCESS);
+			setAttr("redirectionUrl", "/manage/bxgl/cjwxrk");
+			render("/admin/common/success.html");
+		} else {
+			setAttr("msg", msg);
+			setAttr("redirectionUrl", "/manage/bxgl/cjwxrk");
+			render("/admin/common/error.html");
+		}
+	}
+	
+	/**
+	 * 入库单
+	 */
+	@SuppressWarnings("unchecked")
+	@ButtonBind(buttonname = "打印")
+	
+	public void printruku(){
+		
+		String id=getPara("id");
+		Produce produce = Produce.getProduceById(id);
+		Map report_param = new HashMap();
+		report_param.put("DH",  produce.getStr("DH"));         //编号即为单号
+		report_param.put("CKMC", DicPlugin.b_storeall.get(produce.getStr("RKCKBH")));		//仓库，通过仓库id获得
+		
+		report_param.put("rukuren", produce.getStr("OPERATOR"));			//入库人
+		report_param.put("fuheren",produce.getStr("FHR"));			//复核人
+		
+		Store store = Store.getStoreByCKBH(produce.getStr("RKCKBH"));
+		report_param.put("kuguanyuan", store.getStr("FZRXM"));			//库管员
+		
+		String DHZT = produce.getStr("DHZT");
+		List<Record> list = null;
+		if (DHZT != null && DHZT.equals("003")) {
+			list = ProduceDetail.getProduceDetailForReportByDH(produce.getStr("DH"));
+		} else if (DHZT != null && !DHZT.equals("003")) {
+			list = ProduceDetailDraft.getProduceDetailDraftForReportByDH(produce.getStr("DH"));
+		}
+		
+    	//报表列表数据源
+		List report_dataSourceList=new ArrayList();
+		for(Record record :list){
+			OrderedMap row = new LinkedMap();
+			row.put("JLDW",record.getStr("JLDW"));				//产品代码（数据库中的jldw字段）
+			row.put("DNAME", record.getStr("DNAME"));					//设备名称
+			row.put("FNAME", DicPlugin.b_factorysimgle.get(record.get("FACTORYID") + ""));				//厂商
+			row.put("SBXH", record.getStr("SBXH"));				//型号
+			row.put("SBSM",  record.getStr("SBSM"));					//说明
+			row.put("NUM", record.get("sums"));						//数量
+			row.put("BZ", record.getStr("BZ"));						//备注
+			
+			String SCDATE = "";
+			if(record.get("SCDATE") == null){
+				SCDATE = "";
+			}else{
+				SCDATE = record.get("SCDATE").toString();
+			}
+			row.put("OPDATE", SCDATE);	//产品生产日期
+			report_dataSourceList.add(row);	
+		}
+		//报表信息
+		String report_jasperUrl=PathKit.getWebRootPath()+"/report/rukureport/ruku.jasper";
+		String report_imageServletUrl=PathKit.getWebRootPath()+"/report/images/";
+		String report_fileName="厂商维修入库单";
+		String report_fileExt= getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList, report_imageServletUrl, report_fileName, report_fileExt);
+	}
+}

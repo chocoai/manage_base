@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>厂商列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+			厂商列表&nbsp;<span class="pageInfo">总记录数: ${page.totalRow}(共${page.totalPage}页)</span>
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/manage/base/factory/index" method="post">
+			<div class="listBar">
+				<#if (session.loginUser.roleStr?index_of("/manage/base/factory/add")>0) >
+				<input type="button" class="formButton" onclick="location.href='${base}/manage/base/factory/add'" value="添加厂商" />
+				</#if>
+				<label>根据厂商名称或邮箱查找:</label>
+				<label class="searchText"><input id="searchText" type="text" name="filter_LIKES_name" value="${filter_LIKES_name!}" /></label>
+				<input type="button" hidefocus="" value="搜 索" class="formButton" id="searchButton">
+				<input type="button" hidefocus="" value="显示全部" class="formButton" id="showAllButton">
+				<label>每页显示:</label>  
+				<select name="pageSize" id="pageSize">
+					<option value="10" <#if page.pageSize == 10>selected="selected" </#if>>
+						10
+					</option>
+					<option value="20" <#if page.pageSize == 20>selected="selected" </#if>>
+						20
+					</option>
+					<option value="50" <#if page.pageSize == 50>selected="selected" </#if>>
+						50
+					</option>
+					<option value="100" <#if page.pageSize == 100>selected="selected" </#if>>
+						100
+					</option>
+				</select>
+			</div>
+			<table class="listTable">
+				<tr>		
+					<th>
+						<span class="sort">序号</span>
+					</th>		
+					<th>
+						<span class="sort" name="FNAME">厂商名称</span>
+					</th>
+					<th>
+						<span class="sort" name="FSNAME">厂商简称</span>
+					</th>
+					<th>
+						<span class="sort" name="LXR">联系人</span>
+					</th>
+					<th>
+						<span class="sort" name="LXDH">联系电话</span>
+					</th>
+					
+					<th>
+						<span class="sort" name="EMAIL">邮箱</span>
+					</th>
+					<th>
+						<span class="sort" name="ADDR">地址</span>
+					</th>
+					
+					<th>
+						<span class="sort" name="OPDATE">添加时间</span>
+					</th>
+					<th>
+						<span class="sort" name="OPDATE">启用状态</span>
+					</th>
+					<th>
+						操作
+					</th>
+				</tr>
+				<#list page.list as list>
+					<tr>		
+						<td>
+							${list_index+1}
+						</td>
+						<td>
+							<#if list.FNAME?length lt 30>${list.FNAME}<#else>${list.FNAME[0..30]}...</#if>
+						</td>
+						<td>
+							${list.FSNAME}
+						</td>
+						<td>
+							${list.LXR}
+						</td>
+						<td>
+							${list.LXDH}
+							
+						</td>
+						<td>
+							${list.EMAIL}
+							
+						</td>
+						<td>
+							<#if list.ADDR?length lt 50>${list.ADDR}<#else>${list.ADDR[0..50]}...</#if>
+						</td>
+						
+						<td>
+							<span title="${list.OPDATE?string("yyyy-MM-dd HH:mm:ss")}">${list.OPDATE}</span>
+						</td>
+						<td>					
+							<#if list.YXBZ!='002'>
+							            启用
+							<#else>
+							           停用
+							</#if>
+						</td>
+						<td>
+							<#if (session.loginUser.roleStr?index_of("/manage/base/factory/edit")>0) >
+								<a href="${base}/manage/base/factory/edit?ID=${list.ID}" title="编辑">[编辑]</a>
+							</#if>
+							<#if (session.loginUser.roleStr?index_of("/manage/base/factory/changeYXBZ")>0) >
+								<#if list.YXBZ!='002'>
+								<a href="${base}/manage/base/factory/changeYXBZ?ID=${list.ID}" title="停用">[停用]</a>
+								<#else>
+								<a href="${base}/manage/base/factory/changeYXBZ?ID=${list.ID}" title="启用">[启用]</a>
+								</#if>
+							</#if>
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if (page.list?size > 0)>
+				<div class="pagerBar">
+					<div class="pager">
+						<#include "/admin/common/pager.html" />
+					</div>
+				<div>
+			<#else>
+				<div class="noRecord">
+					没有找到任何记录!
+				</div>
+			</#if>
+		</form>
+	</div>
+</body>
+</html>

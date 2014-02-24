@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>管理员列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+			单号类型列表&nbsp;
+	</div>
+	<div class="body">
+		<div class="listBar">
+		    <input type="button" class="formButton" onclick="location.href='${base}/admin/goods/add'" value="添加" />
+		</div>
+		<form id="listForm" action="${base}/admin/goods/index" method="post">
+			<table class="listTable">
+				<tr>
+					<th class="check">
+						<input type="checkbox" class="allCheck" />
+					</th>
+					<th>
+						<span class="sort" name="d_name">名称</span>
+					</th>
+					<th>
+						<span class="sort" name="d_type">类型</span>
+					</th>
+					<th>
+						<span class="sort" name="sm">说明</span>
+					</th>
+					<th>
+						<span class="sort" name="dhcd">单号长度</span>
+					</th>
+					<th>
+						<span class="sort" name="dhqz">单号前缀</span>
+					</th>
+					<th>
+						<span class="sort" name="dhgs">单号格式</span>
+					</th>
+					<th>
+						<span class="sort" name="dhscrq">单号生成日期</span>
+					</th>
+					<th>
+						<span class="sort" name="yxbz">有效标志</span>
+					</th>
+					
+				<!-- 	<th>
+						<span class="sort" name="opdate">新建时间</span>
+					</th>
+				
+					<th>
+						<span class="sort" name="upipdate">更新时间</span>
+					</th> -->
+					<th>
+						操作
+					</th>
+				</tr>
+				<#list goodsList as list>
+					<tr>
+						<td>
+							<input type="checkbox" name="ids" value="${list.id}" />
+						</td>
+					
+						<td>
+							<#if list.d_name?length lt 15>${list.d_name}<#else>${list.d_name[0..15]}...</#if>
+						</td>
+						<td>
+							${list.d_type}
+						</td>
+						<td>
+							<#if list.sm?length lt 20>${list.sm}<#else>${list.sm[0..20]}...</#if>
+						</td>
+						
+						<td>
+							${list.dhcd}
+						</td>
+						<td>
+							${list.dhqz}
+						</td>
+						<td>
+							<#if list.dhgs?length lt 20>${list.dhgs}<#else>${list.dhgs[0..20]}...</#if>
+						</td>
+						<td>
+							${list.dhscrq}
+						</td>
+						<td>
+							${list.yxbz}
+						</td>
+					<!-- 	<td>
+							${list.opdate?string("yyyy-MM-dd HH:mm:ss")}
+						</td>
+						<td>
+							${list.upipdate?string("yyyy-MM-dd HH:mm:ss")}
+						</td> -->
+						<td>
+						   <!--  <a href="${base}/admin/goods/read?id=${list.id}" title="浏览">[浏览]</a> -->
+							<a href="${base}/admin/goods/edit?id=${list.id}" title="编辑">[编辑]</a>
+							<#if list.yxbz == "001">
+							      <a href="${base}/admin/goods/stop?id=${list.id}" title="停用">[停用]</a>
+						    <#else>
+						      	<a href="${base}/admin/goods/stop?id=${list.id}" title="停用">[启用]</a>
+						    </#if>
+							
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if (goodsList?size <= 0)>
+				<div class="noRecord">没有找到任何记录!</div>
+			</#if>
+			<input type="hidden" name="orderBy" id="orderBy" value="${orderBy!}" />
+			<input type="hidden" name="order" id="order" value="${order!}" />
+		</form>
+	</div>
+</body>
+</html>

@@ -1,0 +1,136 @@
+package cn.com.jandar.action.manage.ruku;
+
+import java.util.List;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.interceptor.StartXtInterceptor;
+import cn.com.jandar.model.Produce;
+import cn.com.jandar.model.ProduceDetail;
+import cn.com.jandar.model.ProduceDetailDraft;
+import cn.com.jandar.model.User;
+
+import com.google.common.collect.Lists;
+import com.jfinal.aop.Before;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+@Before(StartXtInterceptor.class)
+@ControllerBind(controllerKey = "/manage/ruku/byrk", resource = "报溢入库单")
+public class ByrkController extends AdminBaseController {
+	@ButtonBind(buttonname = "查询")
+	public void index() {
+		String DHZT = getPara("DHZT");
+		String filter_LIKES_RKCKBH = getPara("filter_LIKES_RKCKBH");
+		if (filter_LIKES_RKCKBH == null) {
+			filter_LIKES_RKCKBH = "";
+		}
+		Page<Produce> page = Produce.getProducePage(
+				getParaToInt("pageNumber", 1),
+				getParaToInt("pageSize", PAGESIZE),
+				getPara("orderBy", "c_produce.id"), getPara("order", "asc"),
+				filter_LIKES_RKCKBH, "", DHZT, "002");
+		keepPara("filter_LIKES_RKCKBH");
+		keepPara("DHZT");
+		setAttr("page", page);
+		render("produce_list.html");
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "更新")
+	public void update() {
+		Produce produce = getModel(Produce.class);
+		String[] deciveArray = getParaValues("deviceMap");
+		String[] numArray = getParaValues("numMap");
+		List<Record> records = Lists.newArrayList();
+		for (int i = 0; i < deciveArray.length; i++) {
+			Record e = new Record();
+			e.set("deviceid", deciveArray[i]);
+			e.set("num", numArray[i]);
+			records.add(e);
+		}
+		User user = getSessionAttr(User.LOGIN_USER);
+
+		String msg = Produce.saveAll(user, produce, records);
+		if (msg.equals(Produce.SUCCESS)) {
+			setAttr("msg", Produce.SUCCESS);
+			setAttr("redirectionUrl", "/manage/ruku/byrk");
+			render("/admin/common/success.html");
+		} else {
+			setAttr("msg", msg);
+			setAttr("redirectionUrl", "/manage/ruku/byrk");
+			render("/admin/common/error.html");
+		}
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "新增")
+	public void save() {
+		Produce produce = getModel(Produce.class);
+		String[] deciveArray = getParaValues("deviceMap");
+		String[] numArray = getParaValues("numMap");
+		List<Record> records = Lists.newArrayList();
+		for (int i = 0; i < deciveArray.length; i++) {
+			Record e = new Record();
+			e.set("deviceid", deciveArray[i]);
+			e.set("num", numArray[i]);
+			records.add(e);
+		}
+		User user = getSessionAttr(User.LOGIN_USER);
+		String msg = Produce.saveAll(user, produce, records);
+		if (msg.equals(Produce.SUCCESS)) {
+			setAttr("msg", Produce.SUCCESS);
+			setAttr("redirectionUrl", "/manage/ruku/byrk");
+			render("/admin/common/success.html");
+		} else {
+			setAttr("msg", msg);
+			setAttr("redirectionUrl", "/manage/ruku/byrk");
+			render("/admin/common/error.html");
+		}
+	}
+
+	@ButtonBind(buttonname = "新增")
+	public void add() {
+		render("produce_input.html");
+	}
+
+	@ButtonBind(buttonname = "更新")
+	public void edit() {
+		Produce produce = Produce.getProduceById(getPara("id"));
+		String DHZT = produce.getStr("DHZT");
+		List<Record> result = null;
+		System.out.println(DHZT);
+		if (DHZT.equals("003")) {// 已复核
+			result = ProduceDetail.getProduceDetailByDH(produce.getStr("DH"));
+		} else if (DHZT.equals("001") || DHZT.equals("002")) {// 草稿
+			result = ProduceDetailDraft.getProduceDetailDraftByDh(produce
+					.getStr("DH"));
+		}
+		setAttr("result", result);// produceDetails
+		setAttr("produce", produce);
+		render("produce_input.html");
+	}
+
+	@ButtonBind(buttonname = "入库")
+	public void ruku() {
+		Produce p = Produce.getProduceById(getPara("id"));
+		p.set("DHZT", "003");
+		List<Record> records = ProduceDetailDraft.getProduceDetailDraftByDh(p
+				.getStr("DH"));
+		User user = getSessionAttr(User.LOGIN_USER);
+		String msg = Produce.saveAll(user, p, records);
+
+		if (msg.equals(Produce.SUCCESS)) {
+			setAttr("msg", Produce.SUCCESS);
+			setAttr("redirectionUrl", "/manage/ruku/byrk");
+			render("/admin/common/success.html");
+		} else {
+			setAttr("msg", "操作失败");
+			setAttr("redirectionUrl", "/manage/ruku/byrk");
+			render("/admin/common/error.html");
+		}
+	}
+}

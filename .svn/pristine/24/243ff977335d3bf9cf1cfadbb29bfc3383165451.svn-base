@@ -1,0 +1,27 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title>无标题页</title>
+<#include "/admin/common/include.html" />
+<script type="text/javascript" src="${base}/template/admin/js/smartsearch.js"></script>
+<link href="${base}/template/admin/css/smartsearch.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+	function onnext(){
+		var a = $('#KProvince').val()+"_"+$('#KProvincea').val()+"_"+$('#KProvinceb').val();
+		alert(a);
+	}
+</script>
+</head>
+<body>
+<form id="form1" method="get">
+<br /><br /><br />
+		<div>
+		地区智能搜索:<input id="KProvince" type="text" style="width:200px" onkeyup="smartsearch(this,'${base}/admin/ssuo/ajax_dq');" /><br/> 
+		设备智能搜索:<input id="KProvincea" type="text" style="width:400px" onkeyup="smartsearch(this,'${base}/admin/ssuo/ajax_sb');" /><br/>
+		单号智能搜索:<input id="KProvinceb" type="text" style="width:400px" onkeyup="smartsearch(this,'${base}/admin/ssuo/ajax_dh');" />
+		</div>
+		<div id="search_suggest" style="position:absolute;"> </div> 
+		<input  value = "提交" type="button"  onclick="onnext()"/>
+</form> 
+</body>
+</html>

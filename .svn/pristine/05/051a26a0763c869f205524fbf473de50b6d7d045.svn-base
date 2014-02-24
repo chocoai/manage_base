@@ -1,0 +1,417 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>退货单维护</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+<script type="text/javascript">
+	var productImageIndex = 0;
+	$().ready( function() {
+		//添加
+		$("#addProduce").click(function() {
+			var select = '<select name="deviceMap" id="" class="labelselect deviceid">';
+			select += '<option value="">请选择</option>';
+			select += '<#list statics["cn.com.jandar.plugin.DicPlugin"].b_device.keySet() as key>';
+			select += '<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_device.get(key)}</option>';
+			select += '</#list>';
+			select += '</select>'; 
+			
+			var amount = '<input type="text" name="numMap" class="numMap"></input>'; 
+			var trHtml = '<tr><td>' + select + '<\/td><td>'+amount+'</td><td><a href="javascript:;" name="d" class="deleteProduce">[删除]<\/a> <\/td><\/tr>';		
+			$(".listTable").append(trHtml);
+			productImageIndex ++;
+			check();
+		});
+		
+		$("#deleteProduce").click(function(){
+			$.dialog({
+				type: "warn",
+				content: "不能删除？",
+				ok: "确 定", 
+				close: true, 
+				modal: true, 
+			});
+		});
+		
+		$("a.deleteProduce").live("click", function() {
+			var $this = $(this);
+			$.dialog({
+				type: "warn",
+				content: "您确定要删除吗？",
+				ok: "确 定", 
+				cancel: "取 消",
+				close: true, 
+				modal: true, 
+				okCallback: function() {//parents
+					$this.closest("tr").remove();
+				}
+			});
+		});
+		
+		$("#fh").click(function(){
+			$("#produce_DHZT").attr("value","002");
+		});
+		
+		$("#cg").click(function(){
+			$("#produce_DHZT").attr("value","001");
+		});
+		
+		$(".deviceid").live("change",function(){
+			var array = $("body").find(".deviceid").get();
+			var count =0;
+  			for(i=0;i<array.length;i++){
+  				if(array[i].value == $(this).val()) {
+  					count += 1;
+  				}
+  			} 
+  			if(count == 2) {
+  				alert("该设备已经存在");
+  				$(this).attr("value","");
+  			}
+		});
+		
+		$(".tijiao").click(function(e){
+			var deviceidarray = $("body").find(".deviceid").get();
+				var flag = true;
+				for(i=0;i<deviceidarray.length;i++){
+					if(deviceidarray[i].value.length == 0) {
+						alert("存在空的设备选项，请修改！");
+						flag = false;
+						e.preventDefault();
+						break;
+					}
+				}
+				if(flag) {
+					var numMaparray = $("body").find(".numMap").get();
+					for(i=0;i<numMaparray.length;i++){
+						if(numMaparray[i].value.length == 0) {
+							alert("存在空的数量选项，请修改！");
+							e.preventDefault();
+							break;
+						}else {
+							var reg = /^\d+$/;
+							if(!reg.test(numMaparray[i].value)) {
+								alert("数量中存在非法数据，请修改!");
+								e.preventDefault();
+								break;
+							}
+						}
+					}
+			}
+		});
+		
+		$(".numMap").live("keypress",function(e){
+			var keyCode = e.which;
+			if (keyCode >= 48 && keyCode <=57) 
+                return true; 
+            else 
+                return false; 
+		});
+		check();
+	});
+	
+	function check() {
+		$(".numMap").blur(function(){
+			var mythis = $(this);
+			var num = $(this).attr("value");
+			var factoryid = $('#b_factoryall').attr("value");
+			var deviceid = $(this).offsetParent().offsetParent().find(".deviceid").attr("value");
+			if(($(this).attr("value").length != 0) && ($(this).attr("value")==0)) {
+				alert("设备数量不能为0，请重新填写");
+				$(this).attr("value","");
+				return ;
+			}
+			if(($(this).attr("value").length != 0) && ($(this).attr("value")!=0)&&(factoryid == "")) {
+				alert("请选择仓库");
+				$(this).attr("value","");
+			} else if(($(this).attr("value").length != 0) && ($(this).attr("value")!=0)&&(deviceid == "")) {
+				alert("请选择设备");
+				$(this).attr("value","");
+			} else if(($(this).attr("value").length != 0) && ($(this).attr("value")!=0)&&(num == "")) {
+				alert("请填写数量");
+				$(this).attr("value","");
+			} else {
+				$.post("${base}/manage/cuku/ckd/validateNum", {
+					CKCKBH : factoryid,
+					deviceid : deviceid,
+					num : num
+				}, function(data) {
+					if (data != "true") {
+						$.dialog({
+							type : "error",
+							content : "操作提示",
+							ok : "确 定",
+							close : true,
+							modal : true,
+							width : 380,
+							content : data,
+							okCallback : function() {
+								mythis.attr("value","");
+								//$(this).attr("value","");这样不行
+							}
+						});
+					}
+				});
+			}
+		});
+	};
+</script>
+<#if !(produce.id)??>
+	<#assign isAdd = true />
+<#else>
+	<#assign isAdd = false />
+</#if>
+	</head>
+	<body class="input list" onload="showMsg('${errMsg}')">
+		<div class="ctrttop cy143w">
+			<#if (((produce.DHZT)!) == '002') && ruku>
+				编辑退货单(已复核)
+			<#elseif ((produce.DHZT)!) == '001'>
+				编辑退货单(草稿)
+			<#elseif ((produce.DHZT)!) == '003' || ((produce.DHZT)!) == '002'>
+				查看退货单(已复核)
+			<#else>
+				添加退货单
+			</#if>
+		</div>
+		<div class="body">
+			<form id="validateForm"  action="<#if isAdd>${base}/manage/cuku/thd/save<#elseif ((produce.DHZT)!)=='001'>${base}/manage/cuku/thd/update<#elseif ((produce.DHZT)!)=='002'>${base}/manage/cuku/thd/cuku</#if>" method="post">
+				<input type="hidden" name="produce.id" value="${((produce.id)!)}" />
+				<input type="hidden" id="produce_DHZT" name="produce.DHZT" value="" />
+				<input type="hidden" name="produce.DHLX" value="004" />
+				<input type="hidden" name="produce.DH" value="${((produce.DH)!)}" />
+				<fieldset>
+				<legend>退货单</legend>
+				<table class="inputTable">
+					<tr>
+						<th>
+							单号类型:
+						</th>
+						<td>
+							退货单
+						</td>
+					</tr>
+					<#if (((produce.DHZT)!) == '003') || (((produce.DHZT)!) == '002')>
+					<tr>
+						<th>
+							单号:
+						</th>
+						<td>
+							${((produce.DH)!)}
+						</td>
+					</tr>
+					</#if>
+					<tr>
+						<th>
+							出库仓库:
+						</th>
+						<td>
+							<#if (((produce.DHZT)!) == '002') || (((produce.DHZT)!) == '003')>
+								${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(((produce.CKCKBH)!) + "")}
+							<#else>
+								<label class="labelbody" >
+									<select name="produce.CKCKBH" id="b_factoryall" class="labelselect formText {required: true}" style="width: 150px">
+										<option value="">请选择</option>
+										<#if statics["cn.com.jandar.plugin.DicPlugin"].b_store?exists>
+										<#list statics["cn.com.jandar.plugin.DicPlugin"].b_store.keySet() as key>
+											<#if ((produce.CKCKBH)!) == key>
+												<option value="${key}" selected="selected">
+											<#else >
+												<option value="${key}" >
+											</#if>
+												${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(key)}
+											</option>
+										</#list>
+										</#if>
+									</select>
+								</label>
+								<label class="requireField">*</label>
+							</#if>
+						</td>
+					</tr>	
+					<#if (!ruku)>
+					<tr>
+						<th>
+							备注:
+						</th>
+						<td>
+							<#if (((produce.DHZT)!) == '003') || (((produce.DHZT)!) == '002')>
+								${(produce.BZ)!}
+							<#else>
+								<textarea class="formTextarea" name="produce.BZ" >${(produce.BZ)!}</textarea>
+							</#if>
+						</td>
+					</tr>
+					</#if>
+				</table>
+				</fieldset>
+				<#if (!ruku) ||(((produce.DHZT)!) != '002')>
+				<fieldset>
+				<legend>单据明细</legend>
+				<table class="listTable" >
+				<#if (((produce.DHZT)!) == '003') || (((produce.DHZT)!) == '002')>
+				<tr>
+					<th>
+						<span>设备名</span>
+					</th>
+					<th>
+						<span>数量</span>
+					</th>
+				</tr>
+				<#list result as ps>
+					<tr>
+						<td>${statics["cn.com.jandar.plugin.DicPlugin"].b_device.get("${ps.DEVICEID}")}</td><td>${ps.sums}</td>
+					</tr>
+				</#list>
+				<#else>
+				<tr>
+					<td colspan="5" align="right">
+					<input type="button" class="formButton" id="addProduce" value="增加设备"/>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						<span>设备名</span>
+					</th>
+					<th>
+						<span>数量</span>
+					</th>
+					<th>
+						<span>操作</span>
+					</th>
+				</tr>
+				<#if isAdd>	
+				<tr>
+					<td>
+						<select name="deviceMap" id="" class="labelselect deviceid">
+						<option value="">请选择</option>
+						<#list statics["cn.com.jandar.plugin.DicPlugin"].b_device.keySet() as key>
+						<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_device.get(key)}</option>
+						</#list>
+						</select>
+					</td>
+					<td>
+						<input type="text" name="numMap" class="numMap"></input>
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				</#if>
+				<#list result as ps>
+				<tr>
+					<td>
+						<span>
+							<select name="deviceMap" id="" class="labelselect deviceid">
+			 				<#list statics["cn.com.jandar.plugin.DicPlugin"].b_device.keySet() as key>
+			 				<#if ((ps.DEVICEID)!) == key>
+			 				<option value="${key}" selected="selected">
+			 				<#else >
+			 				<option value="${key}" >
+			 				</#if>
+			 				${statics["cn.com.jandar.plugin.DicPlugin"].b_device.get(key)}</option>
+			 				</#list>
+							</select>
+						</span>
+					</td>
+					<td>
+						<span><input type="text" name="numMap" class="numMap" value='${ps.sums}' /></span>
+					</td>
+					<td>
+						<span><a href="javascript:;" name="d" id="deleteProduce">[删除]</a></span>
+					</td>
+				</tr>
+				</#list>
+				</#if>
+				</table>
+				</fieldset>
+				</#if>
+				<#if (!isAdd) && (((produce.DHZT)!) == '003')>
+				<fieldset>
+				<legend>发货信息</legend>
+				<table class="inputTable" title="发货信息">
+				    <tr>
+				      <th>物流公司:</th>
+				      <td>
+						${produce.WLGS}
+				      </td>
+				      <th>物流单号:</th>
+				      <td>
+							${produce.WLDH}
+						</td>
+				    </tr>
+				     <tr>
+				      <th>司机姓名:</th>
+				      <td>
+							${produce.SJXM}
+						</td>
+				      <th>司机电话:</th>
+				      <td>
+							${produce.SJLXDH}
+					</td>
+				    </tr>
+				     <tr>
+				      <th>维护人员:</th>
+				      <td>
+							${produce.WHRY}
+						</td>
+				      <th>维护电话:</th>
+				      <td>
+							${produce.WHRYDH}
+						</td>
+				    </tr>
+				</table> 
+				</fieldset>
+				</#if>
+				
+				<#if (ruku) && (!isAdd) && (((produce.DHZT)!) == '002')>
+				<fieldset>
+				<legend>发货信息</legend>
+				<table class="inputTable" title="发货信息">
+				    <tr>
+						<th>物流公司:</th>
+						<td><input type="text"   name="produce.WLGS"></td>
+					</tr>
+					<tr>
+						<th>物流单号:</th>
+						<td><input type="text"   name="produce.WLDH"></td>
+					</tr>
+					<tr>
+						<th>司机姓名:</th>
+						<td><input type="text"   name="produce.SJXM"></td>
+					</tr>
+					<tr>
+						<th>司机电话:</th>
+						<td><input type="text"  name="produce.SJLXDH"></td>
+					</tr>
+					<tr>
+						<th>维护人员:</th>
+						<td><input type="text"   name="produce.WHRY"></td>
+					</tr>
+					<tr>
+						<th>维护电话:</th>
+						<td><input type="text" name="produce.WHRYDH"></td>
+					</tr>
+				</table> 
+				</fieldset>
+				</#if>
+				<div class="buttonArea">
+				<#if (((produce.DHZT)!) == '001') || (isAdd)>
+					<input type="submit" class="formButton tijiao" value="设备出库" hidefocus="true" id="fh"  />
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="submit" class="formButton tijiao" value="保存草稿" hidefocus="true" id="cg" />
+					&nbsp;&nbsp;&nbsp;&nbsp;
+				<#elseif (((produce.DHZT)!) == '002') && (ruku) >
+					<input type="submit" class="formButton tijiao" value="出库" hidefocus="true" id="ck"  />
+					&nbsp;&nbsp;&nbsp;&nbsp;
+				</#if>
+					<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

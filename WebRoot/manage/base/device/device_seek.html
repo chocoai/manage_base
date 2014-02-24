@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>配件维护</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+	</head>
+	<body class="input" onload="showMsg('${errMsg}')">
+		<div class="ctrttop cy143w">
+			配件查看
+		</div>
+		<div class="body">
+			<form id="validateForm"  action="#" method="post">
+				<table class="inputTable">
+				<tr>
+					<th>
+						产品代码:
+					</th>
+					<td>
+						<label >${(device.JLDW)!}</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						厂商简称:
+					</th>
+					<td>
+					
+						<label>
+							<#if statics["cn.com.jandar.plugin.DicPlugin"].b_factorysimgle?exists>
+								<#list statics["cn.com.jandar.plugin.DicPlugin"].b_factorysimgle.keySet() as key>
+									<#if ((device.FACTORYID)!) == key>
+										${statics["cn.com.jandar.plugin.DicPlugin"].b_factorysimgle.get(key)}
+									</#if>
+								</#list>
+							</#if>
+						</label>									
+						
+					</td>
+				</tr>
+				<tr>
+					<th>
+						配件名称:
+					</th>
+					<td>
+						<label>${(device.DNAME)!}</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						配件型号:
+					</th>
+					<td>
+						<label>${(device.SBXH)!}</label>
+					</td>
+				</tr>
+				
+				<tr>
+					<th>
+						配件说明:
+					</th>
+					<td>
+						<lable>${(device.SBSM)!}</lable>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						备注:
+					</th>
+					<td>
+						<label>${(device.BZ)!}</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						配件类型:
+					</th>
+					<td>
+						<label>
+							<#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("SBLX") as sblx>
+									<#if ((device.SBLX)!) == sblx.code>										
+									${sblx.value}
+									</#if>				
+							</#list>
+						</label>
+						
+					</td>
+				</tr>
+				<tr>
+					<th>
+						配件状态:
+					</th>
+					<td>
+						<!-- <input type="text"  name="device.SBZT" class="formText {required: true}" value="${(device.SBZT)!}" /> -->
+						<label><#if (device.SBZT == '001')!>生产库、备件库启用</#if></label>
+						<label><#if (device.SBZT == '002')!>备件库启用</#if></label>
+						<label><#if (device.SBZT == '003')!>停用</#if></label>
+					</td>
+				</tr>
+				</table>
+				<div class="buttonArea">
+					
+					<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

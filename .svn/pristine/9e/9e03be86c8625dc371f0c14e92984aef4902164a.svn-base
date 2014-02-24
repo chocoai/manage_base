@@ -1,0 +1,80 @@
+package cn.com.jandar.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.joda.time.DateTime;
+
+import com.jfinal.ext.plugin.tablebind.TableBind;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Model;
+import com.jfinal.plugin.activerecord.Page;
+
+/**
+ * @author
+ */
+@TableBind(tableName = "p_scdsb")
+public class Scdsb extends Model<Scdsb> {
+	private static final long serialVersionUID = -2063970373324095312L;
+	public static final Scdsb dao = new Scdsb();
+
+	/**
+	 * 获得单据列表
+	 * 
+	 * @return
+	 */
+	public static Page<Scdsb> getScdList(int sPageNum, int sPageSize,
+			String orderBy, String order, String dhzt) {
+		List<Object> param = new ArrayList<Object>();
+		param.add(dhzt);
+		StringBuffer sqlBuffer = new StringBuffer("FROM p_scd where DHZT = ? ");
+		sqlBuffer.append(" order by ").append(orderBy).append(" ")
+				.append(order);
+		Page<Scdsb> scdPage = (Page<Scdsb>) Scdsb.dao.paginate(sPageNum,
+				sPageSize, "SELECT * ", sqlBuffer.toString(), param.toArray());
+		return scdPage;
+	}
+
+
+
+	public static List<Scdsb> query(Scd scd) {
+		int scdId = scd.getInt("id");
+		return Scdsb.dao.find("select * from p_scdsb where 1=1 and SCDID =?",
+				scdId);
+	}
+
+	public static void delete(Scd scd) {
+		Db.update("delete from p_scdsb where SCDID = ?", scd.getInt("ID"));
+	}
+
+	public static boolean save(User user, Scd scd) {
+		boolean result = true;
+		for(int i=0; i<scd.getInt("SBNUM");i++){
+			Scdsb scdsb = new Scdsb();
+			scdsb.set("SCDID", scd.get("id"));
+			scdsb.set("SCSBZT", "001");
+			scdsb.set("OPERATOR", user.getStr("username"));
+      	    scdsb.set("OPDATE", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+			scdsb.set("UPOPERATOR", user.getStr("username"));
+      	    scdsb.set("UPIPDATE", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+		     
+      	  result = scdsb.save();
+		}
+		return result;
+	}
+	
+	public static String update(Scdsb scdsb) {
+		String sql = "update p_scdsb sb set sb.SCSBBH = ? , sb.YYNBBH = ? , sb.SCSBWZ = ? where sb.SCDID = ?  ";
+		try{
+			Db.update(sql,scdsb.getStr("SCSBBH"),scdsb.getStr("YYNBBH"),scdsb.getStr("SCSBWZ"),scdsb.getInt("SCDID"));
+		}catch (Exception e) {
+			return "操作失败";
+		}
+		return "操作成功";
+	}
+	
+	public static Scdsb getScdsbByScdId(String id){
+		String sql = "select * from p_scdsb sb where sb.SCDID = ? ";
+		return Scdsb.dao.findFirst(sql,id);
+	}
+}

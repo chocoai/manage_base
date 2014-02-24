@@ -1,0 +1,114 @@
+package cn.com.jandar.model;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+import cn.com.jandar.kit.Constant;
+
+import com.jfinal.core.Controller;
+import com.jfinal.ext.plugin.tablebind.TableBind;
+import com.jfinal.kit.StringKit;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Model;
+import com.jfinal.plugin.activerecord.Page;
+
+
+/**
+ * @author 
+ */
+@TableBind(tableName="s_bxd")
+public class Bxd extends Model<Bxd> {
+	
+	private static final long serialVersionUID = 1L;
+	public static final Bxd dao = new Bxd();
+    public static final String LOGIN_USER = "loginUser"; //登入用户session中的key name
+    
+    /**
+     * 获得保修单列表
+     * @return
+     */
+    public static List<Bxd> getBxdList() {
+        List<Bxd> bxdrList = Bxd.dao.find("select * from s_bxd order by id");
+        return bxdrList;
+    }
+    /**
+     * 根据ID编号查询保修单
+     */
+    public static Bxd getBxdById(String id){
+        return Bxd.dao.findById(id);
+    }
+    /**
+     * 批量删除保修单
+     */
+    public static String delete(String[] ids) {
+        for (String id : ids) {
+            if (!Bxd.dao.deleteById(id)) {
+                return "error";
+            }
+        }
+        return "success";
+    } 
+    
+    /**
+     * 分页查询用户列表
+     */
+    public static Page<Bxd> getBxdPage(int sPageNum, int sPageSize, String orderBy, String order, String search) {
+    	 List<Object> param = new ArrayList<Object>();
+         StringBuffer sqlBuffer = new StringBuffer("FROM s_bxd  where 1 = 1 ");
+         if (!StringKit.isBlank(search)) {
+             sqlBuffer.append("and s_bxd.SBLX = ? ");
+             param.add(search);
+         }
+         
+         sqlBuffer.append(" order by ").append(orderBy).append(" ").append(order);
+         Page<Bxd> bxdPage = (Page<Bxd>) Bxd.dao.paginate(sPageNum, sPageSize, "SELECT * ",
+                                                                          sqlBuffer.toString(),param.toArray());
+         return bxdPage;
+    }
+    
+    /**
+     * 保存报修单,操作员默认为操作者的姓名
+     */
+    public static String save(Bxd bxd,Controller c) {
+    	User user = c.getSessionAttr(LOGIN_USER);
+    	//生成报修单号
+    	String DH  =  Constant.findb_goods_dh("031");
+    	bxd.set("DH",DH);
+    	
+    //  生成设备客户维修出库单号
+    //	String KHWXCKDH  =  Constant.findb_goods_dh("009");
+    //  bxd.set("KHWXCKDH",KHWXCKDH);
+    	
+    	bxd.set("OPDATE", new Timestamp(System.currentTimeMillis()));
+    	bxd.set("OPERATOR",user.getStr("name"));
+    	bxd.save();
+        return "保存成功";
+    }
+    /**
+     * 保存报修单,更新操作员默认为操作者的姓名
+     */
+    public static String update(Bxd bxd,Controller c) {
+    	User user = c.getSessionAttr(LOGIN_USER);
+    	bxd.set("UPIPDATE", new Timestamp(System.currentTimeMillis()));
+    	bxd.set("UPOPERATOR",user.getStr("name"));
+    	bxd.update();
+        return "更新成功";
+    }
+    
+    public static String reply(Bxd bxd,Controller c){
+    	User user = c.getSessionAttr(LOGIN_USER);
+    	
+    	
+    	bxd.set("CLWCSJ", new Timestamp(System.currentTimeMillis()));
+		bxd.set("CLZT", "002");
+    	
+    	bxd.set("HZSJ", new Timestamp(System.currentTimeMillis()));
+    	bxd.set("HZDJR",user.getStr("name"));  
+    	
+    	String sql = "update s_bxd set CLZT = '"+bxd.getStr("CLZT")+"', CLJGHZ = '"+bxd.getStr("CLJGHZ")+"', CLWCSJ = '"+bxd.get("CLWCSJ")+"', HZSJ =' "+bxd.get("HZSJ")+"',HZDJR = '"+bxd.getStr("HZDJR")+"' where id = '"+bxd.get("id")+"'";
+    	Db.update(sql);
+    	
+        return "回复成功";
+    }
+}

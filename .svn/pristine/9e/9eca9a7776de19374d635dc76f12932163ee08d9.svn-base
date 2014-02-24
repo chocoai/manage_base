@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>添加模型细节</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<script type="text/javascript">
+	var productImageIndex = 1;
+	$().ready( function() {
+		//添加事件
+		$("#addModelDetail").click(function() {
+			var select = '<select name="DEVICEID" id="DEVICEID" class="labelselect" style="width: 100px">';				
+				select += '<#if statics["cn.com.jandar.plugin.DicPlugin"].b_device001?exists>';
+				select += '<#list statics["cn.com.jandar.plugin.DicPlugin"].b_device001.keySet() as key>';		
+				select += '<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_device001.get(key)}</option>';			
+				select += '</#list>';
+				select += '</#if>';
+				select += '</select>';
+			var dnum = '<input type="text" name="DNUM" id="num.' + productImageIndex + '" class="fromText {required: true}" />';
+  				dnum +=	'<label class="requiredField">*</label>';
+  			var sm ='<input type="text" name="SM" id="sm.' + productImageIndex + '" class="fromText" value="无"/><label class="requiredField">*</label>';
+			var trHtml = '<tr> <td>'+select+'</td><td>'+dnum+'</td><td>'+sm+'</td><td> <a href="javascript:;" class="deleteProductImage">[删除]<\/a> <\/td> <\/tr>';		
+			$("#productImageTable").append(trHtml);
+			productImageIndex ++;
+		});
+			//刪除
+		$("a.deleteProductImage").live("click", function() {
+			var $this = $(this);
+			$.dialog({
+				type: "warn",
+				content: "您确定要删除吗？",
+				ok: "确 定", 
+				cancel: "取 消",
+				close: true, 
+				modal: true, 
+				okCallback: function() {
+					$this.closest("tr").remove();
+					productImageIndex--;
+				}
+			});
+		});
+	});
+	
+	function aa(){
+		var reg = new RegExp("^[0-9]*$");
+		if(productImageIndex>0){
+			for(var i=0;i<productImageIndex;i++){
+				var numo = document.getElementById("num."+i);
+				var smo = document.getElementById("sm."+i);
+				if(numo!=null&&smo!=null){
+					var num = numo.value;
+					var sm  = smo.value;
+					 if(sm==""){ 
+			        	alert("请填写说明");return false;
+			        }else if(num==""){ 
+			        	alert("请输入设备数量");return false;
+			        }else if(!reg.test(num)){
+			        	  alert("数量只能为数字!");
+				          return false;
+			        }
+				}
+			}
+		}
+		$("#validateForm").submit();
+	}
+	
+</script>			
+</head>
+
+<body class="list input" onload="showMsg('${errMsg}')">
+    <div class="ctrttop cy143w">
+    	添加模型
+    </div>
+    <div class="body">
+    	<form id="validateForm" action="${base}/manage/scd/mxsc/save" method="post">
+    	<input type="hidden" name="yxbz" value="001"/>
+	
+    		<table	class="inputTable">
+    			<tr>
+    				<th>
+    					 模型名称
+    				</th>
+    				<td>
+    					<input type="text"  name="name" class="fromText {required: true}" value="模型名称"/>
+  						<label class="requiredField">*</label>
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>
+    					 备注
+    				</th>
+    				<td>
+    					<textarea name="bz" class="formTextarea {required: true}">模型备注</textarea>
+  						<label class="requiredField">*</label>
+    				</td>
+    			</tr>
+    		</table>
+    		<div class="listBar">
+					<input type="button" class="formButton" id="addModelDetail" value="添加细节"/>  
+    		</div>
+    		<table class="listTable " id="productImageTable">
+    			<tr>
+    				<th>
+    					<span class="sort">设备名称</span>
+    				</th>
+    				<th>
+    					<span class="sort">数量</span>
+    				</th>
+    				<th>
+    					<span class="sort">说明</span>
+    				</th>
+    				<th>
+    					<span class="sort">操作</span>
+    				</th>
+    			</tr>
+    			<tr>
+    				<td>
+    				<select name="DEVICEID" id="DEVICEID" class="labelselect" style="width: 100px" >		
+					<#if statics["cn.com.jandar.plugin.DicPlugin"].b_device001?exists>
+						<#list statics["cn.com.jandar.plugin.DicPlugin"].b_device001.keySet() as key>
+							<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_device001.get(key)}</option>	
+						</#list>
+					</#if>
+					</select>
+    				</td>
+    				<td>
+    					<input type="text" name="DNUM" id="num.0" class="fromText {required: true}" value="1"/>
+  						<label class="requiredField">*</label>
+    				</td>
+    				<td>
+    					<input type="text" name="SM" id="sm.0" class="fromText" value="无"/>
+    					<label class="requiredField">*</label>
+    				</td>
+    				<td> 
+    					<!-- <a href="javascript:;" class="deleteProductImage">[删除]</a>  -->
+    				</td> 
+    			</tr>
+    		</table>
+    		
+    		<div class="buttonArea">
+				<input type="button" class="formButton" value="确  定" onclick="aa()" hidefocus="true" />&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus />			</div>
+    	</form>
+    </div>
+</body>
+</html>

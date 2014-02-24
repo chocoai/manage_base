@@ -1,0 +1,243 @@
+package cn.com.jandar.action.manage.ruku;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.OrderedMap;
+import org.apache.commons.collections.map.LinkedMap;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.interceptor.StartXtInterceptor;
+import cn.com.jandar.model.Device;
+import cn.com.jandar.model.Factory;
+import cn.com.jandar.model.Produce;
+import cn.com.jandar.model.ProduceDetail;
+import cn.com.jandar.model.ProduceDetailDraft;
+import cn.com.jandar.model.User;
+import cn.com.jandar.plugin.DicPlugin;
+
+import com.google.common.collect.Lists;
+import com.jfinal.aop.Before;
+import com.jfinal.kit.PathKit;
+import com.jfinal.plugin.activerecord.CPI;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+@Before(StartXtInterceptor.class)
+@ControllerBind(controllerKey = "/manage/ruku/ykd", resource = "移库单")
+public class YkdController extends AdminBaseController {
+	@ButtonBind(buttonname = "查询")
+	public void index() {
+		String dhlx = "006";// 单据类型
+		String dhzt = this.getPara("dhzt"); // 单据状态
+		String typeCode = "1";
+		if (this.getPara("dhzt") != null) {
+			// dhzt = this.getPara("dhzt");
+			if (dhzt.equals("001")) {
+				typeCode = "2";
+			} else if (dhzt.equals("003")) {
+				typeCode = "1";
+			} else {
+				typeCode = "1";
+			}
+		}
+
+		if (this.getPara("dhlx") != null) {
+			dhlx = this.getPara("dhlx");
+		}
+
+		Page<Produce> page = Produce.getProduceList(
+				getParaToInt("pageNumber", 1),
+				getParaToInt("pageSize", PAGESIZE),
+				getPara("orderBy", "c_produce.dh"), getPara("order", "asc"),
+				dhlx, getPara("dhzt"));
+
+		setAttr("page", page);
+		setAttr("typeCode", typeCode);
+
+		render("ykd_list.html");
+	}
+
+	// 根据单据类型查找该类型单据最大的单据号
+	@ButtonBind(buttonname = "新增")
+	public void add() {
+		setAttr("produce", new Produce().set("DHLX", "006"));
+		setAttr("DHLX", "移库单");
+		setAttr("produceDetail", new ProduceDetail());
+
+		render("ykd_input.html");
+	}
+
+	// 已复核单据查看
+	@ButtonBind(buttonname = "查看明细")
+	public void query() {
+		// 得到单号
+		String dh = this.getPara("dh");
+		Produce produce = Produce.getProduceByDh(dh);
+		String DHZT = produce.getStr("DHZT");
+		List<Record> recordList = null;
+		if (DHZT != null && DHZT.equals("003")) {
+			recordList = ProduceDetail.getProduceDetailByDHYiKu(produce
+					.getStr("DH"));
+		} else if (DHZT != null && !DHZT.equals("003")) {
+			recordList = ProduceDetailDraft.getProduceDetailDraftByDh(produce
+					.getStr("DH"));
+		}
+		// List<Record> recordList = ProduceDetail.getYkdProduceDetailByDH(dh);
+
+		setAttr("produce", produce);
+		setAttr("DHLX", "移库单");
+		setAttr("recordList", recordList);
+		setAttr("onlyQuery", true);
+
+		render("ykd_input.html");
+	}
+
+	// 查询草稿
+	@ButtonBind(buttonname = "编辑")
+	public void edit() {
+		String dh = this.getPara("dh");
+		Produce produce = Produce.getProduceByDh(dh);
+		List<Record> recordList = ProduceDetailDraft
+				.getProduceDetailDraftByDH(dh);
+
+		setAttr("DHLX", "移库单");
+		setAttr("onlyQuery", true);
+		setAttr("produce", produce);
+		setAttr("recordList", recordList);
+
+		render("ykd_input.html");
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "新增")
+	public void save() {
+		Produce produce = this.getModel(Produce.class);
+		String[] deciveArray = this.getParaValues("deviceMap");
+		String[] numArray = this.getParaValues("numMap");
+		List<Record> records = Lists.newArrayList();
+
+		for (int i = 0; i < deciveArray.length; i++) {
+			Record e = new Record();
+			e.set("deviceid", deciveArray[i]);
+			e.set("num", numArray[i]);
+			records.add(e);
+		}
+		User user = getSessionAttr(User.LOGIN_USER);
+		String msg = Produce.saveAll(user, produce, records);
+
+		if (Produce.SUCCESS.equals(msg)) {
+			this.setAttr("msg", Produce.SUCCESS);
+			this.setAttr("redirectionUrl", "/manage/ruku/ykd");
+			this.render("../../../admin/common/success.html");
+		} else {
+			this.setAttr("msg", msg);
+			this.setAttr("redirectionUrl", "/manage/ruku/ykd");
+			this.render("../../../admin/common/error.html");
+		}
+
+	}
+
+	// 明细从单据中得到信息
+	private void getAttrFromProduce(Produce produce, int i) {
+		if (i == 0) {
+			ProduceDetailDraft produceDetailDraft = new ProduceDetailDraft();
+			produceDetailDraft.setAttrs(CPI.getAttrs(produce));
+			// 另外的setter补充
+			produceDetailDraft.set("num", 1);
+			produceDetailDraft.set("CHNUM", -1);
+		} else {
+			ProduceDetail produceDetail = new ProduceDetail();
+			produceDetail.setAttrs(CPI.getAttrs(produce));
+			// 另外的setter补充
+			produceDetail.set("num", 1);
+			produceDetail.set("CHNUM", -1);
+		}
+	}
+
+	@ButtonBind(buttonname = "更新")
+	public void update() {
+
+	}
+
+	// 作废
+	public void stop() {
+
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "移库")
+	public void send() {
+		Produce produce = Produce.getProduceById(getPara("id"));
+		produce.set("DHZT", "003");
+		List<Record> records = ProduceDetailDraft
+				.getProduceDetailDraftByDhSend(produce.getStr("DH"));
+		;
+		User user = getSessionAttr(User.LOGIN_USER);
+		String msg = Produce.saveAll(user, produce, records);
+		if (msg.equals(Produce.SUCCESS)) {
+			setAttr("msg", Produce.SUCCESS);
+			setAttr("redirectionUrl", "/manage/ruku/ykd");
+			render("/admin/common/success.html");
+		} else {
+			setAttr("msg", msg);
+			setAttr("redirectionUrl", "/manage/ruku/ykd");
+			render("/admin/common/error.html");
+		}
+	}
+
+	@ButtonBind(buttonname = "打印")
+	public void print() {
+		Produce p = Produce.getProduceById(getPara("id"));
+
+		Map report_param = new HashMap();
+		report_param.put("DH", p.get("DH")); // 编号即为单号
+		report_param.put("OPDATE", p.get("CHECKDATE").toString());         //移库日期
+		report_param.put("CKCKMC", DicPlugin.b_storeall.get(p.get("CKCKBH")));		//出库仓库名称，通过仓库CKCKBH获得
+		report_param.put("RKCKMC", DicPlugin.b_storeall.get(p.get("RKCKBH")));		//入库仓库名称，通过仓库RKCKBH获得
+		report_param.put("BZ", p.get("BZ"));
+		
+		report_param.put("OPERATOR", "");			//操作员
+		report_param.put("FHR", "");			//复核人
+		
+
+		List<Record> result = null;
+		if (p.get("DHZT").equals("003")) {// 已复核
+			result = ProduceDetail
+					.getProduceDetailForReportByDH(p.getStr("DH"));
+		} else if (p.get("DHZT").equals("002")) {
+			result = ProduceDetailDraft.getProduceDetailDraftForReportByDH(p
+					.getStr("DH"));
+		}
+
+		// 报表列表数据源
+		List report_dataSourceList = new ArrayList();
+		OrderedMap row = null;
+		for (Record r : result) {
+			row = new LinkedMap();
+
+			row.put("JLDW", r.get("JLDW")); // 产品代码，产品id得到
+			row.put("DNAME", r.get("DNAME")); // 产品名称
+			row.put("FNAME", DicPlugin.b_factorysimgle.get(r.get("FACTORYID") + "")); // 厂商， 厂商id得到
+			row.put("SBXH", r.get("SBXH"));  //设备型号
+			row.put("SBSM", r.get("SBSM")); // 产品说明， 也用产品id得到
+			row.put("OPDATE", r.get("SCDATE")); // 产品生产日期
+			row.put("NUM", r.get("sums")); // 数量
+			row.put("BZ", r.get("BZ")); // 备注
+			report_dataSourceList.add(row);
+		}
+
+		// 报表信息
+		String report_jasperUrl=PathKit.getWebRootPath()+"/report/yikureport/yiku.jasper";
+		String report_imageServletUrl=PathKit.getWebRootPath()+"/report/images/";
+		String report_fileName="移库单";
+		String report_fileExt= getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList, report_imageServletUrl, report_fileName, report_fileExt);
+	}
+}

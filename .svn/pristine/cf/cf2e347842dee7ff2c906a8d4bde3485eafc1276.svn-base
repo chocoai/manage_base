@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>出库单</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+	</head>
+	<body class="input list" onload="showMsg('${errMsg}')">
+		<div class="ctrttop cy143w">
+			出库信息单
+		</div>
+		<div class="body">
+			<form id="validateForm"  action="${base}/manage/bxgl/cjwxck/send" method="post">
+				<input type="hidden" name="produce.id" value="${(produce.id)!}" />
+				<input type="hidden" name="produce.DHZT" value="003" />
+				<fieldset>
+				<legend>出库信息单</legend>
+				<table class="inputTable" title="出库信息单">
+				    <tr>
+						<th>单号类型:</th>
+						<td>厂商维修出库单</td>
+					</tr>
+					<tr>
+						<th>仓库名称:</th>
+					<!-- 	<td>${(produce.CKCKBH)!}</td> -->
+				    <td> ${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get("${(produce.CKCKBH)!}")}</td>
+					</tr>
+					<tr>
+						<th>物流公司:</th>
+						<td><input type="text" value="${(produce.WLGS)!}" name="produce.WLGS"></td>
+					</tr>
+					<tr>
+						<th>物流单号:</th>
+						<td><input type="text" value="${(produce.WLDH)!}" name="produce.WLDH"></td>
+					</tr>
+					<tr>
+						<th>司机姓名:</th>
+						<td><input type="text" value="${(produce.SJXM)!}" name="produce.SJXM"></td>
+					</tr>
+					<tr>
+						<th>司机电话:</th>
+						<td><input type="text" value="${(produce.SJLXDH)!}" name="produce.SJLXDH"></td>
+					</tr>
+					<tr>
+						<th>维护人员:</th>
+						<td><input type="text" value="${(produce.WHRY)!}" name="produce.WHRY"></td>
+					</tr>
+					<tr>
+						<th>维护电话:</th>
+						<td><input type="text" value="${(produce.WHRYDH)!}" name="produce.WHRYDH"></td>
+					</tr>
+				</table> 
+				</fieldset>
+				<div class="buttonArea">
+					<input type="submit" class="formButton" value="出库" hidefocus="true"/>
+					   &nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

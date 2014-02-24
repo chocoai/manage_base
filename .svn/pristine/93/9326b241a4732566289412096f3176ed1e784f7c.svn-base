@@ -1,0 +1,134 @@
+package cn.com.jandar.model;
+
+import java.sql.Timestamp;
+import java.util.List;
+
+import com.jfinal.ext.plugin.tablebind.TableBind;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Model;
+
+/**
+ * @author dinglf
+ * 
+ */
+@TableBind(tableName = "c_produce_detail_draft")
+public class ProduceDetailDraft extends Model<ProduceDetailDraft> {
+	private static final long serialVersionUID = -2063970373324095312L;
+	public static final ProduceDetailDraft dao = new ProduceDetailDraft();
+
+	// 查询草稿
+	public static List<ProduceDetailDraft> getProduceDetailDraft(String SZCK) {
+
+		return ProduceDetailDraft.dao
+				.find(" select * from c_produce_detail_draft where SBZT = ? and DHZT = '001'",
+						SZCK);
+	}
+
+	// 默认从入库仓库取
+	public static List<ProduceDetailDraft> getProduceByDH(String dh, String SZCK) {
+		List<ProduceDetailDraft> produceDetailList = ProduceDetailDraft.dao
+				.find("select * from c_produce_detail where dh = ? and SZCK = ?",
+						dh, SZCK);
+
+		return produceDetailList;
+	}
+
+	public static List<ProduceDetailDraft> getProduceList() {
+		List<ProduceDetailDraft> produceList = ProduceDetailDraft.dao
+				.find("select * from c_produce_detail_draft order by id");
+		return produceList;
+	}
+
+	public static ProduceDetailDraft getProduceById(String id) {
+		return ProduceDetailDraft.dao.findById(id);
+	}
+
+	public static String delete(String[] ids) {
+		for (String id : ids) {
+			if (!ProduceDetailDraft.dao.deleteById(id)) {
+				return "error";
+			}
+		}
+		return "success";
+	}
+
+	public static boolean save(ProduceDetailDraft produceDetailDraft,
+			String out, String in, String[] deciveArray, String[] numArray) {
+		boolean result = true;
+		boolean checkResult = true;
+		// 得到数量组
+		int i = 0;
+
+		for (String id : deciveArray) {
+			int num = Integer.parseInt(numArray[i]);
+			if (!judgeDeviceTotal(num, id, out)) {
+				// 有一种设备数量不合要求就中断判断
+				checkResult = false;
+				result = false;
+				break;
+			}
+			i++;
+		}
+
+		i = 0;
+		if (checkResult) {
+			// 遍历保存,现在是草稿只考虑出库
+			for (String id : deciveArray) {
+				int num = Integer.parseInt(numArray[i]);
+				ProduceDetailDraft out_draft = new ProduceDetailDraft(); // 出库
+				out_draft.setAttrs(produceDetailDraft);
+				out_draft.set("DEVICEID", Integer.valueOf(id));
+
+				for (int k = 0; k < num; k++) {
+					out_draft.set("id", null);
+					out_draft.set("num", 1);
+					out_draft.set("CHNUM", -1);
+					out_draft.set("SZCK", out);
+					result = out_draft.save();
+
+				}
+				i++;
+			}
+		}
+
+		return result;
+	}
+
+	public static String update(ProduceDetailDraft produceDetailDraft) {
+		produceDetailDraft.set("modifyDate",
+				new Timestamp(System.currentTimeMillis()));
+		produceDetailDraft.update();
+		return "更新成功";
+	}
+
+	// 出库前产品数量判断
+	public static boolean judgeDeviceTotal(int num, String id, String out) {
+		int checkNum = 0;
+		int checkNumDraft = 0;
+		// 计算草稿或未审核中已出的设备数量
+		if (Db.queryBigDecimal(
+				"select sum(CHNUM) from c_produce_detail_draft where DEVICEID=? and SZCK=?",
+				Integer.valueOf(id), out) != null) {
+			checkNumDraft = Integer
+					.valueOf(Db
+							.queryBigDecimal(
+									"select sum(CHNUM) from c_produce_detail_draft where DEVICEID=? and SZCK=?",
+									Integer.valueOf(id), out).toString());
+		}
+
+		// 计算正式以及库存的设备数量
+		if (Db.queryBigDecimal(
+				"select sum(CHNUM) from c_produce_detail where DEVICEID=? and SZCK=?",
+				Integer.valueOf(id), out) != null) {
+			checkNum = Integer
+					.valueOf(Db
+							.queryBigDecimal(
+									"select sum(CHNUM) from c_produce_detail where DEVICEID=? and SZCK=?",
+									Integer.valueOf(id), out).toString());
+		}
+
+		checkNum += checkNumDraft;
+
+		return (checkNum >= num) ? true : false;
+	}
+}

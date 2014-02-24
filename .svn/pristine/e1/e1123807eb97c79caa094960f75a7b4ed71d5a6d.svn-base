@@ -1,0 +1,86 @@
+package cn.com.jandar.action.manage.pancun;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.OrderedMap;
+import org.apache.commons.collections.map.LinkedMap;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.model.Produce;
+import cn.com.jandar.plugin.DicPlugin;
+
+import com.jfinal.kit.PathKit;
+import com.jfinal.kit.StringKit;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+@ControllerBind(controllerKey = "/manage/pancun/adlxcx", resource = "按单类型查询")
+public class AdlxcxController extends AdminBaseController {
+
+	@ButtonBind(buttonname = "查询")
+	public void index() {
+		// 条件：出入库单类型 起始日期 截至日期
+		String filter_LIKES_DHLX = getPara("filter_LIKES_DHLX");
+		String filter_LIKES_startTime = getPara("filter_LIKES_startTime");
+		String filter_LIKES_endTime = getPara("filter_LIKES_endTime");
+
+		List<Object> param = new ArrayList<Object>();
+		StringBuffer sql = new StringBuffer("FROM c_produce where (1=1 and DHZT='003')");
+		if (!StringKit.isBlank(filter_LIKES_DHLX)) {
+			sql.append(" and  c_produce.DHLX = ? ");
+			param.add(filter_LIKES_DHLX);
+		}
+		sql.append(" order by ").append("c_produce.id").append(" ")
+				.append("asc");
+		Page<Record> producePage = Db.paginate(getParaToInt("pageNumber", 1),
+				getParaToInt("pageSize", PAGESIZE), "SELECT * ",
+				sql.toString(), param.toArray());
+		keepPara("filter_LIKES_DHLX");
+		keepPara("filter_LIKES_startTime");
+		keepPara("filter_LIKES_endTime");
+		setAttr("producePage", producePage);
+		render("kc_list.html");
+	}
+
+	@ButtonBind(buttonname = "打印")
+	public void print() {
+		String storeid = getPara("storeid");
+
+		Map report_param = new HashMap();
+		report_param.put("ckmc", DicPlugin.b_store.get(storeid));
+
+		List<Record> produceDetailList = Db
+				.find("select DEVICEID,SUM(chnum) shnum from c_produce_detail where  c_produce_detail.szck =? GROUP BY DEVICEID",
+						storeid);
+
+		List report_dataSourceList = new ArrayList();
+		for (int i = 0; i < produceDetailList.size(); i++) {
+			Integer id = produceDetailList.get(i).get("DEVICEID");
+			Record record = Db.findById("b_device", id);
+			OrderedMap row = new LinkedMap();
+			row.put("device", record.get("DNAME"));
+			row.put("sblx", record.get("SBLX"));
+			row.put("sbxh", record.get("SBXH"));
+			row.put("sm", record.get("SBSM"));
+			row.put("jldw", record.get("JLDW"));
+			row.put("chnum", produceDetailList.get(i).get("shnum"));
+			row.put("bz", record.get("BZ"));
+			report_dataSourceList.add(row);
+		}
+		String report_jasperUrl = PathKit.getWebRootPath()
+				+ "/report/pancun/pancunreport.jasper";
+		String report_imageServletUrl = PathKit.getWebRootPath()
+				+ "/report/images/";
+		String report_fileName = "pancunreport";
+		String report_fileExt = getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList,
+				report_imageServletUrl, report_fileName, report_fileExt);
+	}
+}

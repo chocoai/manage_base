@@ -1,0 +1,100 @@
+package cn.com.jandar.action.manage.ruku;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.kit.Constant;
+import cn.com.jandar.kit.Md5Util;
+import cn.com.jandar.model.ProduceDetail;
+import cn.com.jandar.model.Produce;
+import cn.com.jandar.model.Role;
+import cn.com.jandar.model.User;
+import cty.kit.route.ControllerBind;
+
+@ControllerBind(controllerKey = "/manage/ruku/byrk", resource = "报溢入库单")
+public class ByrkController extends AdminBaseController {
+	public void index() {
+		String DHZT = getPara("DHZT");
+		if (DHZT == null) {
+			DHZT = "003";
+		}
+		String filter_LIKES_RKCKBH = getPara("filter_LIKES_RKCKBH");
+		if (filter_LIKES_RKCKBH == null) {
+			filter_LIKES_RKCKBH = "";
+		}
+		Page<Produce> page = Produce.getProducePage(
+				getParaToInt("pageNumber", 1),
+				getParaToInt("pageSize", PAGESIZE),
+				getPara("orderBy", "c_produce.id"), getPara("order", "asc"),
+				filter_LIKES_RKCKBH, DHZT, "002");
+
+		keepPara("filter_LIKES_RKCKBH");
+		keepPara("DHZT");
+		setAttr("page", page);
+		System.out.println(DHZT);
+		render("produce_list.html");
+	}
+
+	public void update() {
+		Produce produce = getModel(Produce.class);
+
+		setAttr("msg", Produce.update(produce, this));
+
+		setAttr("msg",
+				ProduceDetail.deleteByDH(Produce.getProduceById(
+						produce.get("id") + "").getStr("DH")));
+
+		/*
+		 * Integer[] deviceidArray = getParaValuesToInt("deviceMap"); Integer[]
+		 * numArray = getParaValuesToInt("numMap"); if(deviceids!=null) { for
+		 * (int i = 0; i < deviceids.length; i++) { for (int j = 0; j < nums[i];
+		 * j++) { ProduceDetail p = new ProduceDetail(); p.set("DH",
+		 * Produce.getProduceById(produce.get("id") + "") .getStr("DH"));
+		 * p.set("SBZT", "002"); p.set("NUM", 1); p.set("DEVICEID",
+		 * deviceids[i]); setAttr("msg", value) setAttr("msg",
+		 * ProduceDetail.save(p)); } } }
+		 */
+		setAttr("redirectionUrl", "/manage/ruku/byrk");
+		render("/admin/common/success.html");
+	}
+
+	public void save() {
+		Produce produce = getModel(Produce.class);
+		produce.set("SBZT", "002");
+		produce.set("DH", Constant.findb_goods_dh("002"));
+		Produce.saveAll(this);
+	}
+
+	public void edit() {
+		Produce produce = Produce.getProduceById(getPara("id"));
+		String DHZT = produce.getStr("DHZT");
+		if(DHZT.equals("003")) {//已复核
+			
+		} else if(DHZT.equals("001")) {//草稿
+			
+		}
+		List<ProduceDetail> produceDetails = ProduceDetail.getProduceByDH(
+				produce.getStr("DH"), produce.getStr("RKCKBH"));
+		for (int i = 0; i < produceDetails.size(); i++) {// 数量处理
+			for (int j = i + 1; j < produceDetails.size(); j++) {
+				if (produceDetails.get(i).get("DEVICEID") == produceDetails
+						.get(j).get("DEVICEID")) {
+					produceDetails.remove(j);
+					j = j - 1;
+					produceDetails.get(i).set("NUM",
+							produceDetails.get(i).getInt("NUM") + 1);
+				}
+			}
+		}
+		setAttr("produce", produce);
+		setAttr("produceDetails", produceDetails);
+		render("produce_input.html");
+	}
+
+}

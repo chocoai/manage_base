@@ -1,0 +1,24 @@
+package cn.com.jandar.action.admin;
+
+
+import cn.com.jandar.interceptor.AdminLoginInterceptor;
+
+import com.jfinal.aop.Before;
+import com.jfinal.core.Controller;
+
+@Before(AdminLoginInterceptor.class)
+public class AdminBaseController extends Controller{
+    
+    protected final static int PAGESIZE = 10;
+    protected String errMsg="errorMessages";
+    
+    
+    @Override
+    public void render(String view) {
+        keepPara("orderBy","order");
+//        this.setAttr("base",getRequest().getContextPath());
+//        this.setAttr("statics", BeansWrapper.getDefaultInstance().getStaticModels());
+        super.render(view);
+    }
+    
+}

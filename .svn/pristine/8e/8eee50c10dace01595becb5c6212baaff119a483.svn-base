@@ -1,0 +1,12 @@
+package cn.com.jandar.action.manage.ruku;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/ruku/ykd",resource="移库单")
+public class YkdController extends AdminBaseController{
+	public void index(){
+		renderText("移库单");
+	}
+}

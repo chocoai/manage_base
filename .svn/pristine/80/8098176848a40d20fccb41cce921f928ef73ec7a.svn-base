@@ -1,0 +1,12 @@
+package cn.com.jandar.action.manage.ruku;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/ruku/rkd",resource="入库单")
+public class RudController extends AdminBaseController{
+	public void index(){
+		renderText("入库单");
+	}
+}

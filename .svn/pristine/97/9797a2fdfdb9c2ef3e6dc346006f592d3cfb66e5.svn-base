@@ -1,0 +1,19 @@
+package cn.com.jandar.interceptor;
+
+
+import com.jfinal.aop.Interceptor;
+import com.jfinal.core.ActionInvocation;
+
+
+/**
+ * 盘存期，不能操作系统出入库
+ * @author 
+ *
+ */
+public class PancunInterceptor implements Interceptor{
+
+	public void intercept(ActionInvocation ai) {
+		ai.invoke();
+	}
+
+}

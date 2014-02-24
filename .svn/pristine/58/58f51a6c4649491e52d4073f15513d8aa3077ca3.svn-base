@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<#include "/admin/common/include.html" />
+<link href="${base}/template/admin/css/index_public.css" type="text/css" rel="stylesheet"/>
+<title>right</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+</head>
+
+<body class="index" style="overflow-y: hidden">
+<div class="ctrt">
+	<div class="ctrttop cy143w">
+		<span class="icon">&nbsp;</span>欢迎使用银医自助运行管理平台！
+	</div>
+	<div class="ctrtct">
+		<div class="body">
+			<div class="bodyLeft">
+				
+			</div>
+		</div>        
+	</div>
+</div>
+</body>
+</html>

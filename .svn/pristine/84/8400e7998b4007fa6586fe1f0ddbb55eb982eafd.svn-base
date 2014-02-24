@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>期初入库</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<script type="text/javascript">
+function validate(){
+	var inputs = $('input');
+	for(var i=0;i<inputs.length;i++){
+			var type = $(inputs[i]).attr("type");
+			var mr = $(inputs[i]).val();
+			var name = $(inputs[i]).attr("name");
+			if(name.indexOf("number")!=-1){
+				if(type=='text'&&mr!=''){
+					return true;
+				}
+			}
+	   }
+	return false;
+}
+function next(){
+	if(validate())
+		$('#validateForm').submit();
+	else
+		alert('请填写设备数量');
+}
+</script>
+</head>
+   <body class="list">
+		<div class="ctrttop cy143w">
+			期初入库&nbsp;<span class="pageInfo">总记录数: ${deviceList?size}</span>
+		</div>
+		<div class="body">
+			<form id="validateForm"  action="${base}/manage/ruku/qcrk/add" method="post">
+			<div class="listBar">
+			    <label>请填入设备数量到对应仓库</label>
+			</div>
+			
+			<table class="listTable">
+				<tr>
+					<th>
+						<span class="sort" name="DNAME">设备名称</span>
+					</th>
+					<th>
+					    <span class="sort" name="SBSM">设备说明</span>
+					</th>
+					 <#list  storeList as list>
+					<th>
+						<span class="sort" name="FSNAME">${list.CKMC}|${statics["cn.com.jandar.plugin.DicPlugin"].jkzidian.get("CKLX").get(list.CKLX)}</span>
+					</th>
+					</#list>
+				</tr>
+				
+				<#list deviceList as alist>
+				<tr>
+				  	<td>
+				  		 ${alist.DNAME}
+				  	</td>
+				  	<td>
+				  	     ${alist.SBSM}
+				  	</td>
+				  	
+				  <#list storeList as blist>
+				  	<td>
+				  	   <input type="text" style="width: 100px;" class="formText {positiveInteger: true}" name="number${blist_index+1}" id="number"/>
+				  	</td>
+				  </#list>
+				</tr>
+				</#list>
+			</table>
+			<br/>
+			<div class="Bar">
+			  <label>备注:</label>  <input type="text" class="formText " name="beizhu" style="width:500px" />
+			  <!-- <input type="reset" class="formButton" style=" float: right" value="重置" hidefocus="true" /> -->
+			  <input type="button" onclick="next()" class="formButton" style="float: right;margin-right: 50px" value="提交"/>&nbsp;&nbsp;
+			</div>
+			
+		    </form>
+		</div>
+	</body>
+</html>

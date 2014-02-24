@@ -1,0 +1,217 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>报修单列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<#assign xlh = ((page.pageNumber-1)*page.pageSize + 1) />
+<script type="text/javascript">
+$().ready( function() {
+	$("#showAllDataButton").click( function() {
+		$("#pageNumber").val("1");
+		window.location.href="${base}/manage/bxgl/kbxd/index";
+	});
+});
+</script>
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+			报修单列表&nbsp;<span class="pageInfo">总记录数: ${page.totalRow}(共${page.totalPage}页)</span>
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/manage/bxgl/kbxd/index" method="post">
+			<div class="listBar">
+				
+				<#if (session.loginUser.roleStr?index_of("/manage/bxgl/kbxd/add")>0) >
+				    <input type="button" class="formButton" onclick="location.href='${base}/manage/bxgl/kbxd/add'" value="添加" />
+			    </#if>
+			    
+				<label>根据故障部件类型查找:</label>
+				<label class="searchText">
+				  <!--  <input id="searchText" type="text" name="filter_LIKES_name" value="${filter_LIKES_name!}" /> -->
+			   		<select name="filter_LIKES_name" class="labelselect" style="width:180px">
+						<option value="">请选择</option>
+						<#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("SBLX") as sblx>
+							<#if sblx.code=="${(filter_LIKES_name)!}">
+							<option value="${sblx.code}" selected>${sblx.value}</option>
+							<#else>
+							<option value="${sblx.code}">${sblx.value}</option>
+							</#if>
+						</#list>
+					</select>
+				</label>
+				<input type="button" hidefocus="" value="搜 索" class="formButton" id="searchButton">
+				<input type="button" hidefocus="" value="显示全部" class="formButton" id="showAllDataButton">
+				<label>每页显示:</label>  
+				<select name="pageSize" id="pageSize">
+					<option value="10" <#if page.pageSize == 10>selected="selected" </#if>>
+						10
+					</option>
+					<option value="20" <#if page.pageSize == 20>selected="selected" </#if>>
+						20
+					</option>
+					<option value="50" <#if page.pageSize == 50>selected="selected" </#if>>
+						50
+					</option>
+					<option value="100" <#if page.pageSize == 100>selected="selected" </#if>>
+						100
+					</option>
+				</select>
+			</div>
+			<table class="listTable">
+				<tr>
+				<!-- 
+					<th class="check">
+						<input type="checkbox" class="allCheck" />
+					</th>
+				-->	
+				     <th>
+						<span class="sort" name="ID">序号</span>
+					</th> 
+				
+					<th>
+						<span class="sort" name="DH">单号</span>
+					</th>
+					<th>
+						<span class="sort" name="CUSTOMERID">客户名称</span>
+					</th>
+				  <!-- 
+					<th>
+						<span class="sort" name="KHWXCKDH">客户维修出库单号</span>
+					</th>
+				  -->
+			        <th>
+						<span class="sort" name="SBLX">故障部件类型</span>
+					</th>
+					<th>
+						<span class="sort" name="GZSM">故障说明</span>
+					</th> 
+					<th>
+						<span class="sort" name="BTBXDH">博泰报修单号</span>
+					</th>
+					<th>
+						<span class="sort" name="BZ">备注</span>
+					</th>
+					<th>
+						<span class="sort" name="CLZT">状态</span>
+					</th>
+				  <!--
+			         <th>
+						<span class="sort" name="OPERATOR">操作员</span>
+					</th>
+			     -->
+					<th>
+						<span class="sort" name="OPDATE">新建时间</span>
+					</th>
+				<!--
+				     <th>
+						<span class="sort" name=UPOPERATOR>更新操作员</span>
+					</th>
+					<th>
+						<span class="sort" name="UPIPDATE">更新时间</span>
+					</th>
+				 -->
+					<th>
+						操作
+					</th>
+				</tr>
+				<#list page.list as list>
+					<tr>
+					<!-- 
+						<td>
+							<input type="checkbox" name="ids" value="${list.id}" />
+						</td>
+					 -->
+					  	<td>
+							${xlh}
+							<#assign xlh = xlh+1 />
+						</td>
+					 	<td>
+							${list.DH!}
+						</td>
+						<td>
+							<#if statics["cn.com.jandar.plugin.DicPlugin"].b_customerall?exists>
+								<#list statics["cn.com.jandar.plugin.DicPlugin"].b_customerall.keySet() as key>
+							         <#if key==list.CUSTOMERID>
+							            ${statics["cn.com.jandar.plugin.DicPlugin"].b_customerall.get(key)}
+								     </#if>
+								</#list>
+							</#if>
+						</td>
+					 <!-- 
+						<td>
+							${list.KHWXCKDH}
+						</td>
+					 -->
+						<td>
+							<!-- <#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("SBLX") as sblx>
+								<#if sblx.code== list.SBLX>
+								  ${sblx.value}
+								</#if>
+							</#list> -->
+							${(statics["cn.com.jandar.plugin.DicPlugin"].jkzidian.get("SBLX")).get("${(list.SBLX)!}")!}
+						</td>
+						<td>
+							${list.GZSM!}
+						</td>
+						<td>
+							${list.BTBXDH!}
+						</td>
+						<td>
+							${(list.BZ)!}
+						</td>
+						<td>
+							${(statics["cn.com.jandar.plugin.DicPlugin"].jkzidian.get("CLZT")).get("${(list.CLZT)!}")!}
+						</td>
+					 <!-- 
+				        <td>
+							${list.OPERATOR}
+						</td> 
+					 -->
+						<td>
+							${list.OPDATE!}
+						</td>
+				      <!-- 		
+				        <td>
+							${list.UPOPERATOR}
+						</td>
+						<td>
+							${list.UPIPDATE}
+						</td> 
+					  -->
+						<td>
+						    <!-- 未回复都显示编辑    -->
+						    <#if list.CLZT == "001">
+							   <#if (session.loginUser.roleStr?index_of("/manage/bxgl/kbxd/edit")>0) >
+							       <a href="${base}/manage/bxgl/kbxd/edit?id=${list.id}" title="编辑">[编辑]</a>
+			                   </#if>
+						     <#else>
+						       <#if (session.loginUser.roleStr?index_of("/manage/bxgl/kbxd/edit")>0) >
+						          <a href="${base}/manage/bxgl/kbxd/edit?id=${list.id}" title="查看">[查看]</a>
+			                   </#if>
+						    </#if>
+						       <a href="${base}/manage/bxgl/kbxd/printrepair?id=${list.id}" title="打印">[打印]</a>
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if (page.list?size > 0)>
+				<div class="pagerBar">
+				<!-- 	<div class="delete">
+						<input type="button" id="deleteButton" class="formButton" url="${base}/manage/bxgl/kbxd/delete" value="删 除" disabled hidefocus />
+					</div> 
+				-->
+					<div class="pager">
+						<#include "/admin/common/pager.html" />
+					</div>
+				<div>
+			<#else>
+				<div class="noRecord">
+					没有找到任何记录!
+				</div>
+			</#if>
+		</form>
+	</div>
+</body>
+</html>

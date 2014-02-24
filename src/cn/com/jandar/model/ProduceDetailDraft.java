@@ -1,0 +1,231 @@
+package cn.com.jandar.model;
+
+import java.sql.Timestamp;
+import java.util.List;
+
+import com.jfinal.ext.plugin.tablebind.TableBind;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Model;
+import com.jfinal.plugin.activerecord.Record;
+
+/**
+ * @author dinglf
+ * 
+ */
+@TableBind(tableName = "c_produce_detail_draft")
+public class ProduceDetailDraft extends Model<ProduceDetailDraft> {
+	private static final long serialVersionUID = -2063970373324095312L;
+	public static final ProduceDetailDraft dao = new ProduceDetailDraft();
+
+	/**
+	 * 查询莫单号的所有草稿
+	 * 
+	 * @param 单号
+	 *            dh
+	 * */
+	public static List<Record> getProduceDetailDraftByDH(String dh) {
+		List<Record> recordList = Db
+				.find("select cpdd.DEVICEID as deviceid,sum(num) as sums from c_produce_detail_draft cpdd where dh = ? group by DEVICEID",
+						dh);
+		return recordList;
+	}
+
+	public static List<Record> getProduceDetailDraftForReportByDH(String DH) {
+		String sql = "select b.*,d.*,b.factoryid factoryid,sum(NUM)sums from c_produce_detail_draft d,b_device b  where b.ID = d.DEVICEID and  DH = '"
+				+ DH + "' group by d.DEVICEID";
+		return Db.find(sql);
+	}
+
+	public static List<ProduceDetailDraft> getProduceList() {
+		List<ProduceDetailDraft> produceList = ProduceDetailDraft.dao
+				.find("select * from c_produce_detail_draft order by id");
+		return produceList;
+	}
+
+	public static ProduceDetailDraft getProduceById(String id) {
+		return ProduceDetailDraft.dao.findById(id);
+	}
+
+	public static String delete(String[] ids) {
+		for (String id : ids) {
+			if (!ProduceDetailDraft.dao.deleteById(id)) {
+				return "error";
+			}
+		}
+		return "success";
+	}
+
+	public static boolean save(ProduceDetailDraft produceDetailDraft,
+			String out, String[] deciveArray, String[] numArray) {
+		boolean result = true;
+		boolean checkResult = true;
+		// 得到数量组
+		int i = 0;
+
+		for (String id : deciveArray) {
+			int num = Integer.parseInt(numArray[i]);
+			if (!judgeDeviceTotal(num, id, out)) {
+				// 有一种设备数量不合要求就中断判断
+				checkResult = false;
+				result = false;
+				break;
+			}
+			i++;
+		}
+
+		i = 0;
+		if (checkResult) {
+			// 遍历保存,现在是草稿只考虑出库
+			for (String id : deciveArray) {
+				int num = Integer.parseInt(numArray[i]);
+				ProduceDetailDraft out_draft = new ProduceDetailDraft(); // 出库
+				out_draft.setAttrs(produceDetailDraft);
+				out_draft.set("DEVICEID", Integer.valueOf(id));
+
+				for (int k = 0; k < num; k++) {
+					out_draft.set("id", null);
+					out_draft.set("num", 1);
+					out_draft.set("CHNUM", -1);
+					out_draft.set("SZCK", out);
+					result = out_draft.save();
+
+				}
+				i++;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * 出库或者入库
+	 * 
+	 * @param type
+	 *            =0 入库 type=1 出库
+	 * */
+	public static boolean saveInOrOut(ProduceDetailDraft produceDetailDraft,
+			String in, String out, int type, String[] deciveArray,
+			String[] numArray) {
+		boolean result = true;
+
+		int i = 0;
+		String storeId; // 仓库Id
+		int chnum = 1;
+		boolean checkResult = true;
+
+		// 遍历保存,现在是草稿只考虑出库
+		if (type == 0) {
+			storeId = in;
+		} else {
+			storeId = out;
+			chnum = -1;
+			int j = 0;
+			// 出库的情况需要判断产品数量
+			for (String id : deciveArray) {
+				int num = Integer.parseInt(numArray[i]);
+
+				if (!ProduceDetailDraft.judgeDeviceTotal(num, id, out)) {
+					// 有一种设备数量不合要求就中断判断
+					checkResult = false;
+					result = false;
+					break;
+				}
+				j++;
+			}
+		}
+
+		if (result && checkResult) {
+			for (String id : deciveArray) {
+				int num = Integer.parseInt(numArray[i]);
+				ProduceDetailDraft out_draft = new ProduceDetailDraft(); // 出库
+				out_draft.setAttrs(produceDetailDraft);
+				out_draft.set("DEVICEID", Integer.valueOf(id));
+
+				for (int k = 0; k < num; k++) {
+					out_draft.set("id", null);
+					out_draft.set("num", 1);
+					out_draft.set("CHNUM", chnum);
+					out_draft.set("SZCK", storeId);
+					result = out_draft.save();
+
+				}
+				i++;
+			}
+		}
+
+		return result;
+	}
+
+	public static String update(ProduceDetailDraft produceDetailDraft) {
+		produceDetailDraft.set("modifyDate",
+				new Timestamp(System.currentTimeMillis()));
+		produceDetailDraft.update();
+		return "更新成功";
+	}
+
+	// 出库前产品数量判断
+	public static boolean judgeDeviceTotal(int num, String id, String out) {
+		int checkNum = 0;
+		int checkNumDraft = 0;
+		// 计算草稿或未审核中已出的设备数量
+
+		if (Db.queryBigDecimal(
+				"select sum(CHNUM) from c_produce_detail_draft where DEVICEID=? and SZCK=?",
+				Integer.valueOf(id), out) != null) {
+			checkNumDraft = Integer
+					.valueOf(Db
+							.queryBigDecimal(
+									"select sum(CHNUM) from c_produce_detail_draft where DEVICEID=? and SZCK=?",
+									Integer.valueOf(id), out).toString());
+		}
+		// 计算正式以及库存的设备数量
+		if (Db.queryBigDecimal(
+				"select sum(CHNUM) from c_produce_detail where DEVICEID=? and SZCK=?",
+				Integer.valueOf(id), out) != null) {
+			checkNum = Integer
+					.valueOf(Db
+							.queryBigDecimal(
+									"select sum(CHNUM) from c_produce_detail where DEVICEID=? and SZCK=?",
+									Integer.valueOf(id), out).toString());
+		}
+		checkNum += checkNumDraft;
+		return (checkNum >= num) ? true : false;
+	}
+
+	/**
+	 * 编辑时批量删除原来的设备详情
+	 */
+	public static String deleteByDH(String DH) {
+		String sql = "select * from c_produce_detail_draft   where DH = '" + DH
+				+ "'";
+		List<ProduceDetailDraft> list = ProduceDetailDraft.dao.find(sql);
+		if (list != null && list.size() > 0) {
+			for (ProduceDetailDraft p : list) {
+				ProduceDetailDraft.dao.deleteById(p.getInt("ID"));
+			}
+		}
+		return "success";
+	}
+
+	/**
+	 * @param DH
+	 * @return 编辑与查看详情时显示设备详情
+	 * 
+	 */
+	public static List<Record> getProduceDetailDraftByDh(String DH) {
+		String sql = "select *,sum(NUM)sums from c_produce_detail_draft d  where DH = '"
+				+ DH + "' group by d.DEVICEID";
+		return Db.find(sql);
+	}
+
+	/**
+	 * @param DH
+	 * @return 编辑与查看详情时显示设备详情
+	 * 
+	 */
+	public static List<Record> getProduceDetailDraftByDhSend(String DH) {
+		String sql = "select DEVICEID,sum(num) num from c_produce_detail_draft d  where DH = '"
+				+ DH + "' GROUP BY d.DEVICEID";
+		return Db.find(sql);
+	}
+}

@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>添加/编辑文章分类</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<script type="text/javascript">
+$().ready( function() {
+
+	var $articleCategoryName = $("#articleCategoryName");
+	var $articleCategorySign = $("#articleCategorySign");
+	var $articleCategorySignIcon = $("#articleCategorySignIcon");
+	$articleCategoryName.change( function() {
+		var $this = $(this);
+		$this.translate("zh", "en", {
+			data: true,
+			replace: false,
+			start: function() {
+				$articleCategorySignIcon.show();
+			},
+			complete: function() {
+				var articleCategorySignValue = $.trim($this.data("translation").en.value.toLowerCase()).replace(/\s+/g, "_").replace(/[^\w]+/g, "");
+				$articleCategorySign.val(articleCategorySignValue);
+				$articleCategorySignIcon.hide();
+			},
+			error: function() {
+				$articleCategorySignIcon.hide();
+			}
+		});
+
+	});
+});
+</script>
+</head>
+<#if !(menu.id)??>
+	<#assign isAdd = true />
+<#else>
+	<#assign isAdd = false />
+</#if>	
+<body class="input">
+	<div class="bar">
+		<#if isAdd>添加菜单分类<#else>编辑菜单分类</#if>
+	</div>
+	<div class="body">
+		<form id="validateForm" action="<#if isAdd>${base}/admin/xtmenu/savecd<#else>${base}/admin/xtmenu/updatecd</#if>" method="post">
+		<#if isAdd>
+			<input type="hidden" name="cdid" value="${(sjflid)!}" />
+		<#else>
+			<input type="hidden" name="id" value="${(menu.id)!}" />
+		</#if>
+			<table class="inputTable">
+				<tr>
+					<th>
+						上级分类:
+					</th>
+					<td>
+					<#if isAdd>
+						${((sjflname))!}
+					<#else>
+						${(menu.name)!}
+					</#if>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						菜单名称:
+					</th>
+					<td>
+						<input type="text"  name="name" class="formText {required: true}" value="${(menu.name)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						code:
+					</th>
+					<td>
+						<input type="text" name="code" class="formText {required: true, remote: '${base}/admin/xtmenu/checkMenuCode?newcode=${(menu.code)!}', digits: true, messages: {remote: '已存在，请重新输入！'}}"title="只允许输入零或正整数" value="${(menu.code)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						url:
+					</th>
+					<td>
+						<input type="text" name="code" class="formText {required: false}" value="${(menu.url)!}" />
+					</td>
+				</tr>
+				<tr>
+					<th>
+						是否启用：
+					</th>
+					<td>
+						<label><input type="radio" name="qybz" value="1" <#if isAdd||(menu.qybz==1)!>checked </#if>/>启用</label>
+						<label><input type="radio"name="qybz" value="0"  <#if (menu.qybz==0)!>checked </#if>/>停用</label>
+					</td>
+				</tr>
+			
+			</table>
+			<div class="buttonArea">
+				<input type="submit" class="formButton" value="确  定" hidefocus="true" />&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+			</div>
+		</form>
+	</div>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>设备型号列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+</head>
+  
+<body class="list">
+	<div class="ctrttop cy143w">
+		设备型号列表&nbsp;<span class="pageInfo">总记录数：${page?size}</span>
+	</div>
+    <div class="body">
+    	<form id="listForm" action="${base}/manage/scd/mxsc/index" method="post">
+    		<div class="listBar">
+    			<input type="button" class="formButton" onclick="location.href='${base}/manage/scd/mxsc/add'" value="添加设备" />
+    			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	    		<label>每页显示:</label>  
+					<select name="pageSize" id="pageSize">
+						<option value="10" <#if page.pageSize == 10>selected="selected" </#if>>
+							10
+						</option>
+						<option value="20" <#if page.pageSize == 20>selected="selected" </#if>>
+							20
+						</option>
+						<option value="50" <#if page.pageSize == 50>selected="selected" </#if>>
+							50
+						</option>
+						<option value="100" <#if page.pageSize == 100>selected="selected" </#if>>
+							100
+						</option>
+					</select>
+			</div>
+    		<table	class="listTable">
+    			<tr>
+    			 <!-- 
+    				<th style="width: 20px;">
+    					<input type="checkbox" class="allCheck"/>
+    				</th>
+    			  -->
+    				<th style="margin-left: 10px;">
+    					序号
+    				</th>
+    				<th>
+    					<span class="sort" name="MODLENAME">设备型号</span>
+    				</th>
+    				<th>
+    					<span class="sort" name="BZ">备注</span>
+    				</th>
+    				<th>
+    					<span class="sort" name="YXBZ">有效标志</span>
+    				</th>
+    				<th>
+    					<span class="sort">操作</span>
+    				</th>
+    			</tr>
+    			<#if (page?size > 0)>
+    			<#list page.list as list>
+    			<tr>
+    			<!-- 
+    				 <td style="width: 20px;">
+    					<input type="checkbox" name="ids" value="${list.id}"/>
+    				</td> 
+    			-->
+    				<td >
+    					${list_index+1}
+    				</td>
+    				<td>
+    					${(list.MODLENAME)!}
+    				</td>
+    				<td>
+    					<#if list.BZ?length lt 50>${list.BZ}<#else>${list.BZ[0..50]}...</#if>
+    				</td>
+    				<td>
+    				    <#if list.YXBZ=="001">
+    					有效
+    					<#else>
+    					无效
+    					</#if>
+    				</td>
+    				<td>
+    					<#if list.modelInUse>
+    					   <a href="${base}/manage/scd/mxsc/details?id=${list.id}" title="编辑">[编辑]</a>
+    					<#else>
+    					   <a href="${base}/manage/scd/mxsc/query?id=${list.id}" title="查看">[查看]</a>
+    					</#if>   
+    					  
+    				</td>
+    			</tr>
+    			</#list>
+    			</#if>
+    		</table>
+    		
+    		<#if (page?size > 0)>
+    			<div class="pagerBar">
+    				<div class="pager">
+						<#include "/admin/common/pager.html" />
+					</div>
+    			</div>
+    		<#else>
+    			<div class="noRecord">
+					没有找到任何记录!
+				</div>
+    		</#if>
+    	</form>
+    </div>
+</body>
+</html>

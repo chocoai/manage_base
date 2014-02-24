@@ -1,0 +1,11 @@
+package cn.com.jandar.action.admin;
+
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/admin/code",resource="字典维护")
+public class CodeController extends AdminBaseController{
+	public void index(){
+		renderText("字典维护");
+	}
+}

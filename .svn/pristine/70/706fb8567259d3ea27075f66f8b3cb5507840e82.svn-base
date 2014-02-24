@@ -1,0 +1,116 @@
+package cn.com.jandar.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.joda.time.DateTime;
+
+import com.google.common.collect.Lists;
+import com.jfinal.ext.plugin.tablebind.TableBind;
+import com.jfinal.kit.StringKit;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Model;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+/**
+ * @author
+ */
+@TableBind(tableName = "p_scdsb")
+public class Scdsb extends Model<Scdsb> {
+	private static final long serialVersionUID = -2063970373324095312L;
+	public static final Scdsb dao = new Scdsb();
+
+	/**
+	 * 获得单据列表
+	 * 
+	 * @return
+	 */
+	public static Page<Scdsb> getScdList(int sPageNum, int sPageSize,
+			String orderBy, String order, String dhzt) {
+		List<Object> param = new ArrayList<Object>();
+		param.add(dhzt);
+		StringBuffer sqlBuffer = new StringBuffer("FROM p_scd where DHZT = ? ");
+		sqlBuffer.append(" order by ").append(orderBy).append(" ")
+				.append(order);
+		Page<Scdsb> scdPage = (Page<Scdsb>) Scdsb.dao.paginate(sPageNum,
+				sPageSize, "SELECT * ", sqlBuffer.toString(), param.toArray());
+		return scdPage;
+	}
+
+
+
+	public static List<Scdsb> query(Scd scd) {
+		int scdId = scd.getInt("id");
+		return Scdsb.dao.find("select * from p_scdsb where 1=1 and SCDID =?",
+				scdId);
+	}
+
+	public static void delete(Scd scd) {
+		Db.update("delete from p_scdsb where SCDID = ?", scd.getInt("ID"));
+	}
+
+	public static boolean save(User user, Scd scd) {
+		boolean result = true;
+		
+		List<Record> recordList =  Lists.newArrayList();
+		
+		for(int i=0; i<scd.getInt("SBNUM");i++){
+			Record record = new Record();
+			record.set("SCDID", scd.get("id"));
+			record.set("SCSBZT", "001");
+			record.set("OPERATOR", user.getStr("username"));
+			record.set("OPDATE", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+			record.set("UPOPERATOR", user.getStr("username"));
+			record.set("UPIPDATE", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+		     
+			recordList.add(record);
+		}
+		
+		Db.batch("insert into p_scdsb(scdid,SCSBBH,YYNBBH,SCSBWZ,SCSBZT,BZ,OPERATOR,OPDATE,UPOPERATOR,UPIPDATE) values(?,?,?,?,?,?,?,?,?,?)", "scdid,SCSBBH,YYNBBH,SCSBWZ,SCSBZT,BZ,OPERATOR,OPDATE,UPOPERATOR,UPIPDATE", recordList, recordList.size());
+		
+		return result;
+	}
+	
+	public static String update(Scdsb scdsb) {
+		String sql = "update p_scdsb sb set sb.SCSBBH = ? , sb.YYNBBH = ? , sb.SCSBWZ = ? where sb.id = ?  ";
+		try{
+			Db.update(sql,scdsb.getStr("SCSBBH"),scdsb.getStr("YYNBBH"),scdsb.getStr("SCSBWZ"),scdsb.getInt("id"));
+		}catch (Exception e) {
+			return "操作失败";
+		}
+		return "操作成功";
+	}
+	
+	public static Scdsb getScdsbByScdId(String id){
+		String sql = "select * from p_scdsb sb where sb.id = ? ";
+		return Scdsb.dao.findFirst(sql,id);
+	}
+	
+	public static Page<Scdsb> getScdsbList(int sPageNum, int sPageSize,
+			String orderBy, String order, String ddzt,String filter_CUSTOMERID) {
+		
+		//SELECT p2.CUSTOMERID,p2.id p2Id, p1.*  FROM p_scdsb p1,p_scd p2 WHERE p2.CUSTOMERID IN(10) AND p2.ID = p1.SCDID;
+	
+		List<Object> param = new ArrayList<Object>();
+		
+		StringBuffer sqlBuffer = new StringBuffer(" FROM p_scdsb p1,p_scd p2 WHERE  p2.id = p1.scdid ");
+		
+		if (!StringKit.isBlank(filter_CUSTOMERID)) {
+             sqlBuffer.append(" and p2.ddzt = ? ");
+             param.add(ddzt);
+         }
+		 
+		 if (!StringKit.isBlank(filter_CUSTOMERID)) {
+             sqlBuffer.append(" and p2.CUSTOMERID = ? ");
+             param.add(filter_CUSTOMERID);
+         }
+		 
+		sqlBuffer.append(" order by ").append(orderBy).append(" ")
+				.append(order);
+		Page<Scdsb> scdsbPage = (Page<Scdsb>) Scdsb.dao.paginate(
+				sPageNum, sPageSize, "SELECT p2.DH,p2.CKCKBH,p2.BZ p2BZ,p2.MODELID,p2.CUSTOMERID,p2.id p2Id, p1.*  ", sqlBuffer.toString(),
+				param.toArray());
+		return scdsbPage;
+	}
+}

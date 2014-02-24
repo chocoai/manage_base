@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>字典列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+</head>
+<body class="list">
+    <div class="ctrttop cy143w">
+    	字典列表&nbsp;<span class="pageInfo">总记录数: ${page.totalRow}(共${page.totalPage}页)</span>
+    </div> 
+    <div class="body">
+    	<form id="listForm" action="${base}/admin/code/index" method="post">
+    		<div class="listBar">
+    			<input type="button" class="formButton" onclick="location.href='${base}/admin/code/add'" value="添加字典"/>
+    			<label>根据名称查找:</label>
+    			<label class="searchText"><input id="searchText" type="text" name="filter_LIKES_name" value="${filter_LIKES_name!}"/></label>
+    			<input type="button" hidefocus="" value="搜索" class="formButton" id="searchButton"/>
+    			<input type="button" hidefocus="" value="搜索全部" class="formButton" id="showAllButton"/>
+    			<label>每页显示:</label>
+				<select name="pageSize" id="pageSize">
+					<option value="10" <#if page.pageSize == 10>selected="selected" </#if>>
+						10
+					</option>
+					<option value="20" <#if page.pageSize == 20>selected="selected" </#if>>
+						20
+					</option>
+					<option value="50" <#if page.pageSize == 50>selected="selected" </#if>>
+						50
+					</option>
+					<option value="100" <#if page.pageSize == 100>selected="selected" </#if>>
+						100
+					</option>
+				</select>				
+    		</div>
+    		<table class="listTable">
+    			<tr>
+    				<th class="check">
+						<input type="checkbox" class="allCheck" />
+					</th>
+					<th>
+						<span class="sort" name="id">流水号</span>
+					</th>
+					<th>
+						<span class="sort" name="code">编码</span>
+					</th>
+					<th>
+						<span class="sort" name="value">名称</span>
+					</th>
+					<th>
+						<span class="sort" name="type">类型</span>
+					</th>
+					<th>
+						<span class="sort" name="typename">类别名称</span>
+					</th>
+					<th>
+						<span class="sort" name="sort">排序号</span>
+					</th>
+					<th>
+						<span class="sort" name="qybz">启用标志</span>
+					</th>
+					<th>
+						操作
+					</th>
+    			</tr>
+    			<#list page.list as list>
+    			<tr>
+    				<td>
+						<input type="checkbox" name="ids" value="${list.ID}" />
+    				</td>
+    				<td>
+    					${list.ID}
+    				</td>
+    				<td>
+    					${list.CODE}
+    				</td>
+    				<td>
+    					${list.VALUE}
+    				</td>
+    				<td>
+    					${list.TYPE}
+    				</td>
+    				<td>
+    					${list.TYPENAME}
+    				</td>
+    				<td>
+    					${list.SORT}
+    				</td>
+    				<td>
+    					<#if "001"==(list.QYBZ)>
+						启用
+						<#else>
+						停用
+						</#if>  					
+    				</td>
+    				<td>	
+    					<select name="list.QYBZ" id="qybz" class="labelselect">
+    						<option value="">请选择</option>
+    						<#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("QYBZ") as qybz>				
+    						<#if qybz.code==list.QYBZ>
+							<option value="${qybz.code}" selected>${qybz.value}</option>
+							<#else>
+							<option value="${qybz.code}">${qybz.value}</option>
+							</#if>
+    						</#list>
+    					</select>
+    					<!--  <a href="${base}/admin/code/edit?id=${list.ID}" title="编辑">[编辑]</a> -->
+    				</td>
+    			</tr>
+    			</#list>
+    		</table>
+    		<#if (page.list?size>0)>
+    			<div class="pagerBar">
+    				<div class="delete">
+    				</div>
+    				<div class="pager">
+    					<#include "/admin/common/pager.html" />
+    				</div>
+    			</div>
+    		<#else>
+    			<div class="noRecord">
+					没有找到任何记录!
+				</div>
+    		</#if>
+    	</form>
+    </div>
+</body>
+</html>

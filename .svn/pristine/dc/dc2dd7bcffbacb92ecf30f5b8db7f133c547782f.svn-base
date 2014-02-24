@@ -1,0 +1,75 @@
+package cn.com.jandar.action.manage.base;
+
+import java.util.List;
+
+import com.jfinal.plugin.activerecord.Page;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.model.Device;
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+@ControllerBind(controllerKey = "/manage/base/device", resource = "设备维护")
+public class DeviceController extends AdminBaseController {
+	@ButtonBind(buttonname="查询")
+	public void index() {
+		Page<Device> page = Device.getDevicePage(getParaToInt("pageNumber", 1),
+				getParaToInt("pageSize", PAGESIZE),
+				getPara("orderBy", "b_device.id"), getPara("order", "desc"),
+				getPara("filter_LIKES_sblx"), getPara("filter_LIKES_factoryid"), getPara("filter_LIKES_sbzt"));
+		keepPara("filter_LIKES_sblx");
+		keepPara("filter_LIKES_factoryid");
+		keepPara("filter_LIKES_sbzt");
+		setAttr("page", page);
+		System.out.println(getPara("filter_LIKES_sblx"));
+		System.out.println(getPara("filter_LIKES_factoryid"));
+		System.out.println(getPara("filter_LIKES_sbzt"));
+		render("device_list.html");
+	}
+	@ButtonBind(buttonname="删除")
+	public void delete() {
+		String[] ids = getParaValues("ids");
+		renderJson("status", Device.delete(ids));
+	}
+	@ButtonBind(buttonname="新增")
+	public void add() {
+		render("device_input.html");
+	}
+	@ButtonBind(buttonname="新增")
+	public void save() {
+		Device device = getModel(Device.class);
+		setAttr("msg", Device.save(device));
+		setAttr("redirectionUrl", "/manage/base/device");
+		render("/admin/common/success.html");
+	}
+	@ButtonBind(buttonname="更新")
+	public void update() {
+		Device device = getModel(Device.class);
+
+		setAttr("msg", Device.update(device));
+		setAttr("redirectionUrl", "/manage/base/device");
+		render("/admin/common/success.html");
+	}
+	@ButtonBind(buttonname="更新")
+	public void edit() {
+		Device device = Device.getDeviceById(getPara("id"));
+		setAttr("device", device);
+		render("device_input.html");
+	}
+	@ButtonBind(buttonname="查看")
+	public void seek() {
+		Device device = Device.getDeviceById(getPara("id"));
+		setAttr("device", device);
+		render("device_seek.html");
+	}
+
+	@ButtonBind(buttonname="更改设备状态")
+	public void changeState() {
+		Device device = Device.getDeviceById(getPara("id"));
+		device.set("SBZT", getPara("SBZT"));
+		setAttr("msg", Device.update(device));
+		setAttr("redirectionUrl", "/manage/base/device");
+		render("/admin/common/success.html");
+
+	}
+}

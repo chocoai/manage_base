@@ -1,0 +1,41 @@
+package cn.com.jandar.action.manage.bxgl;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.interceptor.StartXtInterceptor;
+import cn.com.jandar.model.Bxd;
+
+import com.jfinal.aop.Before;
+import com.jfinal.plugin.activerecord.Page;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+@Before(StartXtInterceptor.class)
+@ControllerBind(controllerKey="/manage/bxgl/bxdhf",resource="报修单回复")
+public class BxdhfController extends AdminBaseController{
+	
+	@ButtonBind(buttonname="查询")
+	public void index(){
+		Page<Bxd> page =  Bxd.getBxdPage(getParaToInt("pageNumber",1),getParaToInt("pageSize",PAGESIZE),getPara("orderBy","s_bxd.ID"),getPara("order","desc"),getPara("filter_LIKES_name"),null);
+		keepPara("filter_LIKES_name");
+		setAttr("page", page);
+		render("bxdhf_list.html");
+	}
+	
+	@ButtonBind(buttonname="更新")
+	public void edit(){
+		Bxd bxd = Bxd.getBxdById(getPara("id"));
+		setAttr("bxd", bxd);
+		render("bxdhf_input.html");
+	}
+	
+	
+	@ButtonBind(buttonname="回复")
+	public void relpy(){
+		Bxd bxd = getModel(Bxd.class);
+		setAttr("msg", Bxd.reply(bxd,this));
+		setAttr("redirectionUrl", "/manage/bxgl/bxdhf");
+		render("/admin/common/success.html");
+	}
+	
+}

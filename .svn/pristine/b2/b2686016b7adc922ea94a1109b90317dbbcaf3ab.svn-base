@@ -1,0 +1,186 @@
+package cn.com.jandar.action.admin;
+
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+
+import cn.com.jandar.kit.Constant;
+import cn.com.jandar.kit.Md5Util;
+import cn.com.jandar.model.Role;
+import cn.com.jandar.model.User;
+
+import com.jfinal.aop.ClearInterceptor;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+/**
+ * @author
+ */
+@ControllerBind(controllerKey = "/admin/user", resource = "用户管理")
+public class UserController extends AdminBaseController {
+	@ButtonBind(buttonname="查询")
+	public void index() {
+		Page<User> page = User.getUserPage(getParaToInt("pageNumber", 1),
+				getParaToInt("pageSize", PAGESIZE),
+				getPara("orderBy", "ts_user.id"), getPara("order", "desc"),
+				getPara("filter_LIKES_name"));
+		keepPara("filter_LIKES_name");
+		setAttr("page", page);
+		render("user_list.html");
+	}
+	@ButtonBind(buttonname="删除")
+	public void delete() {
+		String[] ids = getParaValues("ids");
+		renderJson("status", User.delete(ids));
+	}
+	@ButtonBind(buttonname="新增")
+	public void add() {
+		setAttr("allRole", Role.getRoleList());
+		render("user_input.html");
+	}
+	@ButtonBind(buttonname="新增")
+	public void save() {
+		User user = getModel(User.class);
+		String[] roleList = getParaValues("roleList");
+		user.set("roleSet", StringUtils.join(roleList, ","));
+		user.set("password", Md5Util.compute(user.getStr("password")));
+		setAttr("msg", User.save(user));
+		setAttr("redirectionUrl", "/admin/user");
+		render("../common/success.html");
+	}
+	@ButtonBind(buttonname="更新")
+	public void edit() {
+		User user = User.getUserById(getPara("id"));
+		String[] roleList = StringUtils.split(user.getStr("resource"), ",");
+		setAttr("allRole", Role.getRoleList());
+		setAttr("user", user);
+		setAttr("roleList", roleList);
+		render("user_input.html");
+	}
+	@ButtonBind(buttonname="更新")
+	public void update() {
+		User user = getModel(User.class);
+		String[] roleList = getParaValues("roleList");
+		user.set("roleSet", StringUtils.join(roleList, ","));
+		setAttr("msg", User.update(user));
+		setAttr("redirectionUrl", "/admin/user");
+		render("../common/success.html");
+	}
+	@ButtonBind(buttonname="单独修改资料")
+	public void edit_only() {
+		User user = User.getUserById(getPara("id"));
+		String[] roleList = StringUtils.split(user.getStr("resource"), ",");
+		setAttr("allRole", Role.getRoleList());
+		setAttr("user", user);
+		setAttr("roleList", roleList);
+		render("user_input_only.html");
+	}
+	@ButtonBind(buttonname="单独修改资料")
+	public void update_only() {
+		User user = getModel(User.class);
+		String[] roleList = getParaValues("roleList");
+		user.set("roleSet", StringUtils.join(roleList, ","));
+		setAttr("msg", User.update(user));
+		setAttr("redirectionUrl", "/admin/main");
+		render("../common/success.html");
+	}
+	@ButtonBind(buttonname="修改密码")
+	public void edit_password(){
+		User user = User.getUserById(getPara("id"));
+		setAttr("user", user);
+		render("user_password_input.html");
+	}
+	@ButtonBind(buttonname="修改密码")
+	public void pwd_save(){
+		User user = getModel(User.class);
+		User loginUser = getSessionAttr(User.LOGIN_USER);
+		loginUser.put("password",  Md5Util.compute(user.getStr("password")));
+		user.set("password", Md5Util.compute(user.getStr("password")));
+		User.update(user);
+		setSessionAttr("User.LOGIN_USER", loginUser);
+		setAttr("msg","密码修改成功");
+		setAttr("redirectionUrl", "/admin/user");
+		render("../common/success.html");
+	}
+	@ButtonBind(buttonname="修改密码")
+	public void checkUserPassword(){
+		String pwd = getPara("old_password");
+		System.out.println("oldpassword:"+pwd+"MD5:"+Md5Util.compute(pwd));
+		User user = getSessionAttr(User.LOGIN_USER);
+		if(user.getStr("password").equals(Md5Util.compute(pwd))){
+			renderText("true");
+		}else{
+			renderText("false");
+		}
+	}
+	@ButtonBind(buttonname="新增")
+	public void checkUserName() {
+		User user = getModel(User.class);
+		renderText(User.isExitByUserName(user.getStr("username")));
+	}
+	@ButtonBind(buttonname="重置密码")
+	public void reset() {
+		User user = User.getUserById(getPara("id"));
+		user.set("password", Md5Util.compute("888888"));
+		User.update(user);
+		setAttr("msg", "【" + user.getStr("name") + "】密码重置成功");
+		setAttr("redirectionUrl", "/admin/user");
+		render("../common/success.html");
+	}
+
+	@ClearInterceptor
+	public void login() {
+		String loginName = getPara("loginName");
+		String password = Md5Util.compute(getPara("password"));
+		User user = User.login(loginName, password);
+		if (user != null) {
+			try {
+				user.set("last_login_time",DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+				user.update();
+				Record relog = new Record();
+				relog.set("username", user.getStr("username"));
+				relog.set("login_time",DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+				Db.save("ts_user_log", relog);
+			} catch (Exception e) {
+			}
+			String roleSet = user.getStr("roleSet");
+			if (roleSet == null || "".equals(roleSet)) {
+				setAttr("errMsg", "该用户未分配权限，请先分配权限！");
+				render("/admin/user/login.html");
+			} else {
+				List<Role> roles = Role.getRoleByIds(roleSet);
+				if (roles == null || roles.size() == 0) {
+					setAttr("errMsg", "该用户分配的权限角色已经被删除！");
+					render("/admin/user/login.html");
+				} else {
+					StringBuffer roleStr = new StringBuffer();
+					for (Role role : roles) {
+						roleStr.append(role.getStr("resource") + ";");
+					}
+					System.out.println("角色功能：" + roleStr.toString());
+					user.put("roleStr", roleStr.toString());
+					// 生成用户功能信息1、生成功能list 2、生成功能html
+					user = Constant.createManagerMenu(roleStr.toString(), user);
+
+					setSessionAttr(User.LOGIN_USER, user);
+					forwardAction("/admin");
+				}
+			}
+		} else {
+			setAttr("errMsg", "用户名或密码错误！");
+			render("/admin/user/login.html");
+		}
+	}
+
+	@ClearInterceptor
+	public void logout() {
+		removeSessionAttr(User.LOGIN_USER);
+		render("/admin/user/login.html");
+	}
+
+}

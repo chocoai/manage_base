@@ -1,0 +1,327 @@
+package cn.com.jandar.plugin;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import cn.com.jandar.kit.DbUtil;
+
+import com.jfinal.kit.PathKit;
+import com.jfinal.kit.StringKit;
+import com.jfinal.plugin.IPlugin;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Record;
+/**
+ * 字典信息加载
+ * @author chenty
+ *
+ */
+public class DicPlugin implements IPlugin{
+
+	public final static Properties properties = new Properties();
+	/**
+	 * 字典维护信息
+	 */
+	//字典表ts_code
+	public final static Map<String,Map<String,String>> jkzidian = new HashMap<String,Map<String,String>> ();
+	public final static Map<String,List<Record>> jkzidianList = new HashMap<String,List<Record>> ();
+	//仓库表字典B_STORE
+	public final static Map<String,String> b_storeall = new LinkedHashMap<String,String> ();
+	public final static Map<String,String> b_store = new LinkedHashMap<String,String> ();
+	//单号表字典B_GOODS
+	public final static Map<String,String> b_goodsall = new LinkedHashMap<String,String> ();
+	public final static Map<String,String> b_goods = new LinkedHashMap<String,String> ();
+	//用户字典TS_USER
+	public final static Map<String,String> ts_userall = new LinkedHashMap<String,String> ();
+	//厂家字典B_FACTORY
+	public final static Map<String,String> b_factoryall = new LinkedHashMap<String,String> ();
+	public final static Map<String,String> b_factory = new LinkedHashMap<String,String> ();
+	public final static Map<String,String> b_factorysimgle = new LinkedHashMap<String,String> ();
+	//客户字典B_CUSTOMER
+	public final static Map<String,String> b_customerall = new LinkedHashMap<String,String> ();
+	public final static Map<String,String> b_customer = new LinkedHashMap<String,String> ();
+	//设备字典B_DEVICE
+	public final static Map<String,String> b_deviceall = new LinkedHashMap<String,String> ();
+	public final static Map<String,String> b_device001 = new LinkedHashMap<String,String> ();
+	public final static Map<String,String> b_device002 = new LinkedHashMap<String,String> ();
+	public final static Map<String,String> b_device003 = new LinkedHashMap<String,String> ();
+	public final static Map<String,String> b_devicesimgle = new LinkedHashMap<String,String> ();
+	public final static Map<String,Map<String,String>> b_deviceoflx = new HashMap<String,Map<String,String>> ();
+	//地区字典B_AREA
+	public final static Map<String,String> ts_area = new LinkedHashMap<String,String> ();
+	
+	/**
+	 * 
+	 * 权限相关
+	 */
+	public final static List<Record> ts_codeList= new ArrayList<Record> ();
+	public final static List<Record> catalogList = new ArrayList<Record> ();
+	public final static Map<String,Record> catalogMap = new LinkedHashMap<String,Record> ();
+	public final static List<Record> menuList = new ArrayList<Record> ();
+	public final static Map<String,List<Record>> menuMap = new LinkedHashMap<String,List<Record>> ();
+
+
+	public boolean start() {
+		reset();
+		return true;
+	}
+
+	public boolean stop() {
+		return true;
+	}
+
+	public static void reset(){
+		//加载字典
+		loadPropertyFile("dic_comm.properties");
+		//加载数据字典
+		loadJkZidianDb();
+		//加载菜单信息
+		loadMenuDb();
+		loadb_storeDb();
+		loadb_goodsDb();
+		loadts_userDb();
+		loadb_factoryDb();
+		loadb_customerDb();
+		loadb_deviceDb();
+		loadb_areaDb();
+	}
+
+
+
+	public static Properties loadPropertyFile(String file) {
+		properties.clear();
+		if (StringKit.isBlank(file))
+			throw new IllegalArgumentException("Parameter of file can not be blank");
+		if (file.contains(".."))
+			throw new IllegalArgumentException("Parameter of file can not contains \"..\"");
+
+		InputStream inputStream = null;
+		String fullFile;	// String fullFile = PathUtil.getWebRootPath() + file;
+		if (file.startsWith(File.separator))
+			fullFile = PathKit.getWebRootPath() + File.separator + "WEB-INF" + file;
+		else
+			fullFile = PathKit.getWebRootPath() + File.separator + "WEB-INF" + File.separator + file;
+
+		try {
+			inputStream = new FileInputStream(new File(fullFile));
+			BufferedReader bf = new BufferedReader(new InputStreamReader(inputStream,"utf-8"));
+			properties.load(bf);
+		} catch (FileNotFoundException e) {
+			throw new IllegalArgumentException("Properties file not found: " + fullFile);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Properties file can not be loading: " + fullFile);
+		}
+		finally {
+			try {if (inputStream != null) inputStream.close();} catch (IOException e) {e.printStackTrace();}
+		}
+		if (properties == null)
+			throw new RuntimeException("Properties file loading failed: " + fullFile);
+		return properties;
+	}
+	//监控字典表
+	public static void loadJkZidianDb(){
+		jkzidian.clear();
+		jkzidianList.clear();
+		List<Record> list = Db.find("select t.* from ts_code t ");
+		for(Record record:list){
+			String aaa100 = record.getStr("TYPE");//类别
+			String aaa102 = record.getStr("CODE");//编号
+			String aaa103 = record.getStr("VALUE");//值
+			if(jkzidian.containsKey(aaa100)){
+				Map<String,String> map = jkzidian.get(aaa100);
+				map.put(aaa102, aaa103);
+			}else{
+				Map<String,String> map = new HashMap<String,String>();
+				map.put(aaa102, aaa103);
+				jkzidian.put(aaa100, map);
+			}
+			if(jkzidianList.containsKey(aaa100)){
+				List<Record> listRecord = jkzidianList.get(aaa100);
+				listRecord.add(record);
+			}else{
+				List<Record> listRecord = new ArrayList<Record>();
+				listRecord.add(record);
+				jkzidianList.put(aaa100, listRecord);
+			}
+
+		}
+	}
+	//加载菜单信息
+	public static void loadMenuDb(){
+		ts_codeList.clear();
+		catalogList.clear();
+		catalogMap.clear();
+		menuList.clear();
+		menuMap.clear();
+		List<Record> list = Db.find("select * from ts_menu_copy where qybz = '1' order by path ");
+		for(Record e:list){
+			ts_codeList.add(e);
+			String code = DbUtil.readDbString(e.get("code"));
+			String cdlx = DbUtil.readDbString(e.get("cdlx"));
+			String parent_id = DbUtil.readDbString(e.get("parent_id"));
+			if("001".equals(cdlx)){
+				catalogList.add(e);
+				if(!"".equals(code))
+					catalogMap.put(code, e);
+			}
+			if("002".equals(cdlx)){
+				menuList.add(e);
+				if(menuMap.get(parent_id)==null){
+					List<Record> mlist = new ArrayList<Record>(); 
+					mlist.add(e);
+					menuMap.put(parent_id, mlist);
+				}else{
+					List<Record> mlist = menuMap.get(parent_id);
+					mlist.add(e);
+				}
+			}
+
+		}
+
+	}
+	//b_store字典加载
+	public static void loadb_storeDb(){
+		b_store.clear();
+		b_storeall.clear();
+		List<Record> list = Db.find("select * from b_store ");
+		for(Record record:list){
+			String cklx = DbUtil.readDbString(record.get("cklx"));
+			String ckbh = DbUtil.readDbString(record.get("ckbh"));
+			String ckmc = DbUtil.readDbString(record.get("ckmc"));
+			String yxbz = DbUtil.readDbString(record.get("yxbz"));
+			if(!"".equals(ckbh)){
+				b_storeall.put(ckbh, jkzidian.get("CKLX").get(cklx)+"|"+ckmc);
+				if("001".equals(yxbz))
+					b_store.put(ckbh, jkzidian.get("CKLX").get(cklx)+"|"+ckmc);
+			}
+		}
+	}
+	//b_goods字典加载
+	public static void loadb_goodsDb(){
+		b_goods.clear();
+		b_goodsall.clear();
+		List<Record> list = Db.find("select * from b_goods  ");
+		for(Record record:list){
+			String d_type = DbUtil.readDbString(record.get("d_type"));
+			String d_name = DbUtil.readDbString(record.get("d_name"));
+			String sm = DbUtil.readDbString(record.get("sm"));
+			String yxbz = DbUtil.readDbString(record.get("yxbz"));
+			if(!"".equals(d_type)){
+				b_goodsall.put(d_type, d_name+"|"+sm);
+				if("001".equals(yxbz))
+					b_goods.put(d_type, d_name+"|"+sm);
+			}
+		}
+	}
+	//用户字典TS_USER
+	public static void loadts_userDb(){
+		ts_userall.clear();
+		List<Record> list = Db.find("select * from ts_user  ");
+		for(Record record:list){
+			String username = DbUtil.readDbString(record.get("username"));
+			String name = DbUtil.readDbString(record.get("name"));
+			ts_userall.put(username, name);
+		}
+	}
+	//厂家字典B_FACTORY
+	public static void loadb_factoryDb(){
+		b_factory.clear();
+		b_factoryall.clear();
+		b_factorysimgle.clear();
+		List<Record> list = Db.find("select * from b_factory ");
+		for(Record record:list){
+			String id = DbUtil.readDbString(record.get("id"));
+			String fsname = DbUtil.readDbString(record.get("fsname"));
+			String lxr = DbUtil.readDbString(record.get("lxr"));
+			String lxdh = DbUtil.readDbString(record.get("lxdh"));
+			String yxbz = DbUtil.readDbString(record.get("yxbz"));
+			b_factoryall.put(id, fsname+"|"+lxr+"|"+lxdh);
+			b_factorysimgle.put(id, fsname);
+			if("001".equals(yxbz))
+				b_factory.put(id, fsname+"|"+lxr+"|"+lxdh);
+		}
+	}
+	//客户字典B_CUSTOMER
+	public static void loadb_customerDb(){
+		b_customer.clear();
+		b_customerall.clear();
+		List<Record> list = Db.find("select * from b_customer ");
+		for(Record record:list){
+			String id = DbUtil.readDbString(record.get("id"));
+			String fsname = DbUtil.readDbString(record.get("csname"));
+			String lxr = DbUtil.readDbString(record.get("lxr"));
+			String lxdh = DbUtil.readDbString(record.get("lxdh"));
+			String yxbz = DbUtil.readDbString(record.get("yxbz"));
+			b_customerall.put(id, fsname+"|"+lxr+"|"+lxdh);
+			if("001".equals(yxbz))
+				b_customer.put(id, fsname+"|"+lxr+"|"+lxdh);
+		}
+	}
+	//设备字典b_device
+	public static void loadb_deviceDb(){
+		b_deviceall.clear();
+		b_device001.clear();
+		b_device002.clear();
+		b_device003.clear();
+		b_devicesimgle.clear();
+		b_deviceoflx.clear();
+		List<Record> list = Db.find("select * from b_device ");
+		for(Record record:list){
+			String id = DbUtil.readDbString(record.get("id"));
+			String factoryid = DbUtil.readDbString(record.get("factoryid"));
+			String dname = DbUtil.readDbString(record.get("dname"));
+			String sbxh = DbUtil.readDbString(record.get("sbxh"));
+			String sbsm = DbUtil.readDbString(record.get("sbsm"));
+			String sblx = DbUtil.readDbString(record.get("sblx"));
+			String sbzt = DbUtil.readDbString(record.get("sbzt"));
+			b_deviceall.put(id, b_factorysimgle.get(factoryid)+"|"+jkzidian.get("SBLX").get(sblx)+"|"+dname+"|"+sbxh+"|"+sbsm);
+			b_devicesimgle.put(id, dname);
+			if("001".equals(sbzt))b_device001.put(id, b_factorysimgle.get(factoryid)+"|"+jkzidian.get("SBLX").get(sblx)+"|"+dname+"|"+sbxh+"|"+sbsm);
+			if("002".equals(sbzt))b_device002.put(id, b_factorysimgle.get(factoryid)+"|"+jkzidian.get("SBLX").get(sblx)+"|"+dname+"|"+sbxh+"|"+sbsm);
+			if("003".equals(sbzt))b_device003.put(id, b_factorysimgle.get(factoryid)+"|"+jkzidian.get("SBLX").get(sblx)+"|"+dname+"|"+sbxh+"|"+sbsm);
+			if(b_deviceoflx.get(sblx)==null){
+				Map<String,String> map = new LinkedHashMap<String,String>();
+				map.put(id, factoryid+"|"+dname+"|"+sbxh+"|"+sbsm);
+				b_deviceoflx.put(sblx, map);
+			}else{
+				Map<String,String> map = b_deviceoflx.get(sblx);
+				map.put(id, factoryid+"|"+dname+"|"+sbxh+"|"+sbsm);
+			}
+			String lxzt = sblx+sbzt;
+			if(b_deviceoflx.get(lxzt)==null){
+				Map<String,String> map = new LinkedHashMap<String,String>();
+				map.put(id, factoryid+"|"+dname+"|"+sbxh+"|"+sbsm);
+				b_deviceoflx.put(lxzt, map);
+			}else{
+				Map<String,String> map = b_deviceoflx.get(lxzt);
+				map.put(id, factoryid+"|"+dname+"|"+sbxh+"|"+sbsm);
+			}
+
+		}
+	}
+	//客户字典B_AREA
+	public static void loadb_areaDb(){
+		ts_area.clear();
+		List<Record> list = Db.find("select * from ts_area where qybz = '001' ");
+		for(Record record:list){
+			String code = DbUtil.readDbString(record.get("code"));
+			String value = DbUtil.readDbString(record.get("value"));
+			if(code.lastIndexOf("0000")!=-1)
+				ts_area.put(code, "--"+value);
+			else if(code.lastIndexOf("00")!=-1)
+				ts_area.put(code, "-- --"+value);
+			else
+				ts_area.put(code, "-- -- --"+value);
+		}
+	}
+}

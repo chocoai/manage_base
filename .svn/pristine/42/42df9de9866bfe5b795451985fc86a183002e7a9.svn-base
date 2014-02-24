@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<#include "/admin/common/include.html" />
+<link href="${base}/template/admin/css/index_left.css" type="text/css" rel="stylesheet"/>
+<link href="${base}/template/admin/css/index_public.css" type="text/css" rel="stylesheet"/>
+<script src="${base}/template/admin/js/menu.js" type="text/javascript"></script>
+<title>menu</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<script type="text/javascript">
+	$().ready(function() {
+		tj();
+	});
+	function tj(){
+		var ac = document.forms[0].action;
+		if(ac==null||ac==""){
+			document.forms[0].action = "${base}/admin/main";
+		}
+		$("#menuForm").submit();
+	}
+</script>
+</head>
+<body >
+<form id="menuForm" action="${base}${firstfunction}" target="mainFrame">
+<div class="ctlf">
+	<div class="ctlftop">
+		<div class="ctlftopme"><a href="#"><img src="${base}/template/admin/imgs/index14.jpg" /></a></div>
+		<div class="left02">
+			<div class="left02down">		
+				<#if menucode?exists>
+					<#list menucode.keySet() as key>
+						<div class="left02down01">
+							<div id="Bf0${session.loginUser.valuecatalog.get(key)}" class="left02down01_img"></div>
+							<a href="javascript:;" target="mainFrame">${key}</a><!-- onclick="show_menuB(${session.loginUser.valuecatalog.get(key)})" -->
+						</div>
+						<div class="left02down01_xia noneBox" id="Bli0${session.loginUser.valuecatalog.get(key)}">
+							<ul>
+							<#list menucode.get(key) as val>
+								<li  id="f0${val.CODE}" class="left02down01_xiali" onclick="show_menu(${val.CODE})">
+									<span class="lia"><a href="${base}${val.URL}" target="mainFrame">${val.NAME}</a></span>
+								</li>
+							</#list>	
+							</ul>
+						</div>
+					</#list>
+				</#if>
+			</div>
+		</div>
+	</div>
+</div> 
+</form> 
+</body>
+</html>

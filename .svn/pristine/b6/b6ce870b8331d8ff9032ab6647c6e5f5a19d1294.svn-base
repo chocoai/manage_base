@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>管理员维护</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+		
+<#if !(device.id)??>
+	<#assign isAdd = true />
+<#else>
+	<#assign isAdd = false />
+</#if>
+	</head>
+	<body class="input" onload="showMsg('${errMsg}')">
+		<div class="ctrttop cy143w">
+			<#if isAdd>添加设备<#else>编辑设备</#if>
+		</div>
+		<div class="body">
+			<form id="validateForm"  action="<#if isAdd>${base}/manage/base/device/save<#else>${base}/manage/base/device/update</#if>" method="post">
+				<input type="hidden" name="device.id" value="${(device.id)!}" />
+				<table class="inputTable">
+				<tr>
+					<th>
+						厂商ID:
+					</th>
+					<td>
+						<label class="labelbody" >
+							<select name="device.FACTORYID" id="b_factoryall" class="labelselect formText {required: true}" >
+								<option value="">请选择</option>
+								<#if statics["cn.com.jandar.plugin.DicPlugin"].b_factoryall?exists>
+								<#list statics["cn.com.jandar.plugin.DicPlugin"].b_factoryall.keySet() as key>
+									<#if ((device.FACTORYID)!) == key>
+										<option value="${key}" selected="selected">
+									<#else >
+										<option value="${key}" >
+									</#if>
+										${statics["cn.com.jandar.plugin.DicPlugin"].b_factoryall.get(key)}
+									</option>
+								</#list>
+								</#if>
+							</select>
+						</label>
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						设备名称:
+					</th>
+					<td>
+						<input type="text"  name="device.DNAME" class="formText {required: true}" value="${(device.DNAME)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						设备型号:
+					</th>
+					<td>
+						<input type="text"  name="device.SBXH" class="formText {required: true}" value="${(device.SBXH)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						设备类型:
+					</th>
+					<td>
+						<select name="device.SBLX" id="sblx" class="labelselect formText {required: true}" >
+							<option value="">请选择</option>
+							<#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("SBLX") as sblx>
+								<#if ((device.SBLX)!) == sblx.code>
+									<option value="${sblx.code}" selected="selected">
+								<#else >
+									<option value="${sblx.code}" >
+								</#if>
+									${sblx.value}
+								</option>
+							</#list>
+						</select>
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						计量单位:
+					</th>
+					<td>
+						<input type="text"  name="device.JLDW" class="formText {required: true}" value="${(device.JLDW)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						设备说明:
+					</th>
+					<td>
+						<input type="text"  name="device.SBSM" class="formText {required: false}" value="${(device.SBSM)!}" style="width:350px" />
+					</td>
+				</tr>
+				<tr>
+					<th>
+						备注:
+					</th>
+					<td>
+						<textarea class="formTextarea" name="device.BZ" >${(device.BZ)!}</textarea>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						设备状态:
+					</th>
+					<td>
+						<!-- <input type="text"  name="device.SBZT" class="formText {required: true}" value="${(device.SBZT)!}" /> -->
+						<label><input type="radio" name="device.SBZT" value="001"<#if (isAdd || device.SBZT == '001')!> checked</#if> />生产库、备件库启用</label>
+						<label><input type="radio" name="device.SBZT" value="002"<#if (device.SBZT == '002')!> checked</#if> />备件库启用</label>
+						<label><input type="radio" name="device.SBZT" value="003"<#if (device.SBZT == '003')!> checked</#if> />停用</label>
+					</td>
+				</tr>
+				</table>
+				<div class="buttonArea">
+					<input type="submit" class="formButton" value="确  定" hidefocus="true" />
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

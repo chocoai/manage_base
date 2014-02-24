@@ -1,0 +1,23 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>fl.html</title>
+	
+    <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+    <meta http-equiv="description" content="this is my page">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    <!--<link rel="stylesheet" type="text/css" href="./styles.css">-->
+
+  </head>
+  
+  <body>
+    This is my HTML page. <br>
+	<div style="margin-top: -8px;margin-left: -8px;margin-right: -8px">
+		<iframe frameBorder=0 frameSpacing=0 id="hosp_Frame" name="hosp_Frame" src="${base}/manage/demo/print/head" frameborder="0" height="80px" width="100%" scrolling="no"></iframe> 
+	</div>
+	<div style="float:left;">
+		<iframe frameBorder=0 frameSpacing=0 id="hosp_main" name="hosp_main" src="" frameborder="0" height="580px" width="1000px" scrolling="no"></iframe> 
+	</div>
+  </body>
+</html>

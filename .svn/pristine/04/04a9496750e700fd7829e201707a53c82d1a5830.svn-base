@@ -1,0 +1,407 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>添加/编辑文章分类</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<#if !(produce.id)??>
+	<#assign isAdd = true />
+<#else>
+    <#assign count="${(record)!}" />
+	<#assign isAdd = false />
+</#if>
+<script type="text/javascript">
+var produceIndex = 1;
+var count = 1;
+<#if !isAdd>
+   produceIndex = '${recordList?size}';
+   count = '${recordList?size}';
+</#if>
+	$().ready(function() {
+		//新增
+		$("#addProduce").click(
+			function() {
+				var select = '<select name="deviceMap" id="sbmc.'+produceIndex+'" class="labelselect deviceid" style="width:180px;">';
+				select += '<option value="">请选择</option>';
+				select += '<#if statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall?exists>';
+				select += '<#list statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.keySet() as key>';
+				select += '<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(key)}</option>';
+				select += '</#list>';
+				select += '</#if>';
+				select += '</select>';
+				var trHtml = '<tr> <td>'+select+'</td><td><input name="numMap" class="produceNumber" id="num.' + produceIndex + '" /></td><td> <a href="javascript:;" class="deleteProduceRKD">[删除]</a> </td> </tr>';		
+				$("#produceTable").append(trHtml);
+				produceIndex ++;
+				count ++;
+				
+				
+			$('.produceNumber').unbind();
+			validateNum();
+			});
+			
+			$(".deviceid").live("change",function(){
+			var array = $("body").find(".deviceid").get();
+			var count =0;
+  			for(i=0;i<array.length;i++){
+  				if(array[i].value == $(this).val()) {
+  					count += 1;
+  				}
+  			} 
+  			if(count == 2) {
+  				alert("该设备已经存在");
+  				$(this).attr("value","");
+  			}
+		});
+		
+		//刪除
+		$("a.deleteProduceRKD").live("click", function() {
+			var $this = $(this);
+			$.dialog({
+				type : "warn",
+				content : "您确定要删除吗？",
+				ok : "确 定",
+				cancel : "取 消",
+				close : true,
+				modal : true,
+				okCallback : function() {
+					$this.closest("tr").remove();
+				}
+			});
+		});
+		validateNum();
+	});
+
+	function validateNum(){	
+		var reg = new RegExp("^[1-9][0-9]*$");
+		$('.produceNumber').blur(function(){
+			var $this = $(this);
+			var id = $this.parent('td').parent('tr').find('td').eq(0).find('select').val();
+			if($('#CKCKBH').val()==""){
+				alert("请先选定出库仓库！");
+				return;
+			}
+			if(id==""){
+				alert("请先选定设备！");
+				return;	
+			}
+			if(!reg.test($this.val())){
+	        	  alert("数量只能为数字,且数字不能以零开头!");
+		          return false;
+			}
+			 $.post("${base}/manage/bxgl/khwxck/validateNum", 
+				{ CKCKBH: $('#CKCKBH').val(), deviceid:id,num:$this.val()},
+			    function(data){
+					if(data!="true"){
+						$.dialog({
+							type: "error",
+							content: "操作提示",
+							ok: "确 定", 
+							close: true, 
+							modal: true, 
+							width: 380,
+							content:data,
+							okCallback: function() {
+								$this.val("");
+							}
+						});
+					} 
+			 }); 
+	     });
+		}
+		
+	function submitYKD() {
+	    //提交前的数据检验
+	    var reg = new RegExp("^[1-9][0-9]*$");
+		if (produceIndex > 0) {
+		    var bool = true;
+			var i = 0;
+			for(i=0; i<produceIndex;i++){
+			   var device = document.getElementById("sbmc."+i).value; 
+			   var num = document.getElementById("num."+i).value;
+			   if(num==""||device==""){
+			     bool = false;
+			     $('#rkd_DHZT').val("002");
+			     alert("必须将产品以及对应数量填写完整再提交!");
+			     return ;
+			   }else{
+				   if(!reg.test(num)){
+		        	 alert("数量只能为数字,且数字不能以零开头!");
+		        	  $('#rkd_DHZT').val("002");
+			          return false;
+				   }
+			   }
+			}
+			if($('#RKCKBH').val() == ""||$('#CKCKBH').val()==""){
+			   bool = false;
+			   $('#rkd_DHZT').val("002");
+			   alert("出库与入库仓库必须选择而且不能一样！");
+			   return ;
+			}else if($('#RKCKBH').val() == $('#CKCKBH').val()){
+			    bool = false;
+			    $('#rkd_DHZT').val("002");
+			    alert("出库与入库仓库不能选择同一个！");
+			    return ;
+			}
+			
+			if(bool){
+			  $("#validateYKDForm").submit();
+			}
+		}else{
+		   $('#rkd_DHZT').val("002");
+		   alert("必须选择产品！"); 
+		}
+
+		
+	}
+	
+/* 	function addSelect(id,num){
+	   var select1 = '<select name="deviceMap" id="sblx" class="labelselect">';
+						select += '<option value="">请选择</option>';
+						select += '<#if statics["cn.com.jandar.plugin.DicPlugin"].b_device001?exists>';
+						select += '<#list statics["cn.com.jandar.plugin.DicPlugin"].b_device001.keySet() as key>';
+						select += '<#if (key==id)>'
+						select += '<option value="${key}" selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].b_device001.get(key)}</option>'; 
+					    select += '<#else>'
+						select += '<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_device001.get(key)}</option>';
+						select += '</#if>'
+						select += '</#list>';
+						select += '</#if>';
+						select += '</select>';
+
+						var trHtml = '<tr id="'+produceIndex+'.tr"><th>设备选择</th><td>'+select1+'<\/td><th>数量</th><td> <input type="text" name="numMap" value="${num}" \/> <\/td><td>'+'<a href="javascript:;" class="deleteProduce">[删除]<\/a> <\/td> <\/tr>';
+
+						$("#produceTable").append(trHtml);
+	} */
+	
+	function changeDHZT(){
+		$('#rkd_DHZT').val("001");
+		submitYKD();
+	}
+</script>
+</head>
+
+<#if !(produce.id)??> <#assign isAdd = true /> <#else> <#assign isAdd = false /> </#if>
+<body class="input list" onload="showMsg('${errMsg}')">
+	<div class="ctrttop cy143w"><#if isAdd>新增移库单<#else>编辑移库单</#if></div>
+	<div class="body">
+		<form id="validateYKDForm"
+			action="<#if isAdd>${base}/manage/ruku/ykd/save<#else>${base}/manage/ruku/ykd/save</#if>"
+			method="post">
+			
+			<input type="hidden" name="produce.id" value="${(produce.id)!}" />
+			<fieldset>
+				<legend>移库单</legend>
+				<table class="inputTable" title="移库单">
+					<tr>
+						<th hidden="true">单号:</th>
+						<td hidden="true"><input type="text" name="produce.dh" class="formText"
+							value="${(produce.dh)!}" readonly="readonly" /> 
+							<label class="requireField">*</label>
+						</td>
+						<th>单号类型:</th>
+						<td hidden="true"><input type="text" name="DHLX"
+							value="${(DHLX)!}" readonly="readonly" />
+							<input type="hidden" name="produce.DHLX"
+							value="${(produce.DHLX)!}" />
+						</td>
+						<td>移库单</td>
+					</tr>
+					 <!-- 可编辑-->
+			        <#if !isAdd == true>
+					<tr >
+						<th>单　　号:</th>
+						<td>
+						 <#if ("${(produce.DHZT)!}" =="001")>
+					       <input type="text" name="produce.DH" value="${(produce.DH)!}" readonly="readonly" style="width:180px;"/>
+						 <!-- 已复核只显示文字（不可编辑）  -->
+						 <#else>
+						   ${(produce.DH)!}
+						 </#if>
+					    </td>
+					</tr> 
+					</#if>
+					<tr>
+						<th>出库仓库:</th>
+						<td>
+						<!-- 表示草稿 （可编辑）-->
+				        <#if ("${(produce.DHZT)!}" =="001")||isAdd == true>
+						<select id="CKCKBH" name="produce.CKCKBH" class="labelselect formText {required: true}">
+								<option value="">请选择</option> <#if
+								statics["cn.com.jandar.plugin.DicPlugin"].b_store?exists> <#list
+								statics["cn.com.jandar.plugin.DicPlugin"].b_store.keySet() as
+								key> <#if key == "${produce.CKCKBH}">
+								<option value="${key}" selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(key)}</option>
+								<#else>
+								<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(key)}</option>
+								</#if> </#list> </#if>
+						</select><label class="requireField">*</label>
+						<#else>
+						   <!-- 不可编辑显示  -->
+						    <#if
+								statics["cn.com.jandar.plugin.DicPlugin"].b_store?exists> <#list
+								statics["cn.com.jandar.plugin.DicPlugin"].b_store.keySet() as
+								key> <#if key == "${produce.CKCKBH}">
+								${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(key)}
+								</#if> </#list> </#if>
+						 </#if>
+						</td>
+					</tr>
+					<tr>
+						<th>入库仓库:</th>
+						<td>
+						<!-- 表示草稿 （可编辑）-->
+				        <#if ("${(produce.DHZT)!}" =="001")||isAdd == true>
+					  	<select id="RKCKBH" name="produce.RKCKBH" class="labelselect formText {required: true}">
+								<option value="">请选择</option> <#if
+								statics["cn.com.jandar.plugin.DicPlugin"].b_store?exists> <#list
+								statics["cn.com.jandar.plugin.DicPlugin"].b_store.keySet() as
+								key> <#if key == "${produce.RKCKBH}">
+								<option value="${key}" selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(key)}</option>
+								<#else>
+								<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(key)}</option>
+								</#if> </#list> </#if>
+						</select><label class="requireField">*</label>
+						<#else>
+						 <#if statics["cn.com.jandar.plugin.DicPlugin"].b_store?exists> 
+						    <#list statics["cn.com.jandar.plugin.DicPlugin"].b_store.keySet() as key> 
+						       <#if key == "${produce.RKCKBH}">
+								    ${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(key)}
+								</#if> 
+						    </#list> 
+						 </#if>
+						  </#if>
+						</td>
+					</tr>
+					
+						<!-- <th>单号状态:</th>
+						<td><select name="produce.DHZT" class="labelselect"> 
+							<#list
+								statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("DHZT")
+								as dhzt> 
+								<#if (dhzt.code == produce.DHZT)>
+								   <option value="${dhzt.code}" selected="selected">${dhzt.value}</option>
+								<#else>
+							       <option value="${dhzt.code}">${dhzt.value}</option>
+								</#if> 
+							</#list>
+						</select></td>  -->
+					<tr>
+						<th>备注:</th>
+						<td colspan="2">
+						<!-- 表示草稿 （可编辑）-->
+				        <#if ("${(produce.DHZT)!}" =="001")||isAdd == true>
+						  <textarea class="formTextarea" name="produce.BZ"  value="${(produce.BZ)!}" >${(produce.BZ)!}</textarea>
+						<!-- 已复核只显示文字（不可编辑）  -->
+						<#else>
+						  ${(produce.BZ)!}
+						</#if>
+						</td>
+					</tr>	
+					<!-- 表示草稿 （可编辑）-->
+				    <#if ("${(produce.DHZT)!}" =="001")||isAdd == true>
+				     <input type="hidden" name="produce.DHZT" value="002" id="rkd_DHZT">
+				    <#else>
+				    <tr>
+				      <th>是否有效:</th>
+					   <td >
+						 <!--  <label><input type="radio" name="produce.DHZT" value="003"<#if (isAdd ||(produce.DHZT=="003") == true)!> checked</#if> />已复核</label>
+						  <label><input type="radio" name="produce.DHZT" value="001"<#if ((produce.DHZT =="003") == fasle)!> checked</#if> />草稿</label> -->
+						  ${"已复核"}
+					   </td>
+				     </tr>
+				    </#if>
+				</table>
+			</fieldset>
+			<fieldset>
+			<legend>单据明细</legend>
+			 <table class="listTable" id="produceTable">
+				<#if (isAdd ||(produce.DHZT == "001") == true)>
+				 <tr>
+					<td colspan="3" align="right">
+						<input type="button" class="formButton" id="addProduce" value="增加设备"/>  
+					</td>
+				</tr>
+				</#if>
+				 <tr >
+				    <th>设备名称</th>
+				    <th>数量</th>
+				 <#if (isAdd ||(produce.DHZT == "001") == true)>
+				    <th>操作</th>
+				  </#if>
+				 </tr>
+			 <#if !isAdd>
+				<#list recordList as lists>
+				 <tr >
+				    <td>
+				       <!-- 表示草稿 -->
+				       <#if (produce.DHZT =="001") == true>
+				      	<select name="deviceMap" id="sbmc.${lists_index}" class="labelselect deviceid" style="width:180px;">
+							<option value="">请选择</option>
+							<#if statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall?exists>
+								<#list statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.keySet() as key>
+							     <#if key=="${(lists.DEVICEID)!}">
+						  	<option value="${key}" selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(key)}</option>
+								 <#else>
+							<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(key)}</option>
+								 </#if>
+								</#list>
+							</#if>
+						</select>
+					  <#else>
+					     <#list statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.keySet() as key>
+							     <#if key=="${(lists.DEVICEID)!}">
+							       ${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(key)}
+							    </#if>
+					     </#list>
+					  </#if>
+				    </td>
+				    <td>
+				    <!-- 表示草稿 -->
+				    <#if (produce.DHZT =="001") == true>
+				    <input name="numMap" type="text" id="num.${lists_index}" class="produceNumber" value="${lists.sums!}"/>
+				     <#else>
+					     ${lists.sums!}
+					  </#if>
+				    </td>
+				   
+				   <#if (isAdd ||(produce.DHZT == "001") == true)>
+				    <td><a href="javascript:;" class="deleteProduceRKD"><#if lists_index !=0 >[删除]</#if></a></td>
+				   </#if>
+				 </tr>
+				</#list>
+			<#else>
+				<tr >
+				    <td>
+				      	<select name="deviceMap" id="sbmc.0" class="labelselect deviceid" style="width:180px;">
+							<option value="">请选择</option>
+							<#if statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall?exists>
+								<#list statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.keySet() as key>
+							<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(key)}</option>
+								</#list>
+							</#if>
+						</select>
+				    </td>
+				    <td><input name="numMap" type="text" id="num.0" class="produceNumber" /></td>
+				     <td><!-- <a href="javascript:;" class="deleteProduceRKD">[删除]</a> --></td>
+				 </tr>
+			</#if>
+				</table> 
+				</fieldset>
+			
+			
+			<div class="buttonArea">
+			   <#if (isAdd ||(produce.DHZT == "001") == true)>
+				<input type="button" class="formButton" value="移库"
+					onclick="submitYKD()" hidefocus="true" />&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="button" class="formButton" value="保存草稿" hidefocus="true" onclick="changeDHZT()"/>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+				</#if>	
+				<input type="button" class="formButton"
+					onclick="window.history.back(); return false;" value="返  回"
+					hidefocus="true" />
+			</div>
+		</form>
+	</div>
+</body>
+</html>

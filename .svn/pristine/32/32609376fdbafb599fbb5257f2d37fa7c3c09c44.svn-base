@@ -1,0 +1,80 @@
+package cn.com.jandar.model;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.jfinal.ext.plugin.tablebind.TableBind;
+import com.jfinal.kit.StringKit;
+import com.jfinal.plugin.activerecord.Model;
+import com.jfinal.plugin.activerecord.Page;
+
+@TableBind(tableName = "b_device")
+public class Device extends Model<Device> {
+
+	private static final long serialVersionUID = 1L;
+	public static final Device dao = new Device();
+
+	public static List<Device> getDeviceList() {
+		List<Device> deviceList = Device.dao
+				.find("select * from b_device order by id");
+		return deviceList;
+	}
+
+	public static Device getDeviceById(String id) {
+		return Device.dao.findById(id);
+	}
+
+	public static List getDeviceByIds(String ids) {
+		List<Device> deviceList = Device.dao
+				.find("select * from b_device where id in (" + ids + ")");
+		return deviceList;
+	}
+
+	public static String delete(String[] ids) {
+		for (String id : ids) {
+			if (!Device.dao.deleteById(id)) {
+				return "error";
+			}
+		}
+		return "success";
+	}
+
+	public static Page<Device> getDevicePage(int sPageNum, int sPageSize,
+			String orderBy, String order, String sblx,String factoryid,String sbzt) {
+		List<Object> param = new ArrayList<Object>();
+		StringBuffer sqlBuffer = new StringBuffer("FROM b_device  ");
+		String sql = "where (1=1 ";
+		if(!StringKit.isBlank(sblx)) {
+			sql += " and b_device.SBLX like '%" + sblx + "%'";
+		}
+		if(!StringKit.isBlank(factoryid)) {
+			sql += " and b_device.FACTORYID like '%" + factoryid + "%'";
+		}
+		if(!StringKit.isBlank(sbzt)) {
+			sql += " and b_device.SBZT like '%" + sbzt + "%'";
+		}
+		sql += ")";
+		sqlBuffer.append(sql);
+		sqlBuffer.append(" order by ").append(orderBy).append(" ")
+				.append(order);
+		Page<Device> devicePage = Device.dao.paginate(sPageNum, sPageSize,
+				"SELECT * ", sqlBuffer.toString(), param.toArray());
+		return devicePage;
+	}
+
+	public static String save(Device device) {
+		device.set("OPDATE", new Timestamp(System.currentTimeMillis()));
+		device.set("UPIPDATE", new Timestamp(System.currentTimeMillis()));
+		device.set("SBZT", "001");
+		device.save();
+		return "保存成功";
+	}
+
+	public static String update(Device device) {
+		device.set("UPIPDATE", new Timestamp(System.currentTimeMillis()));
+		device.update();
+		return "更新成功";
+	}
+
+}

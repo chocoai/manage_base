@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>文章分类列表</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<script type="text/javascript">
+$(document).ready(function() {
+	// 删除确认对话框
+	$(".deleteCategory").click(function() {
+		if (confirm("您确定要删除此文章分类吗？") == false) {
+			return false;
+		}
+	});
+
+	// 树折叠
+	$(".categoryName").click(function() {
+		var level = $(this).parent().attr("level");
+		var isHide;
+		$(this).parent().nextAll("tr").each(function() {
+			var thisLevel = $(this).attr("level");
+			if (thisLevel <= level) {
+				return false;
+			}
+			if (isHide == null) {
+				if ($(this).is(":hidden")) {
+					isHide = true;
+				} else {
+					isHide = false;
+				}
+			}
+			if (isHide) {
+				$(this).show();
+			} else {
+				$(this).hide();
+			}
+		});
+	});
+})
+</script>
+</head>
+<body class="list">
+	<div class="bar">
+		菜单列表 &nbsp; 总记录数: ${menuList?size}
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/admin/xtmune" method="post">
+			<div class="listBar">
+				<input type="button" class="formButton" onclick="location.href='${base}/admin/xtmenu/addml'" value="添加目录" />
+			</div>
+			<table class="listTable" id="listTable">
+				<tr>
+					<th>
+						分类名称&nbsp;
+					</th>
+					<th>
+						code
+					</th>
+					<th>
+						url
+					</th>
+					<th>
+						images
+					</th>
+					<th>
+						cdlx
+					</th>
+					<th>
+						启用标志
+					</th>
+					<th>
+						操作
+					</th>
+				</tr>
+				<#list menuList as list>
+					<tr level="${((list.path?split(','))?size)}">
+						<td class="categoryName">
+							<#if ((list.path?split(','))?size) == 0>
+								<span class="pointer firstCategory" style="margin-left: ${((list.path?split(','))?size) * 20}px;">
+									${list.name}
+								</span>
+							<#else>
+								<span class="pointer category" style="margin-left: ${((list.path?split(','))?size) * 20}px;">
+									${list.name}
+								</span>
+							</#if>
+						</td>
+						<td>
+							${(list.code)!}
+						</td>
+						<td>
+							${(list.url)!}
+						</td>
+						<td>
+							${(list.images)!}
+						</td>
+						<td>
+							${statics["cn.com.jandar.plugin.DicPlugin"].jkzidian.get("CDLX").get("${(list.cdlx)!}")}
+						</td>
+						<td>
+							<#if list.qybz==1>启用
+							<#else>停用
+							</#if>
+						</td>
+						<td>
+						<#if list.qybz==1>
+							<a href="${base}/admin/xtmenu/editzt?id=${list.id}&zt=${list.qybz}"  title="停用">[停用]</a>
+						<#else>
+							<a href="${base}/admin/xtmenu/editzt?id=${list.id}&zt=${list.qybz}"  title="启用">[启用]</a>
+						</#if>
+							<a href="${base}/admin/xtmenu/edit?id=${list.id}&cdlx=${list.cdlx}" title="编辑">[编辑]</a>
+						<#if !(list.parent_id)??>
+							<a href="${base}/admin/xtmenu/addcd?id=${list.id}" title="新增菜单">[新增菜单]</a>
+						</#if>
+						<#if list.cdlx=="002">
+							<a href="${base}/admin/xtmenu/addbt?id=${list.id}" title="新增按钮">[新增按钮]</a>
+						</#if>
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if menuList?size == 0>
+				<div class="noRecord">
+					没有找到任何记录!
+				</div>
+			</#if>
+		</form>
+	</div>
+</body>
+</html>

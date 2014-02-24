@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>管理员列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+			系统启用&nbsp;
+	</div>
+	<div class="body">
+		<table class="listTable"  id="listTable">
+				<tr>
+					<th>
+						<span  name="code">code</span>
+					</th>
+					<th>
+						<span  name="zwsm">中文说明</span>
+					</th>
+					<th>
+						<span  name="value">value</span>
+					</th>
+					<th>
+						<span  name="type">type</span>
+					</th>
+					<th>
+						操作
+					</th>
+					</tr>
+					<#list xtcs as list>
+					<#if list_index+1==1>
+						<tr>
+							<td>
+								${list.code}
+							</td>
+							<td>
+								${list.zwsm}
+							</td>
+							<td>
+								${list.value}
+							</td>
+							<td>
+								${list.type}
+							</td>
+							<td>
+							<#if list.value=="001">
+							<#if (session.loginUser.roleStr?index_of("/admin/startxt/qy")>0) >
+								<input type="button" class="formButton" onclick="location.href='${base}/admin/startxt/qy?id=${list.id}'" value="启用"/>
+							</#if>
+								<font color="red">未启用</font>
+							<#else>
+								<font color="red">已启用</font>
+							</#if>
+							</td>
+						  </tr> 
+					<#else>
+						<tr>  
+							<td>
+								${list.code}
+							</td>
+							<td>
+								${list.zwsm}
+							</td>
+							<td>
+								${list.value}
+							</td>
+							<td>
+								${list.type}
+							</td>
+							<td>
+							<#if (session.loginUser.roleStr?index_of("/admin/startxt/edit")>0) >
+								 <input type="button" class="formButton" onclick="location.href='${base}/admin/startxt/edit?id=${list.id}'" value="编辑" /> 
+							</#if>
+							</td>
+						</tr> 
+					</#if>	
+				</#list>
+		</table>
+			<#if (xtcs?size <= 0)>
+				<div class="noRecord">没有找到任何记录!</div>
+			</#if>
+			<input type="hidden" name="orderBy" id="orderBy" value="${orderBy!}" />
+			<input type="hidden" name="order" id="order" value="${order!}" />
+	</div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+package cn.com.jandar.action.manage.bxgl;
+
+import java.util.List;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.interceptor.StartXtInterceptor;
+import cn.com.jandar.model.Produce;
+import cn.com.jandar.model.ProduceDetail;
+import cn.com.jandar.model.ProduceDetailDraft;
+import cn.com.jandar.model.User;
+
+import com.google.common.collect.Lists;
+import com.jfinal.aop.Before;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+@Before(StartXtInterceptor.class)
+@ControllerBind(controllerKey="/manage/bxgl/khwxrk",resource="客户维修入库单")
+public class KhwxrkController extends AdminBaseController{
+	
+	@ButtonBind(buttonname = "查询")
+	public void index() {
+		Page<Produce> page = Produce.getProducePage(
+				getParaToInt("pageNumber", 1),
+				getParaToInt("pageSize", PAGESIZE),
+				getPara("orderBy", "c_produce.ID"), getPara("order", "desc"),
+				getPara("filter_LIKES_RKCKBH"),"", getPara("filter_LIKES_DHZT"),
+				"010");
+		keepPara("filter_LIKES_RKCKBH");
+		keepPara("filter_LIKES_DHZT");
+		setAttr("page", page);
+		render("khwxrk_list.html");
+	}
+
+	@ButtonBind(buttonname = "新增")
+	public void add() {
+
+		render("khwxrk_input.html");
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "新增")
+	public void save() {
+		Produce produce = getModel(Produce.class);
+		String[] deciveArray = getParaValues("deviceMap");
+		String[] numArray = getParaValues("numMap");
+		List<Record> records = Lists.newArrayList();
+		for (int i = 0; i < deciveArray.length; i++) {
+			Record e = new Record();
+			e.set("deviceid", deciveArray[i]);
+			e.set("num", numArray[i]);
+			records.add(e);
+		}
+		User user = getSessionAttr(User.LOGIN_USER);
+		
+		setAttr("msg", Produce.saveAll(user, produce, records));
+		setAttr("redirectionUrl", "/manage/bxgl/khwxrk");
+		render("/admin/common/success.html");
+	}
+
+	@ButtonBind(buttonname = "更新")
+	public void edit() {
+
+		Produce produce = Produce.getProduceById(getPara("id"));
+		String DHZT = produce.getStr("DHZT");
+		List<Record> record = null;
+		if (DHZT != null && DHZT.equals("003")) {
+			record = ProduceDetail.getProduceDetailByDH(produce.getStr("DH"));
+		} else if (DHZT != null && !DHZT.equals("003")) {
+			record = ProduceDetailDraft.getProduceDetailDraftByDh(produce
+					.getStr("DH"));
+		}
+		setAttr("produce", produce);
+		setAttr("record", record);
+		render("khwxrk_input.html");
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "更新")
+	public void update() {
+		Produce produce = getModel(Produce.class);
+		String[] deciveArray = getParaValues("deviceMap");
+		String[] numArray = getParaValues("numMap");
+		List<Record> records = Lists.newArrayList();
+		for (int i = 0; i < deciveArray.length; i++) {
+			Record e = new Record();
+			e.set("deviceid", deciveArray[i]);
+			e.set("num", numArray[i]);
+			records.add(e);
+		}
+		User user = getSessionAttr(User.LOGIN_USER);
+		setAttr("msg", Produce.saveAll(user, produce, records));
+		setAttr("redirectionUrl", "/manage/bxgl/khwxrk");
+		render("/admin/common/success.html");
+	}
+
+	@ButtonBind(buttonname = "删除")
+	public void delete() {
+		String[] ids = getParaValues("ids");
+		renderJson("status", Produce.delete(ids));
+	}
+	
+	@ButtonBind(buttonname = "入库")
+	public void send(){
+		
+		Produce produce = Produce.getProduceById(getPara("id"));
+		produce.set("DHZT", "003");
+		
+		List<Record> records = ProduceDetailDraft.getProduceDetailDraftByDh(produce.getStr("DH"));;
+		User user = getSessionAttr(User.LOGIN_USER);
+		String msg =  Produce.saveAll(user, produce, records);
+		if (msg.equals(Produce.SUCCESS)) {
+			setAttr("msg", Produce.SUCCESS);
+			setAttr("redirectionUrl", "/manage/bxgl/khwxrk");
+			render("/admin/common/success.html");
+		} else {
+			setAttr("msg", msg);
+			setAttr("redirectionUrl", "/manage/bxgl/khwxrk");
+			render("/admin/common/error.html");
+		}
+	}
+}

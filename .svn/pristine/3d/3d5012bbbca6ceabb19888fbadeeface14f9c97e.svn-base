@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>整机信息维护</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+		
+	</head>
+	<body class="input" onload="showMsg('${errMsg}')">
+		<div class="ctrttop cy143w">
+			整机信息维护 
+		</div>
+		<div class="body">
+			<form id="validateForm"  action="${base}/manage/scd/zjdj/update" method="post">
+			  	<fieldset>
+				<legend>订单信息</legend>
+				<table class="inputTable" title="订单信息">
+				   <tr>
+				     <th>单　　号</th>
+				     <td>${(scd.DH)!}</td>
+				   </tr>
+				   <tr>
+				     <th>客户名称</th>
+				     <td> 
+				        <#if statics["cn.com.jandar.plugin.DicPlugin"].b_customer?exists> 
+						     <#list statics["cn.com.jandar.plugin.DicPlugin"].b_customer.keySet() as key>
+								<#if key=="${scd.CUSTOMERID}"> 
+							 	  ${statics["cn.com.jandar.plugin.DicPlugin"].b_customer.get(key)}
+						       </#if>
+						     </#list>
+						 </#if>
+				    </td>
+				   </tr>
+				   <tr>
+				     <th>出库仓库</th>
+				     <td>
+				        ${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(scd.CKCKBH)}
+				     </td>
+				   </tr>
+				   <tr>
+				     <th>模　　型</th>
+				     <td>
+				        <#if statics["cn.com.jandar.plugin.DicPlugin"].p_model?exists> 
+				        <#list statics["cn.com.jandar.plugin.DicPlugin"].p_model.keySet() as key>
+							<#if key=="${scd.MODELID}"> 
+								${statics["cn.com.jandar.plugin.DicPlugin"].p_model.get(key)}
+							</#if>
+						</#list> 
+						</#if>
+				     </td>
+				   </tr>
+				   <tr>
+				     <th>数　　量</th>
+				     <td>
+				        ${(scd.SBNUM)!}
+				     </td>
+				   </tr>
+				   <tr>
+				     <th>备　　注</th>
+				     <td>${(scd.bz)!}</td>
+				   </tr>
+				</table>
+				</fieldset>
+			
+				<fieldset>
+				<legend>维护信息</legend>
+				<table class="inputTable" title="维护信息">
+				  <#if !scdsb.SCSBBH??>
+				   <tr hidden="true">
+				      <th>产品信息ID:</th>
+				      <td><input name="scdsb.SCDID" value="${(scdsb.SCDID)!}"></td>
+				    </tr>
+				    <tr >
+				      <th>设备编号:</th>
+				      <td><input name="scdsb.SCSBBH" style="width:180px;height:25px;" class="formTextarea {required: true}"><label class="requiredField">*</label></td>
+				    </tr>
+				    <tr >
+				      <th>医院编号:</th>
+				      <td><input name="scdsb.YYNBBH" style="width:180px;height:25px;" class="formTextarea {required: true}"><label class="requiredField">*</label></td>
+				    </tr>
+				    <tr>
+					  <th>设备位置:</th>
+					  <td><textarea class="formTextarea" name="scdsb.SCSBWZ"></textarea></td>
+					 </tr>
+					<#else>
+					  <tr >
+				      <th>设备编号:</th>
+				      <td>${(scdsb.SCSBBH)!}</td>
+				    </tr>
+				    <tr >
+				      <th>医院编号:</th>
+				      <td>${(scdsb.YYNBBH)!}</td>
+				    </tr>
+				    <tr>
+					  <th>设备位置:</th>
+					  <td>${(scdsb.SCSBWZ)!}</td>
+					 </tr>
+					</#if>
+				</table>
+				</fieldset>
+				<div class="buttonArea">
+				  <#if !scdsb.SCSBBH??>
+					<input type="submit" class="formButton" value="确  定" hidefocus="true" />
+					&nbsp;&nbsp;&nbsp;&nbsp;
+				  </#if>
+					<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

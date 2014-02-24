@@ -1,0 +1,12 @@
+package cn.com.jandar.action.manage.bxgl;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/bxgl/bjrk",resource="备件入库")
+public class BjrkController extends AdminBaseController{
+	public void index(){
+		renderText("备件入库");
+	}
+}

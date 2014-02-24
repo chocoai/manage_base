@@ -1,0 +1,78 @@
+package cn.com.jandar.action.manage.demo;
+
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.OrderedMap;
+import org.apache.commons.collections.map.LinkedMap;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+
+import com.jfinal.kit.PathKit;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Record;
+
+import cty.kit.route.ControllerBind;
+
+@ControllerBind(controllerKey="/manage/demo/print",resource="测试搜索")
+public class DemoprintController extends AdminBaseController {
+	public void index(){
+		render("fl.html");
+	}
+	public void head(){
+		render("flhead.html");
+	}
+	
+	public void printtest(){
+		Map report_param = new HashMap();
+		report_param.put("TITLE", "test");
+    	
+    	//报表列表数据源
+		List report_dataSourceList=new ArrayList();
+		OrderedMap row = new LinkedMap();
+		row.put("name", "xuxiang");
+		row.put("duty", "designer");
+		row.put("age", 33);
+		report_dataSourceList.add(row);
+		
+		row = new LinkedMap();
+		row.put("name", "陈文平");
+		row.put("duty", "软件工程师");
+		row.put("age", 24);
+		report_dataSourceList.add(row);
+		
+		//报表信息
+		String report_jasperUrl=PathKit.getWebRootPath()+"/report/test.jasper";
+		String report_imageServletUrl=PathKit.getWebRootPath()+"/report/images/";
+		String report_fileName="test";
+		String report_fileExt= getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList, report_imageServletUrl, report_fileName, report_fileExt);
+	}
+	
+	
+	public void imgid(){
+		String str = "<tr>" +
+				"<td width=100><img width=98 height=121 src=\"/kiosk_bjyy/kiosk/pluginsLibrary/yy/comm/img/%1$s\"></td>" +
+				"<td width=100>%2$s</td><td width=100>%3$s</td><td width=500>%4$s</td><td width=200>%5$s</td><td width=100>%6$s</td></tr>";
+		StringBuffer sb = new StringBuffer("<TABLE>");
+		List<Record> list = Db.find("select t.* from tk_ysxx t ");
+		for(Record record:list){
+			String stmp = String.format(str, record.getStr("IMGID"),record.getStr("NAME"),record.getStr("ZW"),record.getStr("YSXX"),record.getStr("BJYYJZSJ"),record.getStr("ZHEERJZSJ"));
+			sb.append(stmp);
+		}
+		sb.append("</TABLE>");
+		PrintWriter out;
+		getResponse().setCharacterEncoding("GBK");
+		try {
+			out = getResponse().getWriter();
+			out.println(sb.toString());
+			out.flush();
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}

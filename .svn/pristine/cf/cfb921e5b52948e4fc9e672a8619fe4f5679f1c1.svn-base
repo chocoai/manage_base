@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>管理员维护</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+	<#assign isAdd = false />
+	</head>
+	<body class="input" onload="showMsg('${errMsg}')">
+		<div class="ctrttop cy143w">
+			<#if isAdd>添加管理员<#else>编辑管理员</#if>
+		</div>
+		<div class="body">
+			<form id="validateForm"  action="${base}/admin/user/update_only" method="post">
+				<input type="hidden" name="user.id" value="${(user.id)!}" />
+				<table class="inputTable">
+					<tr>
+						<th>
+							登入账号:
+						</th>
+						<td>
+							<#if isAdd>
+								<input type="text" name="user.username" class="formText {required: true, username: true, remote: '${base}/admin/user/checkUserName', minlength: 2, maxlength: 20, messages: {remote: '用户名已存在,请重新输入!'}}" title="用户名只允许包含中文、英文、数字和下划线" />
+								<label class="requireField">*</label>
+							<#else>
+								${(user.username)!}
+								<input type="hidden" name="user.username" value="${(user.username)!}" />
+							</#if>
+						</td>
+					</tr>
+					<#if isAdd>
+					<tr>
+						<th>
+							登入密码:
+						</th>
+						<td>
+							<input type="password" name="user.password" id="password" class="formText {required: true, minlength: 4, maxlength: 20}" title="密码长度只允许在4-20之间" />
+							<label class="requireField">*</label>
+						</td>
+					</tr>
+				<tr>
+					<th>
+						重复密码:
+					</th>
+					<td>
+						<input type="password" name="rePassword" class="formText {equalTo: '#password', messages: {equalTo: '两次密码输入不一致!'}}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>	
+				
+				</#if>	
+				<tr>
+						<th>
+							姓名:
+						</th>
+						<td>
+							<input type="text" name="user.name" class="formText {required: true}" value="${(user.name)!}" />
+							<label class="requireField">*</label>
+						</td>
+					</tr>
+				<tr>
+					<th>
+						E-mail:
+					</th>
+					<td>
+						<input type="text" name="user.email" class="formText {required: true, email: true}" value="${(user.email)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						联系电话:
+					</th>
+					<td>
+						<input type="text"  name="user.phone" class="formText {required: true}" value="${(user.phone)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						地 址:
+					</th>
+					<td>
+						<textarea class="formTextarea" name="user.address" >${(user.address)!}</textarea>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						管理角色:
+					</th>
+					<td>
+						<#list allRole as list>
+							<label>
+								<input type="checkbox" name="roleList" class="{required: true, messages: {required: '请至少选择一个角色!'}, messagePosition: '#roleMessagePosition'}" value="${list.id}" <#if (user.roleSet.contains("${list.id}") == true)!> checked="checked"</#if> />
+								${(list.name)!}
+							</label>
+						</#list>
+						<span id="roleMessagePosition"></span>
+						<label class="requireField">*</label>
+					</td>
+				</tr>	
+				<tr>
+					<th>
+						是否启用:
+					</th>
+					<td>
+						<label><input type="radio" name="user.isAccountEnabled" value="true"<#if (user.isAccountEnabled == true)!> checked</#if> />是</label>
+						<label><input type="radio" name="user.isAccountEnabled" value="false"<#if (user.isAccountEnabled == false)!> checked</#if> />否</label>
+					</td>
+				</tr>
+				<!-- <#if !isAdd>
+					<tr>
+						<th>&nbsp;</th>
+						<td>
+							<span class="warnInfo"><span class="icon">&nbsp;</span>如果要修改密码,请填写密码,若留空,密码将保持不变!</span>
+						</td>
+					</tr>
+				</#if> -->
+				</table>
+				<div class="buttonArea">
+					<input type="submit" class="formButton" value="确  定" hidefocus="true" />
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>文章分类列表</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<script type="text/javascript">
+$(document).ready(function() {
+
+	// 树折叠
+	$(".categoryName").click(function() {
+		var level = $(this).parent().attr("level");
+		var isHide;
+		$(this).parent().nextAll("tr").each(function() {
+			var thisLevel = $(this).attr("level");
+			if (thisLevel <= level) {
+				return false;
+			}
+			if (isHide == null) {
+				if ($(this).is(":hidden")) {
+					isHide = true;
+				} else {
+					isHide = false;
+				}
+			}
+			if (isHide) {
+				$(this).show();
+			} else {
+				$(this).hide();
+			}
+		});
+	});
+})
+</script>
+</head>
+<body class="list">
+	<div class="bar">
+		地区树形列表 &nbsp; 总记录数: ${areaTreeList?size}
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/admin/area" method="post">
+			<!-- <div class="listBar">
+				<input type="button" class="formButton" onclick="location.href='${base}/admin/articleCategory/add'" value="添加分类" />
+			</div> -->
+			<table class="listTable" id="listTable">
+				<tr>
+					<th>
+						分类名称&nbsp;
+					</th>
+					<th>
+						编码&nbsp;
+					</th>
+					<th>
+						停/启用&nbsp;
+					</th>
+					<th>
+						操作
+					</th>
+				</tr>
+				<#list areaTreeList as list>
+					<tr level="${list.level}">
+						<td class="categoryName">
+							<#if list.level == 1>
+								<span class="pointer category" style="margin-left: ${(list.level) * 20}px;">
+									${list.VALUE}
+								</span>
+							<#else>
+								<span class="pointer category" style="margin-left: ${(list.level) * 20}px;">
+									${list.VALUE}
+								</span>
+							</#if>
+						</td>
+						<td>
+						  ${list.CODE}
+						</td>
+						<td>
+						   <#if list.QYBZ == "001"> 
+						       	启用
+						   <#else>
+						      	 停用
+						   </#if>
+							
+						</td>
+						<td>
+							<#if list.level == 1>
+							     <#if list.QYBZ == "001">
+							       <a href="${base}/admin/area/update?code=${list.CODE}" title="停用">停用</a>
+							     <#else>
+						      	      <a href="${base}/admin/area/update?code=${list.CODE}" title="启用">启用</a>
+							     </#if>
+							</#if>
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if areaTreeList?size == 0>
+				<div class="noRecord">
+					没有找到任何记录!
+				</div>
+			</#if>
+		</form>
+	</div>
+</body>
+</html>

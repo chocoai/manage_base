@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>整机信息维护</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+		
+	</head>
+	<body class="input list" onload="showMsg('${errMsg}')">
+	<div class="ctrttop cy143w">
+	 	模型详情
+    </div>
+    <div class="body">
+    		<fieldset>
+				<legend>模型信息</legend>
+				<table class="inputTable" title="模型信息">
+    			<tr>
+    				<th>
+    					 模型名称:
+    				</th>
+    				<td>
+    					${(record[0].MODLENAME)!}
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>
+    					 备注
+    				</th>
+    				<td>
+    					<textarea name="bz" class="formTextarea" disabled="disabled">${(record[0].dbz)!}</textarea>
+    				</td>
+    			</tr>
+    		</table>
+    		</fieldset>
+    		<fieldset>
+				<legend>单据明细</legend>
+		    	 <table class="listTable" id="productImageTable">
+  				 <tr>
+    				<th>
+    					<span class="sort">设备名称</span>
+    				</th>
+    				<th>
+    					<span class="sort">数量</span>
+    				</th>
+    			</tr>
+    			<#list record as alist>
+    			<tr>
+    				<td>
+						${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get("${alist.DEVICEID}")}
+    				</td>
+    				<td>
+						${(alist.DNUM)!}
+    				</td>
+    			</tr>
+    			</#list>
+    		</table>
+    		</fieldset>
+    		<div class="buttonArea">
+				<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus />			</div>
+    	</form>
+    </div>
+</body>
+</html>

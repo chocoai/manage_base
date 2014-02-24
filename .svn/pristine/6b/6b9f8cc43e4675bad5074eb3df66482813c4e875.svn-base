@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>添加/编辑文章分类</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<#include "/admin/common/include.html" />
+<script type="text/javascript">
+	var productImageIndex = 0;
+	$().ready( function() {
+		//添加
+		$("#addProductImage").click(function() {
+			var select = '<select name="sblx" id="sblx" class="labelselect" onchange="alert(this.value)">';
+			select += '<option value="">请选择</option>';
+			select += '<#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("SBLX") as sblx>';
+			select += '<#if sblx.code=="${a001}">';
+			select += '<option value="${sblx.code}" selected>${sblx.value}</option>';
+			select += '<#else>';
+			select += '<option value="${sblx.code}">${sblx.value}</option>';
+			select += '</#if>';
+			select += '</#list>';
+			select += '</select>';
+			var trHtml = '<tr> <td> <input type="file" id="' + productImageIndex + '.file" name="productImages[' + productImageIndex + '].file"  class="productImageFile" \/> <\/td><td>'+select+'</td><td> <a href="javascript:;" class="deleteProductImage">[删除]<\/a> <\/td> <\/tr>';		
+			$("#productImageTable").append(trHtml);
+			productImageIndex ++;
+		});
+			//刪除
+		$("a.deleteProductImage").live("click", function() {
+			var $this = $(this);
+			$.dialog({
+				type: "warn",
+				content: "您确定要删除吗？",
+				ok: "确 定", 
+				cancel: "取 消",
+				close: true, 
+				modal: true, 
+				okCallback: function() {
+					$this.closest("tr").remove();
+				}
+			});
+		});
+	});
+	function aa(){
+		if(productImageIndex>0){
+			for(var i=0;i<productImageIndex;i++){
+				var file = document.getElementById(i+".file");
+				if(file!=null){
+					var f=document.getElementById(i+".file").value;
+			        if(f==""){ 
+			        	alert("请上传图片");return false;
+			        }else{
+				        if(!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(f)){
+				          alert("图片类型必须是.gif,jpeg,jpg,png中的一种")
+				          return false;
+				        }
+			        }
+		        }
+	        }
+		}
+		$("#validateForm").submit();
+	}
+	
+</script>			
+</head>
+<#if !(pbxx.id)??>
+	<#assign isAdd = true />
+<#else>
+	<#assign isAdd = false />
+</#if>
+<body class="input">
+	<div class="bar">
+		<#if isAdd>添加屏保图片<#else>编辑屏保图片</#if>
+	</div>
+	<div class="body">
+		<form id="validateForm" action="<#if isAdd>${base}/hospital/xxwh/picfabu/save<#else>${base}/hospital/xxwh/picfabu/update</#if>" method="post" enctype="multipart/form-data">
+			<input type="hidden" name="pbxxid" value="${(pbxx.id)!}" />
+			<table class="inputTable" id="productImageTable">
+			
+				<tr>
+					<td colspan="2">
+						<#if !isAdd>
+							<input type="button" class="formButton" id="addProductImage" value="修改图片"/> 上传图片存放目录：<font color="red">${saveurl}</font>  
+						<#else>
+							<input type="button" class="formButton" id="addProductImage" value="增加图片"/> 上传图片存放目录：<font color="red">${saveurl}</font>  
+						</#if>
+					</td>
+				</tr>
+			</table>
+			
+			<table class="inputTable">
+				<tr>
+					<th>
+						开始时间:
+					</th>
+					<td>
+						<input type="text"  name="startdate" id="startdate" onClick="WdatePicker({maxDate:'#F{$dp.$D(\'enddate\')}'})" class="Wdate formText {required: true}" value="${(pbxx.startdate)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						失效时间:
+					</th>
+					<td>
+						<input type="text"  name="enddate" id="enddate" onClick="WdatePicker({minDate:'#F{$dp.$D(\'startdate\')}',maxDate:'2050-10-01'})" class="Wdate formText {required: true}"  value="${(pbxx.enddate)!}"/>
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+			
+				<tr>
+					<th>
+						经办人:
+					</th>
+					<td>
+							${(session.loginUser.username)!}
+					</td>
+				</tr>
+				
+				
+			</table>
+			<div class="buttonArea">
+				<input type="button" class="formButton" value="确  定" onclick="aa()" hidefocus="true" />&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus="true" />
+			</div>
+		</form>
+	</div>
+</body>
+</html>

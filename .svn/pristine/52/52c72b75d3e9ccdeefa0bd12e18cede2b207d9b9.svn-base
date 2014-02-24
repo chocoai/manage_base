@@ -1,0 +1,12 @@
+package cn.com.jandar.action.manage.scd;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/scd/zjdj",resource="整机信息登记")
+public class ZjdjController extends AdminBaseController{
+	public void index(){
+		renderText("整机信息登记");
+	}
+}

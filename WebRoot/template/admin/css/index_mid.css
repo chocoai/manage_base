@@ -1,0 +1,42 @@
+@charset "utf-8";
+/* CSS Document */
+
+
+html, body {
+	margin: 0px;
+	padding: 0px;
+	width: 6px;
+	height: 100%;
+	background: url(../imgs/index_03.jpg) scroll;
+}
+
+.middle .main {
+	width: 6px;
+	height: 100%;
+	cursor: pointer;
+}
+
+.middle .leftArrow {
+	width: 6px;
+	border-right: 1px solid #b2d3f4;
+	background: url(../imgs/index_17.jpg) center no-repeat;
+}
+
+.middle .leftArrow:hover {
+	background-color: #311c6d;
+}
+
+.middle .rightArrow {
+	width: 6px;
+	border-right: 1px solid #b2d3f4;
+	background: url(../imgs/index_17-2.jpg) center no-repeat;
+}
+
+.middle .rightArrow:hover {
+	background-color: #311c6d;
+}
+
+
+
+
+

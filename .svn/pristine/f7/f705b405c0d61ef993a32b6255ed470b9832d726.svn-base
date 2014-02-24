@@ -1,0 +1,81 @@
+package cn.com.jandar.action.manage.pancun;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.OrderedMap;
+import org.apache.commons.collections.map.LinkedMap;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.interceptor.StartXtInterceptor;
+import cn.com.jandar.plugin.DicPlugin;
+
+import com.jfinal.aop.Before;
+import com.jfinal.kit.PathKit;
+import com.jfinal.kit.StringKit;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Record;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+@Before(StartXtInterceptor.class)
+@ControllerBind(controllerKey="/manage/pancun/kccx",resource="库存查询")
+public class KccxController extends AdminBaseController{
+	
+	@ButtonBind(buttonname="查询")
+	public void index(){
+		//条件：所在仓库  ，根据单号类型合计
+		String deviceid=getPara("filter_LIKES_deviceid");
+		String szck=getPara("filter_LIKES_storeid");
+		
+		StringBuffer sqlBuffer = new StringBuffer("select szck,DEVICEID,SUM(chnum) shnum from c_produce_detail  ");
+		String sql = "where(1=1  ";
+		if(!StringKit.isBlank(deviceid)) {
+			sql += "and c_produce_detail.deviceid = " + deviceid + "";
+		}
+		if(!StringKit.isBlank(szck)) {
+			sql += " and c_produce_detail.szck = " + szck + "";
+		}
+		sql += ") GROUP BY szck,DEVICEID ";
+		sqlBuffer.append(sql);
+		List<Record> produceDetailList = Db.find(sqlBuffer.toString());	
+		
+		keepPara("filter_LIKES_deviceid");
+		keepPara("filter_LIKES_storeid");
+		setAttr("produceDetailList", produceDetailList);
+		render("kccx_list.html");
+	}
+	
+	@ButtonBind(buttonname="打印")
+	public void print(){
+		String storeid=getPara("storeid");
+		
+		Map report_param = new HashMap();
+		report_param.put("ckmc", DicPlugin.b_store.get(storeid));
+		
+		List<Record> produceDetailList=Db.find("select DEVICEID,SUM(chnum) shnum from c_produce_detail where  c_produce_detail.szck =? GROUP BY DEVICEID",storeid);
+
+		List report_dataSourceList=new ArrayList();
+		for(int i=0;i<produceDetailList.size();i++){
+			Integer id = produceDetailList.get(i).get("DEVICEID");
+			Record record = Db.findById("b_device", id);
+			OrderedMap row = new LinkedMap();
+			row.put("device",record.get("DNAME"));
+			row.put("sblx",record.get("SBLX"));
+			row.put("sbxh",record.get("SBXH"));
+			row.put("sm",record.get("SBSM"));
+			row.put("jldw",record.get("JLDW"));
+			row.put("chnum",produceDetailList.get(i).get("shnum"));
+			row.put("bz",record.get("BZ"));
+			report_dataSourceList.add(row);
+		}
+		String report_jasperUrl=PathKit.getWebRootPath()+"/report/pancun/pancunreport.jasper";
+		String report_imageServletUrl=PathKit.getWebRootPath()+"/report/images/";
+		String report_fileName="pancunreport";
+		String report_fileExt= getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList, report_imageServletUrl, report_fileName, report_fileExt);
+	}
+}

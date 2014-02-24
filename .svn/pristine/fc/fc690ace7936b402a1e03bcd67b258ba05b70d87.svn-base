@@ -1,0 +1,541 @@
+package cn.com.jandar.model;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.joda.time.DateTime;
+
+import cn.com.jandar.kit.Constant;
+import cn.com.jandar.kit.DateUtil;
+import cn.com.jandar.kit.DbUtil;
+import cn.com.jandar.plugin.DicPlugin;
+
+import com.google.common.collect.Lists;
+import com.jfinal.core.Controller;
+import com.jfinal.ext.plugin.tablebind.TableBind;
+import com.jfinal.kit.StringKit;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Model;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+/**
+ * @author
+ */
+@TableBind(tableName = "c_produce")
+public class Produce extends Model<Produce> {
+	private static final long serialVersionUID = -2063970373324095312L;
+	public static final Produce dao = new Produce();
+	public static String SUCCESS = "操作成功!";
+	public static String ERROR = "操作失败!";
+
+	/**
+	 * 查询莫类型的所有草稿
+	 * 
+	 * @param 设备出入库单类型
+	 *            dhlx
+	 * */
+	public static List<Produce> getProduceCG(String dhlx, String dhzt) {
+		return Produce.dao
+				.find(" select * from c_produce where dhlx = ? and dhzt = ? order by id",
+						dhlx, dhzt);
+	}
+
+	/**
+	 * 获得单据列表
+	 * 
+	 * @return
+	 */
+	public static Page<Produce> getProduceList(int sPageNum, int sPageSize,
+			String orderBy, String order, String dhlx, String dhzt) {
+		List<Object> param = new ArrayList<Object>();
+		param.add(dhlx);
+		param.add(dhzt);
+		StringBuffer sqlBuffer = new StringBuffer(
+				"FROM c_produce where DHLX = ? and DHZT = ? ");
+		sqlBuffer.append(" order by ").append(orderBy).append(" ")
+				.append(order);
+		Page<Produce> producePage = (Page<Produce>) Produce.dao.paginate(
+				sPageNum, sPageSize, "SELECT * ", sqlBuffer.toString(),
+				param.toArray());
+		return producePage;
+	}
+
+	/**
+	 * 根据ID编号查询入库单
+	 */
+	public static Produce getProduceById(String id) {
+		return Produce.dao.findById(id);
+	}
+
+	/**
+	 * 根据单号查询单据
+	 * 
+	 * @param dh
+	 *            (单号)
+	 */
+	public static Produce getProduceByDh(String dh) {
+		return Produce.dao.findFirst("select * from c_produce where dh=?", dh);
+	}
+	
+	/**
+	 * 批量删除入库单
+	 */
+	public static String delete(String[] ids) {
+		for (String id : ids) {
+			if (!Produce.dao.deleteById(id)) {
+				return "error";
+			}
+		}
+		return "success";
+	}
+
+	/**
+	 * 分页查询入库单列表
+	 */
+	public static Page<Produce> getProducePage(int sPageNum, int sPageSize,
+			String orderBy, String order, String filter_LIKES_RKCKBH,
+			String filter_LIKES_CKCKBH, String filter_LIKES_DHZT,
+			String filter_LIKES_SBZT) {
+		List<Object> param = new ArrayList<Object>();
+
+		StringBuffer sqlBuffer = new StringBuffer("FROM c_produce where 1 = 1 ");
+		if (!StringKit.isBlank(filter_LIKES_SBZT)) {
+			sqlBuffer.append(" and  c_produce.DHLX = ? ");
+			param.add(filter_LIKES_SBZT);
+		}
+		if (!StringKit.isBlank(filter_LIKES_RKCKBH)) {
+			sqlBuffer.append(" and  c_produce.RKCKBH = ? ");
+			param.add(filter_LIKES_RKCKBH);
+		}
+		if (!StringKit.isBlank(filter_LIKES_CKCKBH)) {
+			sqlBuffer.append(" and  c_produce.CKCKBH = ? ");
+			param.add(filter_LIKES_CKCKBH);
+		}
+		if (!StringKit.isBlank(filter_LIKES_DHZT)) { // 判断是否是已复核
+			sqlBuffer.append(" and  c_produce.DHZT = ? ");
+			param.add(filter_LIKES_DHZT);
+		} else {
+			sqlBuffer.append(" and  c_produce.DHZT != 001 ");
+		}
+		sqlBuffer.append(" order by ").append(orderBy).append(" ")
+				.append(order);
+		Page<Produce> producePage = (Page<Produce>) Produce.dao.paginate(
+				sPageNum, sPageSize, "SELECT * ", sqlBuffer.toString(),
+				param.toArray());
+		return producePage;
+	}
+	/**
+	 * 多仓库操作
+	 * @param user
+	 * @param produces
+	 * @param records
+	 * @return
+	 */
+	public static synchronized String saveAllMap(User user, Map<String,Produce> produces,Map<String,List<Record>> records) {
+		
+		Set<String> set = produces.keySet();
+		for(Iterator it = set.iterator();it.hasNext();){
+			String s = (String) it.next();
+			Produce produce = produces.get(s);
+			List<Record> list = records.get(s);
+			if(produce==null)return "单信息不存在";
+			if(list==null)return "单明细信息不存在";
+			
+			String flag = saveAll(user,produce,list);
+			if(!flag.equals(SUCCESS)){
+				return flag;
+			}
+		}
+		return SUCCESS;
+	}
+			
+
+	/**
+	 * 
+	 * @param user
+	 * @param produce
+	 * @param record
+	 * @return
+	 */
+	public static synchronized String saveAll(User user, Produce produce,
+			List<Record> records) {
+		if (produce==null)return "单信息不存在";
+		if (records==null)return "单明细信息不存在";
+		String dhlx = DbUtil.readDbString(produce.getStr("dhlx"));
+		String dhzt = DbUtil.readDbString(produce.getStr("dhzt"));
+		String result = checkCHNUMs(records, produce);
+		if (!(SUCCESS.equals(result))) {// 表示库存量不足
+			return result;
+		}
+		if ("".equals(dhlx) || "".equals(dhzt)) {
+			return "单号类型|单号状态不存在";
+		}
+		if ("001".equals(dhzt)) {// 保存草稿
+			String dh = DbUtil.readDbString(produce.getStr("dh"));
+			if ("".equals(dh)) {// 新增
+				produce.set("DH", Constant.findb_goods_dh(dhlx));
+				produce.set("OPERATOR", user.getStr("username"));
+				produce.set("OPDATE",
+						DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+				produce.save();
+			} else {// 更新
+				produce.set("UPOPERATOR", user.getStr("username"));
+				produce.set("UPIPDATE",
+						DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+				produce.update();
+				Db.update("delete from c_produce_detail_draft where dh = '"
+						+ dh + "'");
+			}
+			List<Record> recs = Lists.newArrayList();
+			for (Record record : records) {
+				int num = DbUtil.readDbInt0(record.get("num"));
+				if (num > 0) {
+					for (int i = 0; i < num; i++) {
+						record.set("dh", produce.getStr("dh"));
+						record.set("dhlx", produce.getStr("dhlx"));
+						record.set("factoryid", DicPlugin.b_deviceofb_factory
+								.get(record.get("deviceid")));
+						record.set("customerid", produce.get("customerid"));
+						record.set("dhzt", produce.getStr("dhzt"));
+						record.set("num", 1);
+						record.set("bz", produce.getStr("bz"));
+						record = separa(record, produce);
+						recs.add(record);
+						if ("006".equals(dhlx)) {
+							record.set("chnum", 1);
+							record.set("szck", produce.getStr("RKCKBH"));
+							recs.add(record);
+						}
+					}
+				}
+			}
+			Db.batch(
+					"insert into c_produce_detail_draft(dh,dhlx,deviceid,factoryid,scdate,customerid,dhzt,num,bz,chnum,szck) values(?,?,?,?,?,?,?,?,?,?,?)",
+					"dh,dhlx,deviceid,factoryid,scdate,customerid,dhzt,num,bz,chnum,szck",
+					recs, recs.size());
+			return SUCCESS;
+		} else if ("002".equals(dhzt)) {// 保存待出\入库
+			String dh = DbUtil.readDbString(produce.getStr("dh"));
+			if ("".equals(dh)) {// 新增
+				produce.set("DH", Constant.findb_goods_dh(dhlx));
+				produce.set("OPERATOR", user.getStr("username"));
+				produce.set("OPDATE",
+						DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+				produce.set("CHECKDATE",
+						DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+				produce.save();
+			} else {// 更新
+				produce.set("UPOPERATOR", user.getStr("username"));
+				produce.set("UPIPDATE",
+						DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+				produce.set("CHECKDATE",
+						DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+
+				if (produce.get("id") != null && !produce.get("id").equals("")) {
+					produce.update();
+				} else {
+					produce.save();
+				}
+
+				Db.update("delete from c_produce_detail_draft where dh = '"
+						+ dh + "'");
+			}
+			List<Record> recs = Lists.newArrayList();
+			for (Record record : records) {
+				int num = DbUtil.readDbInt0(record.get("num"));
+				if (num > 0) {
+					for (int i = 0; i < num; i++) {
+						record.set("dh", produce.getStr("dh"));
+						record.set("dhlx", produce.getStr("dhlx"));
+						record.set("factoryid", DicPlugin.b_deviceofb_factory
+								.get(record.get("deviceid")));
+						record.set("customerid", produce.get("customerid"));
+						record.set("checkdate", produce.getStr("checkdate"));
+						record.set("dhzt", produce.getStr("dhzt"));
+						record.set("num", 1);
+						record.set("bz", produce.getStr("bz"));
+						record = separa(record, produce);
+						recs.add(record);
+						if ("006".equals(dhlx)) {
+							// 移库保存的情况
+							Record in_record = new Record();
+							in_record.setColumns(record);
+							in_record.set("chnum", 1);
+							in_record.set("szck", produce.getStr("RKCKBH"));
+							recs.add(in_record);
+						}
+
+					}
+				}
+			}
+			Db.batch(
+					"insert into c_produce_detail_draft(dh,dhlx,deviceid,factoryid,scdate,customerid,checkdate,dhzt,num,bz,chnum,szck) values(?,?,?,?,?,?,?,?,?,?,?,?)",
+					"dh,dhlx,deviceid,factoryid,scdate,customerid,checkdate,dhzt,num,bz,chnum,szck",
+					recs, recs.size());
+			return SUCCESS;
+		} else {// 保存已出\入库
+			String dh = DbUtil.readDbString(produce.getStr("dh"));
+			if ("".equals(dh)) {
+				return "单号不存在，不能出/入库";
+			}else{
+				produce.set("UPOPERATOR", user.getStr("username"));
+				produce.set("UPIPDATE",DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+				produce.set("CHECKDATE",DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+
+				if (produce.get("id") != null && !produce.get("id").equals("")) {
+					produce.update();
+				} else {
+					return "单号不存在，不能出/入库";
+				}
+				Db.update("delete from c_produce_detail_draft where dh = '" + dh + "'");
+			}
+			List<Record> recs = Lists.newArrayList();
+			for (Record record : records) {
+				int num = DbUtil.readDbInt0(record.get("num"));
+				if (num > 0) {
+					for (int i = 0; i < num; i++) {
+						record.set("dh", produce.getStr("dh"));
+						record.set("dhlx", produce.getStr("dhlx"));
+						record.set("factoryid", DicPlugin.b_deviceofb_factory
+								.get(record.get("deviceid")));
+						record.set("customerid", produce.get("customerid"));
+						record.set("checkdate", produce.getStr("checkdate"));
+						record.set("dhzt", produce.getStr("dhzt"));
+						record.set("num", 1);
+						record.set("bz", produce.getStr("bz"));
+						record = separa(record, produce);
+						recs.add(record);
+						if ("006".equals(dhlx)) {
+							// 移库保存的情况
+							Record in_record = new Record();
+							in_record.setColumns(record);
+							in_record.set("chnum", 1);
+							in_record.set("szck", produce.getStr("RKCKBH"));
+							recs.add(in_record);
+						}
+
+					}
+				}
+			}
+			Db.batch(
+					"insert into c_produce_detail(dh,dhlx,deviceid,factoryid,scdate,customerid,checkdate,dhzt,num,bz,chnum,szck) values(?,?,?,?,?,?,?,?,?,?,?,?)",
+					"dh,dhlx,deviceid,factoryid,scdate,customerid,checkdate,dhzt,num,bz,chnum,szck",
+					recs, recs.size());
+			return SUCCESS;
+		}
+
+	}
+
+	/**
+	 * 一个出库单只有一个仓库，但出库数量和设备id是可以多个的
+	 * 
+	 * */
+	public static String checkCHNUMs(List<Record> records, Produce produce) {// 检查多个设备是否可以出库
+		String result = SUCCESS;
+		String ckckbh = DbUtil.readDbString(produce.getStr("CKCKBH"));
+		String deviceid = "";
+		if (!StringKit.isBlank(ckckbh)) {// 仓库为空，即该操作是入库，
+			for (int i = 0; i < records.size(); i++) {
+				deviceid = DbUtil.readDbString(records.get(i).get("deviceid"));
+				String sql = "select SUM(CHNUM) chnum  from c_produce_detail where DEVICEID=? and SZCK=? ";
+				ProduceDetail pds = ProduceDetail.dao.findFirst(sql, deviceid,
+						ckckbh);
+				if (DbUtil.readDbInt0(pds.get("chnum")) < DbUtil
+						.readDbInt0(records.get(i).get("num"))) {// 库存小于出库量
+					result = "仓库：" + DicPlugin.b_store.get(ckckbh) + " 的  "
+							+ DicPlugin.b_devicesimgle.get(deviceid)
+							+ " 的库存不足<br/>余量："
+							+ DbUtil.readDbInt0(pds.get("chnum")) + "<br/>需求量："
+							+ DbUtil.readDbInt0(records.get(i).get("num"));
+					return result;
+				}
+			}
+		}
+		return result;
+	}
+
+	public static Record separa(Record record, Produce produce) {// **
+		String dhlx = DbUtil.readDbString(produce.getStr("dhlx"));
+		if ("001,002,008,010,012".indexOf(dhlx) != -1) {
+			record.set("chnum", 1);
+			record.set("szck", produce.getStr("RKCKBH"));
+		} else {
+			record.set("chnum", -1);
+			record.set("szck", produce.getStr("CKCKBH"));
+		}
+		return record;
+	}
+
+	/**
+	 * 保存入库单,操作员默认为操作者的姓名
+	 */
+	public static boolean save(Produce produce, Controller c) {
+		User user = c.getSessionAttr(User.LOGIN_USER);
+
+		produce.set("CHECKDATE", new Timestamp(System.currentTimeMillis()));
+		produce.set("OPDATE", new Timestamp(System.currentTimeMillis()));
+		produce.set("OPERATOR", user.getStr("name"));
+		System.out.println("-----" + user.getStr("name"));
+		return produce.save();
+	}
+
+	/**
+	 * 各种类型单据出入库保存
+	 * 
+	 * @param Controller
+	 * */
+	public static boolean saveAll(Controller c) {
+		boolean saveBool = true;
+		Produce produce = c.getModel(Produce.class);
+		ProduceDetail produceDetail = c.getModel(ProduceDetail.class);
+		String[] deciveArray = c.getParaValues("deviceMap");
+		String[] numArray = c.getParaValues("numMap");
+		if (produce.getStr("DHLX") != null) {
+			produce.set("DH", Constant.findb_goods_dh(produce.getStr("DHLX")));
+		}
+		User loginUser = c.getSessionAttr(User.LOGIN_USER);
+		if (loginUser != null) {
+			int id = loginUser.getInt("id");
+			produce.set("OPERATOR", id);
+			produce.set("UPOPERATOR", id);
+		}
+		if (produce.getStr("DHZT").equals("001")) {// 草稿
+			ProduceDetailDraft produceDetailDraft = new ProduceDetailDraft();
+			// ！！！只是部分数据copy
+			produceDetailDraft.set("DH", produce.get("DH"));
+			produceDetailDraft.set("DHLX", produce.get("DHLX"));
+			produceDetailDraft.set("CHECKDATE",
+					DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			produceDetailDraft.set("DHZT", produce.get("DHZT"));
+			// produceDetailDraft.set("TXM", produce.get("TXM"));
+			// produceDetailDraft.set("", produce.get("BZ"));
+			// 另外的setter补充
+			saveBool = ProduceDetailDraft.save(produceDetailDraft,
+					produce.getStr("CKCKBH"), deciveArray, numArray);
+		} else if (produce.getStr("DHZT").equals("002")) {// 未复核
+
+		} else if (produce.getStr("DHZT").equals("003")) {// 正式
+			System.out.println(9);
+			produceDetail.set("DH", produce.get("DH"));
+			produceDetail.set("DHLX", produce.get("DHLX"));
+			produceDetail.set("CHECKDATE",
+					DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			produceDetail.set("DHZT", produce.get("DHZT"));
+			// produceDetail.set("BZ", produce.get("BZ"));
+			// produceDetailDraft.set("TXM", produce.get("TXM"));
+			saveBool = ProduceDetail.save(produceDetail,
+					produce.getStr("CKCKBH"), produce.getStr("RKCKBH"),
+					deciveArray, numArray);
+		}
+		if (saveBool) {
+			Produce.save(produce, c);
+		}
+
+		return saveBool;
+	}
+
+	/**
+	 * 各种类型单据入库保存
+	 * 
+	 * @param Controller
+	 * */
+	public static boolean saveIn(Controller c) {
+		boolean saveBool = true;
+		Produce produce = c.getModel(Produce.class);
+		ProduceDetail produceDetail = c.getModel(ProduceDetail.class);
+		String[] deciveArray = c.getParaValues("deviceMap");
+		String[] numArray = c.getParaValues("numMap");
+
+		if (produce.getStr("DHLX") != null) {
+			produce.set("DH", Constant.findb_goods_dh(produce.getStr("DHLX")));
+		}
+
+		User loginUser = c.getSessionAttr(User.LOGIN_USER);
+		if (loginUser != null) {
+			int id = loginUser.getInt("id");
+			produce.set("OPERATOR", id);
+			produce.set("UPOPERATOR", id);
+		}
+
+		if (produce.getStr("DHZT").equals("001")) {// 草稿
+			ProduceDetailDraft produceDetailDraft = new ProduceDetailDraft();
+			// ！！！只是部分数据copy
+			produceDetailDraft.set("DH", produce.get("DH"));
+			produceDetailDraft.set("DHLX", produce.get("DHLX"));
+			produceDetailDraft.set("CHECKDATE",
+					DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			produceDetailDraft.set("DHZT", produce.get("DHZT"));
+			// produceDetailDraft.set("TXM", produce.get("TXM"));
+			// produceDetailDraft.set("", produce.get("BZ"));
+			// 另外的setter补充
+			saveBool = ProduceDetailDraft.saveInOrOut(produceDetailDraft,
+					produce.getStr("RKCKBH"), produce.getStr("CKCKBH"), 0,
+					deciveArray, numArray);
+
+		} else if (produce.getStr("DHZT").equals("002")) {// 未复核
+
+		} else if (produce.getStr("DHZT").equals("003")) {// 正式
+			produceDetail.set("DH", produce.get("DH"));
+			produceDetail.set("DHLX", produce.get("DHLX"));
+			produceDetail.set("CHECKDATE",
+					DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			produceDetail.set("DHZT", produce.get("DHZT"));
+			// produceDetail.set("BZ", produce.get("BZ"));
+			// produceDetailDraft.set("TXM", produce.get("TXM"));
+			saveBool = ProduceDetail.saveInOrOut(produceDetail,
+					produce.getStr("RKCKBH"), produce.getStr("CKCKBH"), 0,
+					deciveArray, numArray);
+		}
+
+		if (saveBool) {
+			Produce.save(produce, c);
+		}
+
+		return saveBool;
+
+	}
+
+	/**
+	 * 更新入库单,更新操作员默认为操作者的姓名
+	 */
+	public static String update(Produce produce, Controller c) {
+		User user = c.getSessionAttr(User.LOGIN_USER);
+		String DHZT = produce.getStr("DHZT");
+		if (DHZT.equals("003")) { // 003代表单号状态为已复核
+			produce.set("CHECKDATE", new Timestamp(System.currentTimeMillis()));
+		} else {
+			produce.set("CHECKDATE", null);
+		}
+		produce.set("UPIPDATE", new Timestamp(System.currentTimeMillis()));
+		produce.set("UPOPERATOR", user.getStr("name"));
+		produce.update();
+		return "更新成功";
+	}
+	/**
+	 * 出库的时候校验是否满足
+	 * @param records
+	 * @param produce
+	 * @return
+	 */
+	public static String checkNUM(Record record) {// 检查设备是否可以出库
+		
+		String result = "true";
+		String dhlx = DbUtil.readDbString(record.get("CKCKBH"));
+		String deviceid = DbUtil.readDbString(record.get("deviceid"));
+		String sql = "select SUM(CHNUM) chnum  from c_produce_detail where DEVICEID=? and SZCK=? ";
+		ProduceDetail pds = ProduceDetail.dao.findFirst(sql, deviceid,dhlx);
+		if (DbUtil.readDbInt0(pds.get("chnum")) < DbUtil.readDbInt0(record.get("num"))) {// 库存小于出库量
+			result = "仓库：" + DicPlugin.b_store.get(dhlx) + " 的  "
+					+ DicPlugin.b_devicesimgle.get(deviceid)
+					+ " 的库存不足<br/>余量："
+					+ DbUtil.readDbInt0(pds.get("chnum")) + "<br/>需求量："
+					+ DbUtil.readDbInt0(record.get("num"));
+	   }
+		return result;
+	}
+}

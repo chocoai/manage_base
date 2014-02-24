@@ -1,0 +1,275 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>客户维修出库单列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<#assign xlh = ((page.pageNumber-1)*page.pageSize + 1) />
+<script type="text/javascript">
+$().ready( function() {
+	$("#showAllDataButton").click( function() {
+		$("#pageNumber").val("1");
+		window.location.href="${base}/manage/bxgl/cjwxck/index";
+	});
+});
+// 查找
+var $searchButton = $("#searchButton");// 查找按钮
+$searchButton.click( function() {
+	$pageNumber.val("1");
+	var text = $('#dhzt').val();
+	if(text=="草稿"){
+		
+	}
+	$listForm.submit();
+});
+function mySubmit(){
+	$('#listForm').submit();
+}	
+</script>
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+	       <#if "001"=="${(filter_LIKES_DHZT)!}">
+			   厂商维修出库单(草稿)列表
+		   <#else>
+		                厂商维修出库单(已复核)列表
+		   </#if>
+			&nbsp;<span class="pageInfo">总记录数: ${page.totalRow}(共${page.totalPage}页)</span>
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/manage/bxgl/cjwxck/index" method="post">
+			<div class="listBar">
+				
+				<#if (session.loginUser.roleStr?index_of("/manage/bxgl/cjwxck/add")>0) >
+				    <input type="button" class="formButton" onclick="location.href='${base}/manage/bxgl/cjwxck/add'" value="添加" />
+			    </#if>
+			                    
+				<#if "001"=="${(filter_LIKES_DHZT)!}">
+				   <input type="hidden" name="filter_LIKES_DHZT" value="001" id="yfh_value" />
+		           <input type="button" class="formButton"  value="已复核" onclick="location.href='${base}/manage/bxgl/cjwxck'" id="dhzt"/>
+				<#else>
+					<!-- <input type="hidden" name="filter_LIKES_DHZT" value="003" id="yfh_value" /> -->
+		            <input type="button" class="formButton"  value="草稿" onclick="location.href='${base}/manage/bxgl/cjwxck?filter_LIKES_DHZT=001'" id="dhzt"/>
+				</#if>
+				  <!-- <select name="filter_LIKES_DHZT" class="labelselect" onchange="mySubmit();">
+				    <#if "001"=="${(filter_LIKES_DHZT)!}">
+					 	 <option value="003" >已复核</option>
+					     <option value="001" selected="selected">草稿</option>
+					<#else>
+					   <option value="003" selected="selected">已复核</option>
+					   <option value="001">草稿</option>
+					</#if>
+				 </select>  -->
+				
+				<label>根据出库仓库名称查询：</label>
+				<label class="searchText">
+					<select name="filter_LIKES_CKCKBH"  class="labelselect" style="width: 180px" id="ckmc">
+						<option value="">请选择</option>
+						<#if statics["cn.com.jandar.plugin.DicPlugin"].b_store003?exists>
+							<#list statics["cn.com.jandar.plugin.DicPlugin"].b_store003.keySet() as key>
+						         <#if key=="${(filter_LIKES_CKCKBH)!}">
+						<option value="${key}" selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].b_store003.get(key)}</option>
+								<#else>
+						<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_store003.get(key)}</option>
+								</#if>
+							</#list>
+						</#if>
+					</select>
+				</label>
+				<input type="button" hidefocus="" value="搜 索" class="formButton" id="searchButton">
+				<input type="button" hidefocus="" value="显示全部" class="formButton" id="showAllDataButton">
+				<label>每页显示:</label>  
+				<select name="pageSize" id="pageSize">
+					<option value="10" <#if page.pageSize == 10>selected="selected" </#if>>
+						10
+					</option>
+					<option value="20" <#if page.pageSize == 20>selected="selected" </#if>>
+						20
+					</option>
+					<option value="50" <#if page.pageSize == 50>selected="selected" </#if>>
+						50
+					</option>
+					<option value="100" <#if page.pageSize == 100>selected="selected" </#if>>
+						100
+					</option>
+				</select>
+			</div>
+			<table class="listTable">
+				<tr>
+			    <!-- <th class="check">
+						<input type="checkbox" class="allCheck" />
+					</th> 
+				-->
+					<th>
+						<span class="sort" name="ID">序号</span>
+					</th>
+					<th>
+						<span class="sort" name="DH">单号</span>
+					</th>
+				<!--
+				     <th>
+						<span class="sort" name="SBZT">设备状态</span>
+					</th> 
+					<th>
+						<span class="sort" name="FACTORYID">厂商名称</span>
+					</th>
+				 --> 
+				    <th>
+						<span class="sort" name="CKCKBH">出库仓库名称</span>
+					</th>
+				   <th>
+						<span class="sort" name="CUSTOMERID">厂商名称</span>
+					</th>
+					<th>
+						<span class="sort" name="CHECKDATE">入库时间</span>
+					</th>
+					<th>
+						<span class="sort" name="DHZT">单号状态</span>
+				    </th>
+				   <!--
+					<th>
+						<span class="sort" name="BZ">备注</span>
+					</th>
+			         <th>
+						<span class="sort" name="OPERATOR">操作员</span>
+					</th>
+			     -->
+					<th>
+						<span class="sort" name="OPDATE">新建时间</span>
+					</th>
+				 <!--
+				     <th>
+						<span class="sort" name=UPOPERATOR>更新操作员</span>
+					</th>
+					<th>
+						<span class="sort" name="UPIPDATE">更新时间</span>
+					</th>
+				 -->
+					<th>
+						操作
+					</th>
+				</tr>
+				<#list page.list as list>
+					<tr>
+						<!-- <td>
+							<input type="checkbox" name="ids" value="${list.id}" />
+						</td> -->
+						<td>
+							${xlh}
+							<#assign xlh = xlh+1 />
+						</td>
+						<td>
+							${list.DH}
+						</td>
+				    <!--
+				        <td>
+							${list.SBZT}
+						</td> 
+					
+						<td>
+							<#if statics["cn.com.jandar.plugin.DicPlugin"].b_factoryall?exists>
+								<#list statics["cn.com.jandar.plugin.DicPlugin"].b_factoryall.keySet() as key>
+								    <#if key=="${(list.FACTORYID)!}">
+								       ${statics["cn.com.jandar.plugin.DicPlugin"].b_factoryall.get(key)}
+									</#if>
+								</#list>
+							</#if>
+						</td>
+					 -->
+						 <td>
+							<#if statics["cn.com.jandar.plugin.DicPlugin"].b_store003?exists>
+								<#list statics["cn.com.jandar.plugin.DicPlugin"].b_store003.keySet() as key>
+							         <#if key=="${(list.CKCKBH)!}">
+							 ${statics["cn.com.jandar.plugin.DicPlugin"].b_store003.get(key)}
+									</#if>
+								</#list>
+							</#if>
+						</td>
+						<td>
+							<#if statics["cn.com.jandar.plugin.DicPlugin"].b_factoryall?exists>
+								 <#list statics["cn.com.jandar.plugin.DicPlugin"].b_factoryall.keySet() as key>
+									<#if key=="${(list.FACTORYID)!}">
+									${statics["cn.com.jandar.plugin.DicPlugin"].b_factoryall.get(key)}
+									</#if>
+								</#list>
+							</#if>
+						
+						</td>
+						<td>
+							${list.CHECKDATE}
+						</td>
+						<td>
+						 	<#if list.DHZT=='003'>
+								已出库
+							<#elseif list.DHZT=='002'>
+								待出库
+							<#else>
+						                        草稿
+							</#if>
+						</td>
+					 <!-- 
+						<td>
+						    <#if list.BZ?length == 0>无<#elseif list.BZ?length lt 50>${list.BZ}<#else>${list.BZ[0..50]}...</#if>
+						</td>
+				     		
+				        <td>
+							${list.OPERATOR}
+						</td> 
+					 -->
+						<td>
+							${list.OPDATE}
+						</td>
+				      <!-- 		
+				        <td>
+							${list.UPOPERATOR}
+						</td>
+						<td>
+							${list.UPIPDATE}
+						</td> 
+					  -->
+						<td>
+						<#if  "001"=="${(list.DHZT)!}">
+						    	<#if (session.loginUser.roleStr?index_of("/manage/bxgl/cjwxck/edit")>0) >
+							           <a href="${base}/manage/bxgl/cjwxck/edit?id=${list.id}" title="编辑">[编辑]</a>
+			                    </#if>
+						<#elseif "002"=="${(list.DHZT)!}">	
+						        <#if (session.loginUser.roleStr?index_of("/manage/bxgl/cjwxck/edit")>0) >
+						                <a href="${base}/manage/bxgl/cjwxck/edit?id=${list.id}" title="查看">[查看]</a>
+			                    </#if>
+			                    <#if (session.loginUser.roleStr?index_of("/manage/bxgl/cjwxck/sendEdit")>0) >
+						           	   <a href="${base}/manage/bxgl/cjwxck/sendEdit?id=${list.id}"  title="出库">[出库]</a>
+			                    </#if>
+						<#else>
+						        <#if (session.loginUser.roleStr?index_of("/manage/bxgl/cjwxck/edit")>0) >
+						               <a href="${base}/manage/bxgl/cjwxck/edit?id=${list.id}" title="查看">[查看]</a>
+			                    </#if>
+						</#if>
+						<#if "001"!="${(filter_LIKES_DHZT)!}">
+						 <#if (session.loginUser.roleStr?index_of("/manage/bxgl/cjwxck/printchuku")>0) >
+						          <a href="${base}/manage/bxgl/cjwxck/printchuku?id=${list.id}" target="_blank" title="打印">[打印]</a>
+			             </#if>
+			            </#if>
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if (page.list?size > 0)>
+				<div class="pagerBar">
+				<!-- 	<div class="delete">
+						<input type="button" id="deleteButton" class="formButton" url="${base}/manage/bxgl/cjwxck/delete" value="删 除" disabled hidefocus />
+					</div> 
+				-->
+					<div class="pager">
+						<#include "/admin/common/pager.html" />
+					</div>
+				<div>
+			<#else>
+				<div class="noRecord">
+					没有找到任何记录!
+				</div>
+			</#if>
+		</form>
+	</div>
+</body>
+</html>

@@ -1,0 +1,235 @@
+package cn.com.jandar.action.manage.bxgl;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.OrderedMap;
+import org.apache.commons.collections.map.LinkedMap;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.interceptor.StartXtInterceptor;
+import cn.com.jandar.model.Bxd;
+import cn.com.jandar.model.Device;
+import cn.com.jandar.model.Factory;
+import cn.com.jandar.model.Produce;
+import cn.com.jandar.model.ProduceDetail;
+import cn.com.jandar.model.ProduceDetailDraft;
+import cn.com.jandar.model.User;
+import cn.com.jandar.plugin.DicPlugin;
+
+import com.google.common.collect.Lists;
+import com.jfinal.aop.Before;
+import com.jfinal.kit.PathKit;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
+
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+@Before(StartXtInterceptor.class)
+@ControllerBind(controllerKey="/manage/bxgl/khwxck",resource="客户维修出库单")
+public class KhwxckController extends AdminBaseController{
+	
+	@ButtonBind(buttonname = "查询")
+	public void index() {
+		Page<Produce> page = Produce.getProducePage(
+				getParaToInt("pageNumber", 1),
+				getParaToInt("pageSize", PAGESIZE),
+				getPara("orderBy", "c_produce.ID"), getPara("order", "desc"),
+				"",getPara("filter_LIKES_CKCKBH"), getPara("filter_LIKES_DHZT"),
+				"009");
+		keepPara("filter_LIKES_CKCKBH");
+		keepPara("filter_LIKES_DHZT");
+		setAttr("page", page);
+		render("khwxck_list.html");
+	}
+
+	@ButtonBind(buttonname = "新增")
+	public void add() {
+
+		render("khwxck_input.html");
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "新增")
+	public void save() {
+		Produce produce = getModel(Produce.class);
+		String[] deciveArray = getParaValues("deviceMap");
+		String[] numArray = getParaValues("numMap");
+		List<Record> records = Lists.newArrayList();
+		for (int i = 0; i < deciveArray.length; i++) {
+			Record e = new Record();
+			e.set("deviceid", deciveArray[i]);
+			e.set("num", numArray[i]);
+			records.add(e);
+		}
+		User user = getSessionAttr(User.LOGIN_USER);
+		String msg =  Produce.saveAll(user, produce, records);
+		if (msg.equals(Produce.SUCCESS)) {
+			setAttr("msg", Produce.SUCCESS);
+			setAttr("redirectionUrl", "/manage/bxgl/khwxck");
+			render("/admin/common/success.html");
+		} else {
+			setAttr("msg", msg);
+			setAttr("redirectionUrl", "/manage/bxgl/khwxck");
+			render("/admin/common/error.html");
+		}
+	}
+
+	@ButtonBind(buttonname = "更新")
+	public void edit() {
+
+		Produce produce = Produce.getProduceById(getPara("id"));
+		String DHZT = produce.getStr("DHZT");
+		List<Record> record = null;
+		if (DHZT != null && DHZT.equals("003")) {
+			record = ProduceDetail.getProduceDetailByDH(produce.getStr("DH"));
+		} else if (DHZT != null && !DHZT.equals("003")) {
+			record = ProduceDetailDraft.getProduceDetailDraftByDh(produce
+					.getStr("DH"));
+		}
+		setAttr("produce", produce);
+		setAttr("record", record);
+		render("khwxck_input.html");
+	}
+
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "更新")
+	public void update() {
+		Produce produce = getModel(Produce.class);
+		String[] deciveArray = getParaValues("deviceMap");
+		String[] numArray = getParaValues("numMap");
+		List<Record> records = Lists.newArrayList();
+		for (int i = 0; i < deciveArray.length; i++) {
+			Record e = new Record();
+			e.set("deviceid", deciveArray[i]);
+			e.set("num", numArray[i]);
+			records.add(e);
+		}
+		User user = getSessionAttr(User.LOGIN_USER);
+		String msg =  Produce.saveAll(user, produce, records);
+		if (msg.equals(Produce.SUCCESS)) {
+			setAttr("msg", Produce.SUCCESS);
+			setAttr("redirectionUrl", "/manage/bxgl/khwxck");
+			render("/admin/common/success.html");
+		} else {
+			setAttr("msg", msg);
+			setAttr("redirectionUrl", "/manage/bxgl/khwxck");
+			render("/admin/common/error.html");
+		}
+	}
+
+	@ButtonBind(buttonname = "删除")
+	public void delete() {
+		String[] ids = getParaValues("ids");
+		renderJson("status", Produce.delete(ids));
+	}
+	
+	/**
+	 * 验证设备出库数量是否溢出(Ajax)
+	 */
+	public void validateNum(){
+		Record record = new Record();
+		record.set("CKCKBH", getPara("CKCKBH"));
+		record.set("deviceid", getPara("deviceid"));
+		record.set("num", getPara("num"));
+		renderText(Produce.checkNUM(record));
+	}
+	
+	@ButtonBind(buttonname = "出库")
+	public void sendEdit(){
+		Produce produce = Produce.getProduceById(getPara("id"));
+		setAttr("produce", produce);
+		render("order_input.html");
+	}
+	
+	@Before(Tx.class)
+	@ButtonBind(buttonname = "出库")
+	public void send(){
+		
+		Produce model = getModel(Produce.class);
+		Produce produce = Produce.getProduceById(model.get("id").toString());
+		
+		Map<String,Object> attrs = new HashMap<String,Object>();
+		attrs.put("WLGS", model.getStr("WLGS"));
+		attrs.put("WLDH", model.getStr("WLDH"));
+		attrs.put("SJXM", model.getStr("SJXM"));
+		attrs.put("SJLXDH", model.getStr("SJLXDH"));
+		attrs.put("WHRY", model.getStr("WHRY"));
+		attrs.put("WHRYDH", model.getStr("WHRYDH"));
+		produce.setAttrs(attrs);
+		
+		produce.set("DHZT", "003");
+		List<Record> records = ProduceDetailDraft.getProduceDetailDraftByDhSend(produce.getStr("DH"));;
+		User user = getSessionAttr(User.LOGIN_USER);
+		String msg =  Produce.saveAll(user, produce, records);
+		if (msg.equals(Produce.SUCCESS)) {
+			setAttr("msg", Produce.SUCCESS);
+			setAttr("redirectionUrl", "/manage/bxgl/khwxck");
+			render("/admin/common/success.html");
+		} else {
+			setAttr("msg", msg);
+			setAttr("redirectionUrl", "/manage/bxgl/khwxck");
+			render("/admin/common/error.html");
+		}
+	}
+	
+	/**
+	 * 出库打印
+	 */
+	@SuppressWarnings("unchecked")
+	@ButtonBind(buttonname="打印")
+	public void printchuku(){     
+		
+		String id=getPara("id");
+		Produce produce = Produce.getProduceById(id);
+		User user = getSessionAttr(User.LOGIN_USER);
+		
+		Map report_param = new HashMap();
+		report_param.put("CHECKDATE", produce.get("CHECKDATE").toString());				//出库日期
+		report_param.put("DHLX", DicPlugin.b_goodssimgle.get(produce.getStr("DHLX")));  //出库类型  DHLX
+		report_param.put("DH", produce.getStr("DH"));		//出库单号.
+		report_param.put("bumen", "");				//部门
+		report_param.put("OPERATOR", "");			//业务员
+		report_param.put("WLDH",produce.getStr("WLDH") );		//发货单号
+		report_param.put("CSNAME", DicPlugin.b_customerall.get(produce.getInt("CUSTOMERID")+""));	//客户名称
+		report_param.put("CKMC",DicPlugin.b_storeall.get(produce.getStr("CKCKBH")));			//仓库
+		report_param.put("zdr", user.getStr("name"));					//制单人
+		report_param.put("shr", "");					//审核人
+    	
+		String DHZT = produce.getStr("DHZT");
+		List<Record> list = null;
+		if (DHZT != null && DHZT.equals("003")) {
+			list = ProduceDetail.getProduceDetailByDH(produce.getStr("DH"));
+		} else if (DHZT != null && !DHZT.equals("003")) {
+			list = ProduceDetailDraft.getProduceDetailDraftByDh(produce.getStr("DH"));
+		}
+    	//报表列表数据源
+		List report_dataSourceList=new ArrayList();
+		for(Record record :list){
+			Device device = Device.getDeviceById(record.getInt("DEVICEID")+"");
+			OrderedMap row = new LinkedMap();
+			row.put("JLDW",device.getStr("JLDW"));				//产品代码（数据库中的jldw字段）
+			row.put("DNAME", device.getStr("DNAME"));					//设备名称
+			row.put("FNAME", Factory.getFactoryById(device.get("FACTORYID") + "").get("FNAME"));				//厂商
+			row.put("SBXH", device.getStr("SBXH"));				//型号
+			row.put("SBSM",  device.getStr("SBSM"));					//说明
+			row.put("NUM", record.get("sums"));						//数量
+			row.put("BZ", device.getStr("BZ"));						//备注
+			report_dataSourceList.add(row);	
+		}
+		
+		
+		//报表信息
+		String report_jasperUrl=PathKit.getWebRootPath()+"/report/chukureport/chuku.jasper";
+		String report_imageServletUrl=PathKit.getWebRootPath()+"/report/images/";
+		String report_fileName="客户维修出库单";
+		String report_fileExt= getPara("reportFormat", "pdf");
+		print(report_jasperUrl, report_param, report_dataSourceList, report_imageServletUrl, report_fileName, report_fileExt);
+	}
+}

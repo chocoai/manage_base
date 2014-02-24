@@ -1,0 +1,250 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>添加/编辑文章分类</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+
+</head>
+<#setting date_format="yyyy-MM-dd HH:mm:ss">
+<#if !(scd.id)??> <#assign isAdd = true /> <#else> <#assign isAdd =
+false /> </#if>
+<body class="input" onload="showMsg('${errMsg}')">
+	<div class="bar"><#if isAdd>新增单据<#else>编辑单据</#if></div>
+	<div class="body">
+	<fieldset>
+	    <legend>${sbscd_form_name}</legend>
+		<form id="validateForm" action="${base}/manage/scd/sbscd/saveOrder"
+			method="post">
+
+			<input type="hidden" name="scd.id" value="${(scd.id)!}" /> 
+			<input type="hidden" name="scd.DHZT" id="scd_dhzt" value="${(scd.DHZT)!}">
+			<input type="hidden" name="scd.DDZT" id="scd_ddzt" value="${(scd.DDZT)!}">
+				<table class="inputTable" title="生产单">
+					<tr>
+						<#if (scd.dh)??>
+							<th>单号:</th>
+							<td>${(scd.dh)!}</td>
+						</#if>	
+						<th>出库仓库:</th>
+						<td>
+						${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get("${scd.CKCKBH}")}
+						</td>
+					</tr>
+				
+					<tr>
+						<th>模型:</th>
+						<td>
+						${statics["cn.com.jandar.plugin.DicPlugin"].p_model.get("${scd.MODELID}")}
+						</td>
+						<th>设备数量:</th>
+						<td>
+						${(scd.SBNUM)!}
+						</td>
+					</tr>
+					
+					<tr>
+						<th>客户:</th>
+						<td>
+						${statics["cn.com.jandar.plugin.DicPlugin"].b_customer.get("${scd.CUSTOMERID}")}
+						</td>
+					</tr>
+					<tr>
+						<th>联系人:</th>
+						<td>
+						${(scd.LXR)!}
+						</td>
+						<th>联系电话:</th>
+						<td>
+						${(scd.LXDH)!}
+						</td>
+					</tr>
+					
+					<tr>
+						<th>备注:</th>
+						<td colspan="3">
+						${(scd.bz)!}
+						</td>
+					</tr>
+
+					<#if type==1>
+					<tr>
+						<th>接收地址:</th>
+						<td><input type="text" name="scd.FH001"
+							class="formText {required: true}" title="必填"
+							value="${(scd.FH001)!}" /> 
+							<input type="hidden" name="type" value="1">
+							<label class="requireField">*</label>
+						</td>
+						<th>物流公司:</th>
+						<td><input type="text" name="scd.FH002"
+							class="formText" title="物流公司"
+							value="${(scd.FH002)!}" />
+						</td>
+					</tr>
+					
+					<tr>
+						<th>物流单号:</th>
+						<td><input type="text" name="scd.FH003"
+							class="formText" title="物流单号"
+							value="${(scd.FH003)!}" /> 
+						</td>
+						<th>司机:</th>
+						<td><input type="text" name="scd.FH004"
+							class="formText" title="司机电话"
+							value="${(scd.FH004)!}" /> 
+						</td>
+					</tr>
+					
+					<tr>
+						<th>司机电话:</th>
+						<td><input type="text" name="scd.FH005"
+							class="formText" title="联系电话"
+							value="${(scd.FH005)!}" />
+						</td>
+						<th>说明:</th>
+						<td><textarea class="formTextarea" type="text" name="scd.FH006"
+							value="${(scd.FH006)!}" >${(scd.FH006)!}</textarea> 
+						</td>
+					</tr>
+					
+					</#if> <#if type == 2>
+					<tr>
+						<th>接收时间:</th>
+						<td><input type="text" name="scd.QRSH001"
+							class="Wdate formText {required: true}" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" title="必填"
+							<#if scd.QRSH001??> 
+							   value="${(scd.QRSH001?date)}"
+							<#else>
+							   value="${(scd.QRSH001)!}"
+							</#if>
+							 /> 
+							<input type="hidden" name="type" value="2">
+							<label class="requireField">*</label>
+						</td>
+						<th>说明:</th>
+						<td><textarea class="formTextarea" name="scd.QRSH002"
+							value="${(scd.QRSH002)!}">${(scd.QRSH002)!}</textarea> </td>
+					</tr>
+
+					</#if> <#if type == 3>
+					<tr>
+						<th>预计完成时间:</th>
+						<td><input type="text" name="scd.KSSC001"
+							class="Wdate formText {required: true}" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" title="必填"
+							<#if scd.KSSC001??> 
+							   value="${(scd.KSSC001?date)}"
+							<#else>
+							   value="${(scd.KSSC001)!}"
+							</#if>
+						    /> 
+							<input type="hidden" name="type" value="3">
+							<label class="requireField">*</label>
+						</td>
+						<th>计划完成时间:</th>
+						<td><input type="text" name="scd.KSSC002"
+							class="Wdate formText {required: true}" title="必填"
+							<#if scd.KSSC002??> 
+							   value="${(scd.KSSC002?date)}"
+							<#else>
+							   value="${(scd.KSSC002)!}"
+							</#if>
+							onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" /> 
+							<label class="requireField">*</label>
+						</td>
+					</tr>
+					<tr>
+						<th>说明:</th>
+						<td colspan="3"><textarea class="formTextarea"  name="scd.KSSC003"
+						 value="${(scd.KSSC003)!}" >${(scd.KSSC003)!}</textarea> 
+						</td>
+					</tr>
+
+					</#if> <#if type == 4>
+					<tr>
+						<th>预计到达时间:</th>
+						<td><input type="text" name="scd.FWKH001"
+							class="Wdate formText {required: true}" title="必填"
+							<#if scd.FWKH001??> 
+							   value="${(scd.FWKH001?date)}"
+							<#else>
+							   value="${(scd.FWKH001)!}"
+							</#if>
+							onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})"/> 
+							<input type="hidden" name="type" value="4">
+							<label class="requireField">*</label>
+						</td>
+						<th>接收地址:</th>
+						<td><input type="text" name="scd.FWKH002"
+							class="formText {required: true}" title="必填"
+							value="${(scd.FWKH002)!}" /> 
+							<label class="requireField">*</label>
+						</td>
+					</tr>
+					
+					<tr>
+						<th>物流公司:</th>
+						<td><input type="text" name="scd.FWKH003"
+							class="formText" title="必填"
+							value="${(scd.FWKH003)!}" /> 
+						</td>
+						<th>物流单号:</th>
+						<td><input type="text" name="scd.FWKH004"
+							class="formText" title="必填"
+							value="${(scd.FWKH004)!}" /> 
+						</td>
+					</tr>
+					<tr>
+						<th>司机:</th>
+						<td><input type="text" name="scd.FWKH005"
+							class="formText" title="必填"
+							value="${(scd.FWKH005)!}" /> 
+						</td>
+						<th>司机电话:</th>
+						<td><input type="text" name="scd.FWKH006"
+							class="formText" title="必填"
+							value="${(scd.FWKH006)!}" /> 
+						</td>
+					</tr>
+					
+					<tr>
+						<th>说明:</th>
+						<td colspan="3"><textarea type="text" name="scd.FWKH007"
+							class="formTextarea" value="${(scd.FWKH007)!}" >${(scd.FWKH007)!}</textarea> 
+						</td>
+					</tr>
+
+					</#if> <#if type == 5>
+					<tr>
+						<th>接收时间:</th>
+						<td><input type="text" name="scd.QRJS001"
+							class="Wdate formText {required: true}" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" title="必填"
+							<#if scd.QRJS001??> 
+							   value="${(scd.QRJS001?date)}"
+							<#else>
+							   value="${(scd.QRJS001)!}"
+							</#if>
+							 /> 
+							<label class="requireField">*</label>
+							<input type="hidden" name="type" value="5">
+						</td>
+						<th>说明:</th>
+						<td><textarea class="formTextarea"  name="scd.QRJS002"
+							value="${(scd.QRJS002)!}">${(scd.QRJS002)!}</textarea> </td>
+					</tr>
+					</#if>
+
+				</table>
+
+			<div class="buttonArea" align="right">
+				<input type="submit" class="formButton" value="保存" hidefocus="true" />&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="button" class="formButton" 
+					onclick="window.history.back(); return false;" value="返  回"
+					hidefocus="true" />
+			</div>
+		</form>
+		</fieldset>
+	</div>
+</body>
+</html>

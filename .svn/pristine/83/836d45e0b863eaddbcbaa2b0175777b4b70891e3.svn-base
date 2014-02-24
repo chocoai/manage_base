@@ -1,0 +1,11 @@
+package cn.com.jandar.action.admin;
+
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/admin/startxt",resource="系统启用")
+public class StartxtController extends AdminBaseController{
+	public void index(){
+		renderText("系统启用");
+	}
+}

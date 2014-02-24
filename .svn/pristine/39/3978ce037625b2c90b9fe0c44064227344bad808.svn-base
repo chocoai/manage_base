@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>库存查询</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<#assign xlh = ((page.pageNumber-1)*page.pageSize + 1) />
+<script type="text/javascript">
+$().ready( function() {
+	$("#showAllButton").click( function() {
+		window.location.href="${base}/manage/pancun/adlxcx/index";
+	});
+	
+	 $("#startTime").blur(function(){
+		checkTime();
+	});
+	
+	$("#endTime").blur(function(){
+		checkTime();
+	});
+	
+	/* $("#searchButton").click(function(e) {
+		checkTime();
+		e.preventDefault();
+	}); */
+	
+	function checkTime() {
+		var startTime = $("#startTime").attr("value");
+		var endTime = $("#endTime").attr("value");
+		
+		if((startTime != "") && (endTime != "")) {
+			if(startTime > endTime) {
+				alert("起始日期不能比结束日期晚，请重新设置!");
+				$("#startTime").attr("value","");
+				$("#endTime").attr("value","");
+			}
+		}
+	} 
+});
+</script>
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+			库存列表&nbsp;<span class="pageInfo">总记录数: ${(page.totalRow)!}</span>
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/manage/pancun/adlxcx/index" method="post" name="listForm">
+			<div class="listBar">
+				<label>根据出入库单类型:</label>
+				<label class="searchText">
+					<select name="filter_LIKES_DHLX" id="searchTextaa"  class="labelselect">
+						<option value="">请选择</option>
+						<#list statics["cn.com.jandar.plugin.DicPlugin"].b_goodsall.keySet() as key>
+						<#if ((filter_LIKES_DHLX)!) == key>
+							<option value="${key}" selected="selected">
+						<#else >
+							<option value="${key}" >
+						</#if>
+							${statics["cn.com.jandar.plugin.DicPlugin"].b_goodsall.get(key)}
+						</option>
+						</#list>
+					</select>
+				</label>
+				&nbsp;				
+				<label>开始时间：</label>
+				<label class="searchText">
+					<input class="Wdate" id="startTime" name="filter_LIKES_startTime" type="text" onClick="WdatePicker()" value="${filter_LIKES_startTime!}" /> <font color=red></font>
+				</label>
+				&nbsp;
+				<label>结束时间：</label>
+				<label class="searchText">
+					<input class="Wdate" id="endTime" name="filter_LIKES_endTime" type="text" onClick="WdatePicker()" value="${filter_LIKES_endTime!}"/> <font color=red></font>
+				</label>				
+			
+				<input type="button" hidefocus="" value="搜 索" class="formButton" id="searchButton">
+				<input type="button" hidefocus="" value="显示全部" class="formButton" id="showAllButton">
+			
+			</div>
+			<table class="listTable">
+				<tr>	
+					<th>
+						<span class="sort" name="XLH">序号</span>
+					</th>	
+					<th>
+						<span class="sort" name="DH">单号</span>
+					</th>
+					<th>
+						<span class="sort" name="DHLX">单子类型</span>
+					</th>
+					<th>
+						<span class="sort" name="CHECKDATE">出入库时间</span>
+					</th>
+					<th>
+						操作
+					</th>
+				</tr>
+				<#list page.list as list>
+					<tr>		
+						<td>
+							${xlh}
+							<#assign xlh = xlh+1 />
+						</td>
+						<td>
+							${list.DH}
+						</td>
+						<td>
+							${statics["cn.com.jandar.plugin.DicPlugin"].b_goodsall.get(list.DHLX + "")}
+						</td>
+						<td>
+							${list.CHECKDATE}
+						</td>
+						<td>
+							<a href="${base}/manage/pancun/adlxcx/edit?id=${list.id}" title="查看">[查看]</a>
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if (page.list?size > 0)>
+				<div class="pagerBar">
+					<div class="pager">
+						<#include "/admin/common/pager.html" />
+					</div>
+				<div>
+			<#else>
+				<div class="noRecord">
+					没有找到任何记录!
+				</div>
+			</#if>
+		</form>
+	</div>
+</body>
+</html>

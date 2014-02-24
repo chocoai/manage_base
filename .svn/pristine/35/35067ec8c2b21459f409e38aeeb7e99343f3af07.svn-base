@@ -1,0 +1,22 @@
+package cn.com.jandar.action.manage.scd;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/scd/zjdj",resource="整机信息登记")
+public class ZjdjController extends AdminBaseController{
+	public void index(){
+		render("zjdj_input.html");
+	}
+	
+	public void queryFactorys(){
+		int areaId = this.getParaToInt("areaId");
+	}
+	
+	public void queryDevices(){
+		int factoryId = this.getParaToInt("factoryId");
+	}
+	
+	
+}

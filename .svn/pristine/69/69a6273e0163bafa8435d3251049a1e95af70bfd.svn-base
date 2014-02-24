@@ -1,0 +1,12 @@
+package cn.com.jandar.action.manage.cuku;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/cuku/ckd",resource="出库单")
+public class CkdController extends AdminBaseController{
+	public void index(){
+		renderText("出库单");
+	}
+}

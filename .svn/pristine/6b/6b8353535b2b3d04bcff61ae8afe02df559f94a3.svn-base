@@ -1,0 +1,12 @@
+package cn.com.jandar.action.manage.base;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/base/device",resource="设备维护")
+public class DeviceController extends AdminBaseController{
+	public void index(){
+		renderText("设备维护");
+	}
+}

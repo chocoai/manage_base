@@ -1,0 +1,12 @@
+package cn.com.jandar.action.manage.scd;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/scd/sbscd",resource="设备生产单")
+public class SbscdController extends AdminBaseController{
+	public void index(){
+		renderText("设备生产单");
+	}
+}

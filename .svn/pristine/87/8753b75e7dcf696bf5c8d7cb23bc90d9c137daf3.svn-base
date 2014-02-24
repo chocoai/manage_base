@@ -1,0 +1,212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>提示信息</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<script type="text/javascript">
+function oncc(){
+	var str = '设备类型:'+$('#sblx').val()+"\n";
+		str += '仓库下拉:'+$('#ckxx').val()+"\n";
+		str += '单号下拉:'+$('#dhxx').val()+"\n";
+		str += '用户信息下拉:'+$('#userxx').val()+"\n";
+	alert(str);
+}
+</script>
+</head>
+<body class="success">
+	字典获取值：
+	${statics["cn.com.jandar.plugin.DicPlugin"].jkzidian.get("SBLX").get("001")}
+	<label class="labelhead">数字字典拉下:</label>  
+	<label class="labelbody">
+		<select name="sblx" id="sblx" class="labelselect">
+			<option value="">请选择</option>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("SBLX") as sblx>
+				<#if sblx.code=="002">
+				<option value="${sblx.code}" selected>${sblx.value}</option>
+				<#else>
+				<option value="${sblx.code}">${sblx.value}</option>
+				</#if>
+			</#list>
+		</select>
+	</label>
+	<br/>
+	<label class="labelhead">仓库下拉:</label>  
+	<label class="labelbody">
+		<select name="ckxx" id="ckxx" class="labelselect" >
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].b_storeall?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].b_storeall.keySet() as key>
+		<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_storeall.get(key)}</option>
+			</#list>
+		</#if>
+		</select>
+	</label>
+	<br/>
+	<label class="labelhead">单号类型下拉:</label>  
+	<label class="labelbody" >
+		<select name="dhxx" id="dhxx" class="labelselect" style="width: 100px">
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].b_goodsall?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].b_goodsall.keySet() as key>
+		<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_goodsall.get(key)}</option>
+			</#list>
+		</#if>
+		</select>
+	</label>
+	<br/>
+	<label class="labelhead">用户信息下拉:</label>  
+	<label class="labelbody" >
+		<select name="userxx" id="userxx" class="labelselect" style="width: 100px">
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].ts_userall?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].ts_userall.keySet() as key>
+				<#if key=="admin">
+				<option value="${key}" selected>${statics["cn.com.jandar.plugin.DicPlugin"].ts_userall.get(key)}</option>
+				<#else>
+				<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].ts_userall.get(key)}</option>
+				</#if>
+			</#list>
+		</#if>
+		</select>
+	</label>
+	<br/>
+	<label class="labelhead">厂商所有下拉:</label>  
+	<label class="labelbody" >
+		<select name="b_factoryall" id="b_factoryall" class="labelselect" style="width: 100px" onchange="alert(this.value)">
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].b_factoryall?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].b_factoryall.keySet() as key>
+		<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_factoryall.get(key)}</option>
+			</#list>
+		</#if>
+		</select>
+	</label>	
+	<br/>
+	<label class="labelhead">厂商有效下拉:</label>  
+	<label class="labelbody" >
+		<select name="b_factory" id="b_factory" class="labelselect" style="width: 100px" onchange="alert(this.value)">
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].b_factory?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].b_factory.keySet() as key>
+		<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_factory.get(key)}</option>
+			</#list>
+		</#if>
+		</select>
+	</label>	
+	<br/>
+	<label class="labelhead">厂商简写下拉:</label>  
+	<label class="labelbody" >
+		<select name="b_factorysimgle" id="b_factorysimgle" class="labelselect" style="width: 100px" onchange="alert(this.value)">
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].b_factorysimgle?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].b_factorysimgle.keySet() as key>
+		<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_factorysimgle.get(key)}</option>
+			</#list>
+		</#if>
+		</select>
+	</label>	
+
+	<br/>
+	<label class="labelhead">客户所有下拉:</label>  
+	<label class="labelbody" >
+		<select name="b_customerall" id="b_customerall" class="labelselect" style="width: 100px" onchange="alert(this.value)">
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].b_customerall?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].b_customerall.keySet() as key>
+		<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_customerall.get(key)}</option>
+			</#list>
+		</#if>
+		</select>
+	</label>	
+	<br/>
+	<label class="labelhead">客户有效下拉:</label>  
+	<label class="labelbody" >
+		<select name="b_customer" id="b_customer" class="labelselect" style="width: 100px" onchange="alert(this.value)">
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].b_customer?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].b_customer.keySet() as key>
+		<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_customer.get(key)}</option>
+			</#list>
+		</#if>
+		</select>
+	</label>
+	
+	<br/>
+	<label class="labelhead">设备所有下拉:</label>  
+	<label class="labelbody" >
+		<select name="b_deviceall" id="b_deviceall" class="labelselect" style="width: 100px" onchange="alert(this.value)">
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.keySet() as key>
+		<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(key)}</option>
+			</#list>
+		</#if>
+		</select>
+	</label>
+	<br/>
+	<label class="labelhead">设备001下拉:</label>  
+	<label class="labelbody" >
+		<select name="b_device001" id="b_device001" class="labelselect" style="width: 100px" onchange="alert(this.value)">
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].b_device001?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].b_device001.keySet() as key>
+		<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_device001.get(key)}</option>
+			</#list>
+		</#if>
+		</select>
+	</label>
+	<br/>
+	<label class="labelhead">设备002下拉:</label>  
+	<label class="labelbody" >
+		<select name="b_device002" id="b_device002" class="labelselect" style="width: 100px" onchange="alert(this.value)">
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].b_device002?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].b_device002.keySet() as key>
+		<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_device002.get(key)}</option>
+			</#list>
+		</#if>
+		</select>
+	</label>
+	<br/>
+	<label class="labelhead">设备003下拉:</label>  
+	<label class="labelbody" >
+		<select name="b_device003" id="b_device003" class="labelselect" style="width: 100px" onchange="alert(this.value)">
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].b_device003?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].b_device003.keySet() as key>
+		<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_device003.get(key)}</option>
+			</#list>
+		</#if>
+		</select>
+	</label>
+	<br/>
+	<label class="labelhead">设备简写下拉:</label>  
+	<label class="labelbody" >
+		<select name="b_devicesimgle" id="b_devicesimgle" class="labelselect" style="width: 100px" onchange="alert(this.value)">
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].b_devicesimgle?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].b_devicesimgle.keySet() as key>
+		<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_devicesimgle.get(key)}</option>
+			</#list>
+		</#if>
+		</select>
+	</label>	
+	<br/>
+	<label class="labelhead">地区下拉:</label>  
+	<label class="labelbody" >
+		<select name="ts_area" id="ts_area" class="labelselect" style="width: 100px" onchange="alert(this.value)">
+		<option value="">请选择</option>
+		<#if statics["cn.com.jandar.plugin.DicPlugin"].ts_area?exists>
+			<#list statics["cn.com.jandar.plugin.DicPlugin"].ts_area.keySet() as key>
+		<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].ts_area.get(key)}</option>
+			</#list>
+		</#if>
+		</select>
+	</label>		
+		
+	<br/>
+	<input type="button" onclick="oncc()" value="提交"/>
+</body>
+</html>

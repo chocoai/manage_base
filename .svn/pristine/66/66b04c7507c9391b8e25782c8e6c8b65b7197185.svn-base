@@ -1,0 +1,77 @@
+package cn.com.jandar.action.admin;
+
+import java.util.List;
+
+import cn.com.jandar.plugin.DicPlugin;
+
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Record;
+
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/admin/xtmenu",resource="菜单管理")
+public class MenuController extends AdminBaseController{
+	public void index(){
+		List<Record> list = Db.find("select * from ts_menu order by sort");
+		setAttr("menuList",list);
+		render("menu_list.html");
+	}
+	//删除
+	public void delete(){
+		String[] ids=getParaValues("ids");
+		for (String id : ids) {
+			if (!Db.deleteById("ts_menu",id)) {
+				renderJson("status","error");
+			}else{
+				DicPlugin.loadMenuDb();
+				renderJson("status","success");
+			}
+		}
+
+	}
+	//编辑菜单
+	public void edit(){
+		Record r = Db.findById("ts_menu", getPara("id"));
+		setAttr("menu", r);
+		render("menu_input.html");
+	}
+	//添加菜单
+	public void add(){
+		render("menu_input.html");
+	}
+
+	public void save(){
+		Record cd = new Record();
+		cd.set("code", getPara("code"));
+		cd.set("name",  getPara("name"));
+		cd.set("function", getPara("function"));
+		cd.set("url",  getPara("url"));
+		cd.set("sort", getPara("sort"));
+		cd.set("stat", getPara("stat"));
+		cd.set("images", getPara("images"));
+		if(Db.save("ts_menu", cd)){
+			DicPlugin.loadMenuDb();
+			setAttr("msg","保存成功" );
+		}
+		setAttr("redirectionUrl", "/admin/xtmenu");
+		render("../common/success.html");
+	}
+	public void update(){
+		Record cd = new Record();
+		cd.set("id",getPara("id"));
+		cd.set("code", getPara("code"));
+		cd.set("name",  getPara("name"));
+		cd.set("function", getPara("function"));
+		cd.set("url",  getPara("url"));
+		cd.set("sort", getPara("sort"));
+		cd.set("stat", getPara("stat"));
+		cd.set("images", getPara("images"));
+		if(Db.update("ts_menu", cd)){
+			DicPlugin.loadMenuDb();
+			setAttr("msg","更新成功" );
+		}
+		setAttr("redirectionUrl", "/admin/xtmenu");
+		render("../common/success.html");
+	}
+}

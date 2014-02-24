@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>角色维护</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<#include "/admin/common/include.html" />
+		
+<script type="text/javascript">
+$().ready(function() {
+
+	var $validateErrorContainer = $("#validateErrorContainer");
+	var $validateErrorLabelContainer = $("#validateErrorContainer ul");
+	var $validateForm = $("#validateForm");
+	
+	var $allChecked = $("#validateForm .allChecked");
+	
+	$allChecked.click( function() {
+		var $this = $(this);
+		var $thisCheckbox = $this.parent().parent().find(":checkbox");
+		if ($thisCheckbox.filter(":checked").size() > 0) {
+			$thisCheckbox.attr("checked", false);
+		} else {
+			$thisCheckbox.attr("checked", true);
+		}
+		return false;
+	});
+	
+	// 表单验证
+	$validateForm.validate({
+		errorContainer: $validateErrorContainer,
+		errorLabelContainer: $validateErrorLabelContainer,
+		wrapper: "li",
+		errorClass: "validateError",
+		ignoreTitle: true,
+		rules: {
+			"role.name": "required"
+		},
+		messages: {
+			"role.name": "请填写角色名称"
+		},
+		submitHandler: function(form) {
+			$(form).find(":submit").attr("disabled", true);
+			form.submit();
+		}
+	});
+	
+	$.validator.addMethod("roleAuthorityListRequired", $.validator.methods.required, "请选择管理权限");
+	
+	$.validator.addClassRules("roleAuthorityList", {
+		roleAuthorityListRequired: true
+	});
+	
+})
+</script>
+		
+<#if !(role.id)??>
+	<#assign isAdd = true />
+<#else>
+	<#assign isAdd = false />
+</#if>
+	</head>
+	<body class="input" onload="showMsg('${errMsg}')">
+		<div class="ctrttop cy143w">
+			<#if isAdd>添加角色<#else>编辑角色</#if>
+		</div>
+		<div class="body">
+			<form id="validateForm"  action="<#if isAdd>${base}/admin/role/save<#else>${base}/admin/role/update</#if>" method="post">
+				<input type="hidden" name="role.id" value="${(role.id)!}" />
+				<table class="inputTable">
+				<tr>
+					<th>
+						角色名称: 
+					</th>
+					<td>
+						<input type="text" name="role.name" class="formText {required: true}" value="${(role.name)!}" />
+						<label class="requireField">*</label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						描述: 
+					</th>
+					<td>
+						<textarea name="role.description" class="formTextarea">${(role.description)!}</textarea>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						&nbsp;
+					</td>
+				</tr>
+				<tr class="authorityList">
+					<th>
+						<a href="#" class="allChecked" title="点击全选所有权限">全部选择: </a>
+					</th>
+					<td>
+					
+					<#if statics["cn.com.jandar.plugin.DicPlugin"].menuofMap?exists>
+						<#list statics["cn.com.jandar.plugin.DicPlugin"].menuofMap.keySet() as key>
+							<font style="font-weight: bold">${key}</font><br/>
+								<#list statics["cn.com.jandar.plugin.DicPlugin"].menuofMap.get(key) as val>
+									<label>
+										<input type="checkbox" name="authorityList" class="roleAuthorityList" value="${val.url}"<#if (isAdd || role.resource.contains(val.url))!> checked</#if> />${val.function}
+									</label>
+								</#list>
+								<br/>
+						</#list>
+					</#if>
+					
+					
+					
+					</td>
+				</tr>
+			</table>
+			<div class="buttonArea">
+				<input type="submit" class="formButton" value="确  定" hidefocus />&nbsp;&nbsp;
+				<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus />
+			</div>
+		</form>
+	</div>
+	</body>
+</html>

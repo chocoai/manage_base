@@ -1,0 +1,132 @@
+var objid;
+var array=new Array();
+function smartsearch(obj,xurl){
+	//alert(obj.id);
+	objid = obj.id;
+	//alert(obj.value);
+	
+    var text = $("#"+objid).val();
+    text = $.trim(text);
+    //if (text.length>0){
+        $.ajax({
+			type: "POST",
+			url: xurl,
+			dataType: "json",
+			data:'cs='+text,
+            success:function(result){
+            var name=result.info;
+            name = $.trim(name); 
+            if (name.length>0){
+                    array=name.split('||');
+                    positionDiv();
+                    document.getElementById("search_suggest").innerHTML="";
+                    document.getElementById("search_suggest").innerHTML+="<div class='item_button'></div>";
+                    for(var i=0;i<array.length;i++){
+                        if(array[i]!=""){//项值不为空，组合DIV，每个DIV有onmouseover、onmouseout、onclick对应事件
+                            document.getElementById("search_suggest").innerHTML+="<div class='itemBg' id='item" + i + "' onmouseover='beMouseOver(" + i +")' onmouseout='beMouseOut(" + i + ")' onclick='beClick(" + i + ")'>" + array[i] + "</div>";
+                        }
+                    }
+    				//最后一个DIV显示 关闭 效果 onclick方法
+    				//document.getElementById("search_suggest").innerHTML+="<br/>";
+                    document.getElementById("search_suggest").innerHTML+="<div class='item_button'></div>";
+                    //document.getElementById("search_suggest").innerHTML+="<div class='item_button' onclick='hiddenDiv();'><font color='#666666'><a href='#'>关闭</a></font></div>";
+                    document.getElementById("search_suggest").style.display="inline";
+                }else{
+                    document.getElementById("search_suggest").style.display="none";
+                }
+            }
+        }); 
+    //}
+}
+//实现最后一个DIV 关闭 onclick方法
+function hiddenDiv(){
+    document.getElementById("search_suggest").style.display="none";
+}
+
+function positionDiv(){
+	var dv=document.getElementById('search_suggest');
+	dv.style.left=getPos("x")+"px";
+	dv.style.top=getPos("y")+document.getElementById(objid).offsetHeight+1+"px";
+	dv.style.width=document.getElementById(objid).offsetWidth+"px";
+	dv.style.height=array.length * 20+"px";
+	dv.style.height="160px";
+	dv.style.overflow = "auto";
+}
+function getPos(type){
+	var p;
+	var o=document.getElementById(objid);
+	if(type=="x")
+		p=o.offsetLeft;
+	else 
+		p=o.offsetTop;
+	while(o=o.offsetParent){
+		if (type=="x") 
+			p+=o.offsetLeft; 
+		else 
+			p+=o.offsetTop;
+	}
+	return p;
+}
+//函数鼠标经过效果        
+function beMouseOverEFF(i){
+    if ((i>=0)&(i<=array.length-1)){
+        document.getElementById("item" + i).className="item_high";
+    }
+}
+
+//函数鼠标移开效果
+function beMouseOutEFF(i){
+    if ((i>=0)&(i<=array.length-1)){
+        document.getElementById("item" + i).className="item_normal";
+    }
+}
+
+//函数鼠标经过
+function beMouseOver(i){
+    document.getElementById(objid).focus();
+    var zz=i;
+    beMouseOutEFF(zz);
+    beMouseOverEFF(zz);
+}
+
+//函数鼠标移开
+function beMouseOut(i){
+    beMouseOutEFF(i);
+}
+//函数单击
+function beClick(i){
+	var arrays = array[i].split('#');
+    document.getElementById(objid).value=array[i];
+    document.getElementById(objid+'_0').value=arrays[0];
+    document.getElementById("search_suggest").style.display="none";
+    document.getElementById(objid).focus();
+}
+//处理下拉DIV以外的点击事件，隐藏DIV
+//var _fnString="var _mousedown=function(event){"+
+//		"if (!( event.target.id =='"+ objid +"' || $(event.target).parents('#"+objid+"').length>0) {"+
+//		"	document.getElementById('search_suggest').style.display='none';"+
+//		"}}";
+//eval(_fnString);
+
+var _mousedown=function(event){
+	var id = event.target.id;
+	if (id.indexOf("item")==-1) {
+		document.getElementById("search_suggest").style.display='none';
+	}
+}
+/**
+try{
+	$('body').bind('mousedown', _mousedown);
+}
+catch(e){}
+**/
+
+//document.onmousedown = _mousedown;
+
+$(function($) {
+	$(document).ready(function(){
+		$('body').bind('mousedown', _mousedown);
+	});
+});
+
+

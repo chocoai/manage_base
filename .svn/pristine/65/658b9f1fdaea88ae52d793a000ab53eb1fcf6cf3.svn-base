@@ -1,0 +1,66 @@
+package cn.com.jandar.action.manage.base;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.model.Factory;
+import cn.com.jandar.model.User;
+
+import com.jfinal.plugin.activerecord.Page;
+
+import cty.kit.route.ControllerBind;
+
+/**
+ * @author
+ */
+@ControllerBind(controllerKey="/manage/base/factory",resource="厂商登记")
+public class FactoryController extends AdminBaseController{
+	public void index(){
+		Page<Factory> page =  Factory.getFactoryPage(getParaToInt("pageNumber",1),getParaToInt("pageSize",PAGESIZE),getPara("orderBy","b_factory.ID"),getPara("order","desc"),getPara("filter_LIKES_name"));
+		keepPara("filter_LIKES_name");
+		setAttr("page", page);
+		render("factory_list.html");
+	}
+//    public void delete(){
+//		String[] ids=getParaValues("ids");
+//		renderJson("status", Factory.delete(ids));
+//	}
+	public void add(){
+		render("factory_input.html");
+	}
+	public void save(){
+		Factory factory = getModel(Factory.class);
+		User loginUser=getSessionAttr("loginUser");
+		factory.set("OPERATOR",loginUser.getStr("username"));
+		setAttr("msg", Factory.save(factory));
+		setAttr("redirectionUrl", "/manage/base/factory");
+		render("/admin/common/success.html");
+	}
+	public void edit(){
+		Factory factory = Factory.getFactoryById(getPara("ID"));
+		setAttr("factory", factory);
+		render("factory_input.html");
+	}
+	public void update(){
+		Factory factory=getModel(Factory.class);
+		User loginUser=getSessionAttr("loginUser");
+		factory.set("UPOPERATOR",loginUser.getStr("username"));
+		setAttr("msg", Factory.update(factory));
+		setAttr("redirectionUrl", "/manage/base/factory");
+		render("/admin/common/success.html");
+	}
+	
+	
+	public void checkFactoryName(){
+		Factory factory=getModel(Factory.class);
+		renderText(Factory.isExitByFactoryName(factory.getStr("FNAME")));
+	}
+	/**
+	 *  更改有效标志
+	 */
+	public void changeYXBZ() {
+	    Factory.changeYXBZ(getPara("ID"));
+	    setAttr("msg", "变更厂商状态成功！");
+	    setAttr("redirectionUrl", "/manage/base/factory");
+		render("/admin/common/success.html");
+	}
+	
+}

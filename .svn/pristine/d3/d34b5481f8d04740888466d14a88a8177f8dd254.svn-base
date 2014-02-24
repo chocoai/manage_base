@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>模型详细列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<script type="text/javascript" src="${base}/template/admin/js/smartsearch.js"></script>
+<link href="${base}/template/admin/css/smartsearch.css" rel="stylesheet" type="text/css" />
+<#include "/admin/common/include.html"/>
+<script type="text/javascript">
+var productImageIndex = 1;
+	productImageIndex = '${detaillist?size}';
+
+	$().ready( function() {
+		//添加事件
+		$("#addModelDetail").click(function() {
+			var deviceid = '<input type="text" name="DEVICEID" id="device_' + productImageIndex + '"  style="width:400px" class="fromText {required: true}" onkeyup="smartsearch(this,"${base}/admin/ssuo/ajax_sb");" />';				
+				deviceid += '<label class="requiredField">*</label>';
+			var dnum = '<input type="text" name="DNUM" value="1" id="num_' + productImageIndex + '" class="fromText {required: true}" />';
+  				dnum +=	'<label class="requiredField">*</label>';
+  			/* var sm ='<input type="text" name="SM" id="sm.' + productImageIndex + '" class="fromText" value="无"/><label class="requiredField">*</label>'; */
+			var trHtml = '<tr> <td>'+deviceid+'</td><td>'+dnum+'</td><td> <a href="javascript:;" class="deleteProductImage">[删除]<\/a> <\/td> <\/tr>';		
+			$("#productImageTable").append(trHtml);
+			productImageIndex ++;
+		});
+			//刪除
+		$("a.deleteProductImage").live("click", function() {
+			var $this = $(this);
+			$.dialog({
+				type: "warn",
+				content: "您确定要删除吗？",
+				ok: "确 定", 
+				cancel: "取 消",
+				close: true, 
+				modal: true, 
+				okCallback: function() {
+					$this.closest("tr").remove();
+					productImageIndex--;
+				}
+			});
+		});
+	});
+	
+function aa(){
+	var reg = new RegExp("^[0-9]*$");
+	var devs = "null";
+		if(productImageIndex>0){
+			for(var i=0;i<productImageIndex;i++){
+				console.info(i+"---");
+				var dev = document.getElementById("device_"+i).value;
+				var numo = document.getElementById("num_"+i);
+			/* 	var smo = document.getElementById("sm."+i); */
+				if(devs.indexOf(dev)!=-1){
+						alert("请勿重复选择设备!");
+				          return false;
+				}
+				devs  =devs+ document.getElementById("device_"+i).value;
+				if(numo!=null/* &&smo!=null */){
+					var num = numo.value;
+					/* var sm  = smo.value; */
+					 /* if(sm==""){ 
+			        	alert("请填写说明");return false;
+			        }else */ if(num==""){ 
+			        	alert("请输入设备数量");return false;
+			        }else if(!reg.test(num)){
+			        	  alert("数量只能为数字!");
+				          return false;
+			        }
+				}
+			}
+		}
+		$("#validateForm").submit();
+	}
+</script>
+</head>
+
+<body class="input list" onload="showMsg('${errMsg}')">
+	<div class="ctrttop cy143w">
+	 	查看模型详情
+    </div>
+    <div class="body">
+    	<form id="validateForm" action="${base}/manage/scd/mxsc/update" method="post">
+    		<input type="hidden" name="modelid" id="modelid" value="${model.ID}"/>
+    		<fieldset>
+				<legend>模型信息</legend>
+				<table class="inputTable" title="模型信息">
+
+    			<tr>
+    				<th>
+    					 模型名称:
+    				</th>
+    				<td>
+    					${(model.MODLENAME)!}
+    				</td>
+    			</tr>
+
+				    			
+    			<tr>
+    				<th>
+    					 有效标志
+    				</th>
+    				<td>
+   						<#list statics["cn.com.jandar.plugin.DicPlugin"].jkzidianList.get("YXBS") as qybz> 							
+ 							<#if model.YXBZ == qybz.code>
+ 						       ${qybz.value}
+ 							</#if>
+   						</#list>
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>
+    					 备注
+    				</th>
+    				<td>
+    				${(model.BZ)!}
+    				</td>
+    			</tr>
+    		</table>
+    		</fieldset>
+    		<fieldset>
+				<legend>单据明细</legend>
+		    	 <table class="listTable" id="productImageTable">
+    			<!--  <tr>
+					<td colspan="4" align="right">
+					<input type="button" class="formButton" id="addModelDetail" value="添加细节"/>  
+    		       </td>
+				</tr> -->
+  				<tr>
+    				<th>
+    					<span class="sort">设备名称</span>
+    				</th>
+    				<th>
+    					<span class="sort">数量</span>
+    				</th>
+    				<!-- <th>
+    					<span class="sort">说明</span>
+    				</th> -->
+    			</tr>
+  				<#if detaillist>
+    			<#list detaillist as alist>
+    			<tr>
+    				<td>
+    				  ${(alist.DEVICEID)!}#${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(alist.DEVICEID + "")}
+    				<td>
+    				  ${(alist.DNUM)!}
+    				</td>
+    				<!-- <td>
+   						<input type="text" name="SM" id="sm.${detaillist_index+1}" class="fromText" value="${(alist.SM)!}"/>
+   						<label class="requiredField">*</label>
+    				</td> -->
+    				
+    			</tr>
+    			</#list>
+    			</#if>
+    		</table>
+    		</fieldset>
+    		<div class="buttonArea">
+				<input type="button" class="formButton" onclick="window.history.back(); return false;" value="返  回" hidefocus />			</div>
+    		
+    	</form>
+    </div>
+</body>
+</html>

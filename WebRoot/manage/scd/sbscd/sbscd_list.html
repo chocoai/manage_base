@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>生产单</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+
+<script type="text/javascript">
+ $().ready( function() {
+	$("#searchAllData").click( function() {
+		$("#pageNumber").val("1");
+		window.location.href="${base}/manage/scd/sbscd/index";
+	});
+	
+	$("#searchDataByCondtion").click( function() {
+		$("#listForm").submit();
+	});
+	
+});
+</script>
+
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+		<#if typeCode == 2> 单据(草稿)列表 <#else> 单据(已复核)列表 </#if> &nbsp;<span
+			class="pageInfo">总记录数: ${page.totalRow}(共${page.totalPage}页)</span>
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/manage/scd/sbscd/index" method="post">
+		<div class="listBar">
+			<input type="button" class="formButton" onclick="location.href='${base}/manage/scd/sbscd/add'" value="新增" />
+
+			<#if ddzt == "011">
+			   <input type="button" class="formButton" onclick="location.href='${base}/manage/scd/sbscd'" value="已复核" />
+			<#else>
+			<#if ddzt == "010">
+			   <input type="button" class="formButton" onclick="location.href='${base}/manage/scd/sbscd'" value="已复核" />
+			<#else>
+			   <input type="button" class="formButton" onclick="location.href='${base}/manage/scd/sbscd?ddzt=${'010'}'" value="草稿" />
+			</#if>
+			   <input type="button" class="formButton" onclick="location.href='${base}/manage/scd/sbscd?ddzt=${'011'}'" value="作废" />
+			</#if>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<label>客户:</label>
+			<select  name="SEARCH_LIKES_CUSTOMER" class="labelselect" style="width: 100px">
+				<option value="">请选择</option>
+				<#if statics["cn.com.jandar.plugin.DicPlugin"].b_customer?exists> 
+					<#list statics["cn.com.jandar.plugin.DicPlugin"].b_customer.keySet() as	key>
+						 <#if key == "${SEARCH_LIKES_CUSTOMER}">
+						   <option value="${key}" selected="selected">${statics["cn.com.jandar.plugin.DicPlugin"].b_customer.get(key)}</option>
+						 <#else>
+						    <option value="${key}"> ${statics["cn.com.jandar.plugin.DicPlugin"].b_customer.get(key)}</option>
+						 </#if>
+					</#list>
+				 </#if>
+			 </select> 
+			&nbsp;&nbsp;
+			<label>订单时间查询:</label>
+			<input name="SEARCH_LIKES_DATETIME_BEGIN" style="width: 100px" class="Wdate" value="${SEARCH_LIKES_DATETIME_BEGIN!}"  onfocus="WdatePicker({dateFmt:'yyyy-MM-dd'})"/>
+			—
+			<input name="SEARCH_LIKES_DATETIME_END" style="width: 100px" class="Wdate" value="${SEARCH_LIKES_DATETIME_END!}" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd'})"/>
+			&nbsp;&nbsp;
+			<input id="searchDataByCondtion" type="button" class="formButton"  value="查询" />
+			<input id="searchAllData" type="button" class="formButton"  value="查询全部" />
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<label>每页显示:</label>  
+				<select name="pageSize" id="pageSize">
+					<option value="10" <#if page.pageSize == 10>selected="selected" </#if>>
+						10
+					</option>
+					<option value="20" <#if page.pageSize == 20>selected="selected" </#if>>
+						20
+					</option>
+					<option value="50" <#if page.pageSize == 50>selected="selected" </#if>>
+						50
+					</option>
+					<option value="100" <#if page.pageSize == 100>selected="selected" </#if>>
+						100
+					</option>
+				</select>
+		</div>	
+			<table class="listTable">
+				<tr>
+				    <th style="margin-left: 10px;">
+    					序号
+    				</th>
+					<th>
+						<span class="sort" name="DH">单号</span>
+					</th>
+				
+					<th>
+						<span class="sort" name="CUSTOMERID">客户</span>
+					</th>
+					<th>
+						<span class="sort" name="DHZT">单号状态</span>
+					</th>
+					<th>
+						<span class="sort" name="DDZT">订单状态</span>
+					</th>
+					<th>
+						<span class="sort" name="SBNUM">数量</span>
+					</th>
+					<th>
+						<span class="sort" name="LXR">联系人</span>
+					</th>
+					<th>
+						<span class="sort" name="LXDH">联系电话</span>
+					</th>
+					
+					<th colspan="4">
+						操作
+					</th>
+				</tr>
+				<#list page.list as list>
+					<tr>
+						<td>
+    					   ${list_index+1}
+						</td>
+						<td>
+						    ${list.DH}
+						</td>
+						
+						<td>
+						  <#if list.CUSTOMERID??>
+						    ${statics["cn.com.jandar.plugin.DicPlugin"].b_customer.get("${list.CUSTOMERID}")}  
+						  <#else>
+						    ${list.CUSTOMERID}
+						  </#if>
+						   
+						</td>
+						
+						<td>
+						<#if list.ddzt == "011">
+							<#if list.DHZT == "002">
+							       待入库
+							<#else>
+							      已入库
+							</#if>
+						 <#elseif (list.ddzt != "010") &&(list.ddzt != "011") >
+						    <#if list.DHZT == "002">
+							       待出库
+							<#else>
+							     已出库
+							</#if>
+						  <#else>
+						           无
+						  </#if>
+						</td>
+						
+						<td>
+						   <#if list.DDZT == "001">
+							          订单生成
+						   <#elseif list.ddzt == "002">
+                                                                                              发货中
+                           <#elseif list.ddzt == "003">
+                                                                                               确认收货(生产)
+                           <#elseif list.ddzt == "004">
+                                                                                               开始生产
+                           <#elseif list.ddzt == "005">
+                                                                                               发往客户
+                           <#elseif list.ddzt == "006">
+                                                                                              确认接收(客户)
+                           <#elseif list.ddzt == "010">
+                                                                                            草稿
+                           <#elseif list.ddzt == "011">
+                                                                                            已作废
+						   </#if>
+						</td>
+						
+						<td>
+							${list.SBNUM}
+						</td>
+						<td>
+							${list.lxr}
+						</td>
+						<td>
+							${list.lxdh}
+						</td>
+						<td>
+						    <#if (list.DHZT)??>
+						       <#if (session.loginUser.roleStr?index_of("/manage/scd/sbscd/queryDetail")>0) >
+							  	 <a href="${base}/manage/scd/sbscd/queryDetail?dh=${list.DH}" title="查看">[查看明细]</a>
+							   </#if>
+							   <#if list.DHZT == "003">
+							   
+								   <#if list.DDZT == "001">
+								      <#if (session.loginUser.roleStr?index_of("/manage/scd/sbscd/edit_order_send")>0) >
+								     	<a href="${base}/manage/scd/sbscd/edit_order_send/${list.DH}-${1}" title="发货">[发货]</a>
+								      </#if>
+								   <#elseif list.DDZT == "002">
+								    <#if (session.loginUser.roleStr?index_of("/manage/scd/sbscd/edit_order_send_edit")>0) >
+								     <a href="${base}/manage/scd/sbscd/edit_order_send_edit/${list.DH}-${1}" title="编辑">[编辑]</a>
+								    </#if>
+								    <#if (session.loginUser.roleStr?index_of("/manage/scd/sbscd/edit_order_factory_receive")>0) >
+								     <a href="${base}/manage/scd/sbscd/edit_order_factory_receive/${list.DH}-${2}" title="确认收货">[确认收货]</a>
+								    </#if>
+								   <#elseif list.DDZT == "003">
+								    <#if (session.loginUser.roleStr?index_of("/manage/scd/sbscd/edit_order_factory_receive_edit")>0) >
+								     <a href="${base}/manage/scd/sbscd/edit_order_factory_receive_edit/${list.DH}-${2}" title="编辑">[编辑]</a>
+								    </#if>
+								     <#if (session.loginUser.roleStr?index_of("/manage/scd/sbscd/edit_order_product")>0) >
+								     <a href="${base}/manage/scd/sbscd/edit_order_product/${list.DH}-${3}" title="开始生产">[开始生产]</a>
+								     </#if>
+								   <#elseif list.DDZT == "004">
+								    <#if (session.loginUser.roleStr?index_of("/manage/scd/sbscd/edit_order_product_edit")>0) >
+								      <a href="${base}/manage/scd/sbscd/edit_order_product_edit/${list.DH}-${3}" title="编辑">[编辑]</a>
+								    </#if>
+								    <#if (session.loginUser.roleStr?index_of("/manage/scd/sbscd/edit_order_product_edit")>0) >
+								     <a href="${base}/manage/scd/sbscd/edit_order_send_custom/${list.DH}-${4}" title="发往客户">[发往客户]</a>
+								     </#if>
+								   <#elseif list.DDZT == "005">
+								     <#if (session.loginUser.roleStr?index_of("/manage/scd/sbscd/edit_order_send_custom_edit")>0) >
+								     <a href="${base}/manage/scd/sbscd/edit_order_send_custom_edit/${list.DH}-${4}" title="编辑">[编辑]</a>
+								     </#if>
+								     <#if (session.loginUser.roleStr?index_of("/manage/scd/sbscd/edit_order_custom_receive")>0) >
+								     <a href="${base}/manage/scd/sbscd/edit_order_custom_receive/${list.DH}-${5}" title="确认收货">[确认收货]</a>
+								     </#if>
+								   </#if>
+								   
+								   <#if list.ddzt != "011">
+								     <#if (session.loginUser.roleStr?index_of("/manage/scd/sbscd/cancelOrder")>0) >
+									   <a href="${base}/manage/scd/sbscd/cancelOrder?dh=${list.DH}" title="作废">[作废]</a>
+									  </#if>
+								   </#if>
+							   </#if>
+							<#else>
+							   <#if (session.loginUser.roleStr?index_of("/manage/scd/sbscd/edit")>0) >
+						        <a href="${base}/manage/scd/sbscd/edit?dh=${list.DH}" title="修改">[修改]</a>
+						       </#if>
+						   	</#if>
+						     	
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if (page.list?size > 0)>
+				<div class="pagerBar">
+					<div class="pager">
+						<#include "/admin/common/pager.html" />
+					</div>
+				<div>
+			<#else>
+				<div class="noRecord">
+					没有找到任何记录!
+				</div>
+			</#if>
+		</form>
+	</div>
+	
+	
+</body>
+</html>

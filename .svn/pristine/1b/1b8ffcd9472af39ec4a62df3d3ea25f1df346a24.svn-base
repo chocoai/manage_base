@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>角色列表</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">
+			角色列表&nbsp;<span class="pageInfo">总记录数: ${page.totalRow}(共${page.totalPage}页)</span>
+	</div>
+	<div class="body">
+		<form id="listForm" action="${base}/admin/role/index" method="post">
+			<div class="listBar">
+				<#if (session.loginUser.roleStr?index_of("/admin/role/add")>0) >
+					<input type="button" class="formButton" onclick="location.href='${base}/admin/role/add'" value="添加角色" />
+				</#if>
+				<label>根据角色名称查找:</label>
+				<label class="searchText"><input id="searchText" type="text" name="filter_LIKES_name" value="${filter_LIKES_name!}" /></label>
+				<input type="button" hidefocus="" value="搜 索" class="formButton" id="searchButton">
+				<input type="button" hidefocus="" value="显示全部" class="formButton" id="showAllButton">
+				<label>每页显示:</label>  
+				<select name="pageSize" id="pageSize">
+					<option value="10" <#if page.pageSize == 10>selected="selected" </#if>>
+						10
+					</option>
+					<option value="20" <#if page.pageSize == 20>selected="selected" </#if>>
+						20
+					</option>
+					<option value="50" <#if page.pageSize == 50>selected="selected" </#if>>
+						50
+					</option>
+					<option value="100" <#if page.pageSize == 100>selected="selected" </#if>>
+						100
+					</option>
+				</select>
+			</div>
+			<table class="listTable">
+				<tr>
+					<th>
+						<span class="sort" name="rolename">角色名称</span>
+					</th>
+					<th>
+						<span class="sort" name="description">描述</span>
+					</th>
+					<th>
+						<span class="sort" name="createDate">创建日期</span>
+					</th>
+					<th>
+						操作
+					</th>
+				</tr>
+				<#list page.list as list>
+					<tr>
+						<td>
+							<#if list.name?length lt 30>${list.name}<#else>${list.name[0..30]}...</#if>
+						</td>
+						<td>
+							<#if list.description?length lt 50>${list.description}<#else>${list.description[0..50]}...</#if>
+						</td>
+						<td>
+							<span title="${list.createDate?string("yyyy-MM-dd HH:mm:ss")}">${list.createDate}</span>
+						</td>
+						<td>
+							<#if (session.loginUser.roleStr?index_of("/admin/role/edit")>0) >
+								<a href="${base}/admin/role/edit?id=${list.id}" title="编辑">[编辑]</a>
+							</#if>
+							<#if (session.loginUser.roleStr?index_of("/admin/role/addqx")>0) >
+								<a href="${base}/admin/role/addqx?id=${list.id}" title="添加权限">[添加权限]</a>
+							</#if>
+						</td>
+					</tr>
+				</#list>
+			</table>
+			<#if (page.list?size > 0)>
+				<div class="pagerBar">
+					<div class="pager">
+						<#include "/admin/common/pager.html" />
+					</div>
+				<div>
+			<#else>
+				<div class="noRecord">
+					没有找到任何记录!
+				</div>
+			</#if>
+		</form>
+	</div>
+</body>
+</html>

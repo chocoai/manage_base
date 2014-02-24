@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>期初入库</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<#include "/admin/common/include.html" />
+<script type="text/javascript">
+   var produceIndex = 1;
+	$()
+			.ready(
+					function() {
+						//新增
+						$("#addProduce")
+								.click(
+										function() {
+										   
+											var selectArea = '<select name="areaMap" id="areaMapId.'+produceIndex+'" class="labelselect formText {required: true}" style="width:180px;">';
+											selectArea += '<option value="">请选择</option>';
+											selectArea += '<#if statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall?exists>';
+											selectArea += '<#list statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.keySet() as key>';
+											selectArea += '<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_deviceall.get(key)}</option>';
+											selectArea += '</#list>';
+											selectArea += '</#if>';
+											selectArea += '</select>';
+
+											var selectFactory = '<input name="factoryMap" id="factoryMapId.'+produceIndex+'"  class="labelselect formText {required: true}" style="width:180px;" onclick="downFactorys(this);"></select>';
+
+											var selectStore = '<select name="storeMap" id="storeMapId.'+produceIndex+'"  class="labelselect formText {required: true}"  style="width:180px;">';
+											selectStore += '<option value="">请选择</option>';
+											selectStore += '<#if statics["cn.com.jandar.plugin.DicPlugin"].b_store?exists>';
+											selectStore += '<#list statics["cn.com.jandar.plugin.DicPlugin"].b_store.keySet() as key>';
+											selectStore += '<option value="${key}">${statics["cn.com.jandar.plugin.DicPlugin"].b_store.get(key)}</option>'
+											selectStore += '</#list>';
+											selectStore += '</#if>';
+											selectStore += '</select>';
+
+											var trHtml = '<tr> <td>'
+													+ selectArea
+													+ '</td><td>'
+													+ selectFactory
+													+ '</td><td>'
+													+ selectDevice
+													+ '</td><td>'
+													+ selectStore
+													+ '</td><td>'
+													+ '<a href="javascript:;" class="deleteProduceRKD">[删除]</a> </td> <td> <a href="javascript:;" class="queryProductPart">[部件明细]</a> </td></tr>';
+											$("#produceTable").append(trHtml);
+											 produceIndex++;
+										});
+						//刪除
+						$("a.deleteProduceRKD").live("click", function() {
+						    if(produceIndex > 0){
+						      produceIndex--;
+						      var $this = $(this);
+							  $.dialog({
+								type : "warn",
+								content : "您确定要删除吗？",
+								ok : "确 定",
+								cancel : "取 消",
+								close : true,
+								modal : true,
+								okCallback : function() {
+									$this.closest("tr").remove();
+								}
+							});
+						    }
+						});
+
+						//部件明细查看
+						$("a.queryProductPart").live("click", function() {
+							var $this = $(this);
+							$.dialog({
+
+							});
+						});
+
+					});
+					
+					
+	function downFactorys(obj){
+	   console.info("======83====obj==="+obj);
+	   var id = $('#areaMapId.').val();
+	  // type: "POST",async:false,改为同步不然会有数据加载不全的问题，或者要么放到success回调里面设置
+	 
+	 /* $.ajax({
+        type: "POST",
+        contentType: "application/json;utf-8",
+        dataType: "json",
+        data: {
+          areaId : 
+        },
+        url: "/manage/scd/zjdj/queryFactorys",
+        success: function (result) {
+            var json = eval("(" + result + ")");
+            var html="" ;
+            $.each(json, function () {
+                html += "<option value=" + this.id + ">" + this.name + "</option>\r\n";
+            });
+            $("#cCuisine").append(html);
+        }
+    });*/
+	}
+	
+
+	function next() {
+		$('#validateForm').submit();
+	}
+</script>
+</head>
+<body class="list">
+	<div class="ctrttop cy143w">整机设备信息登记</div>
+	<div class="body" onload="showMsg('${errMsg}')">
+	
+		<form id="validateForm" action="${base}/manage/scd/sbdj/save"
+			method="post">
+
+			<table class="listTable" id="produceTable">
+				<tr>
+					<td colspan="5" align="left"><input type="button"
+						class="formButton" id="addProduce" value="增加设备" /></td>
+				</tr>
+				<tr>
+					<th>地区</th>
+					<th>厂商</th>
+					<th>设备</th>
+					<th>入库仓库</th>
+					<th>操作</th>
+					<th></th>
+				</tr>
+				
+			</table>
+
+			<div class="buttonArea">
+				<input type="button" class="formButton" value="保存" onclick="next();"
+					hidefocus="true" />&nbsp;&nbsp;&nbsp;&nbsp;
+			</div>
+
+		</form>
+	</div>
+</body>
+</html>

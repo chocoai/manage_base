@@ -1,0 +1,155 @@
+package cn.com.jandar.action.manage.demo;
+
+import java.io.File;
+import java.util.Date;
+import java.util.List;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.model.User;
+
+import com.jfinal.kit.PathKit;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.upload.UploadFile;
+
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/demo/pbxx",resource="屏保图片发布")
+public class PbxxController extends AdminBaseController{
+	public void index(){
+		List<Record> list = Db.find("select * from t_pbxx ");
+		setAttr("page", list);
+		render("pbxx_list.html");
+	}
+	public void edit(){
+		Record r= Db.findById("t_pbxx", getPara("id"));
+		setAttr("pbxx", r);
+		setAttr("saveurl", PathKit.getWebRootPath()+"/template/ysimages/");
+		render("pbxx_input.html");
+	}
+	public void add(){
+		setAttr("saveurl", PathKit.getWebRootPath()+"/template/ysimages/");
+		setAttr("a001", "005");
+		render("pbxx_input.html");
+	}
+	public void delete(){
+		String[] ids = getParaValues("ids");
+		for(String id:ids){
+			Record r = Db.findById("t_pbxx", id);
+			String path = r.getStr("url");
+			if(Db.deleteById("t_pbxx", id)){
+				try {
+					File file = new File(path);
+					file.delete();
+					renderJson("status", "success");
+				} catch (Exception e) {
+					renderJson("status", "error");
+				}
+			}else{
+				renderJson("status", "error");
+			}
+		}
+	}
+	public void save(){
+		String url =getPara("url",PathKit.getWebRootPath()+"/template/ysimages/");
+		try {
+			String filePath = url;
+			List<UploadFile> list=getFiles(filePath);
+			if(list.size()>0){
+				for(UploadFile upfile:list){
+					Record cd = new Record();
+					String s=upfile.getParameterName();
+					UploadFile uf = getFile(s);
+					String upname=uf.getFileName();
+					String orname = uf.getOriginalFileName();
+					cd.set("name", orname);
+					cd.set("url", url+orname);
+					String orPath = filePath+orname;
+					String upPath= filePath+upname;
+					File orfile = new File(orPath);
+					File up = new File(upPath);
+					if(!orPath.equals(upPath)){
+						orfile.delete();
+						up.renameTo(orfile);
+						continue;
+					}
+					cd.set("startdate", getPara("startdate"));
+					cd.set("enddate",  getPara("enddate"));
+					cd.set("hospitals", "");
+					cd.set("operator", ((User)getSessionAttr(User.LOGIN_USER)).get("username"));
+					cd.set("opdate", new Date());
+					if(Db.save("t_pbxx", cd)){
+						setAttr("msg","保存成功" );
+					}
+				}
+			
+			}else{
+				setAttr("msg", "请添加文件");
+				setAttr("redirectionUrl", "/hospital/xxwh/picfabu/add");
+				render("/admin/common/success.html");
+			}
+		} catch (Exception e) {
+				setAttr("msg", "失败："+e.getMessage());
+		}
+		setAttr("redirectionUrl", "/hospital/xxwh/picfabu");
+		render("/admin/common/success.html");
+		
+	}
+	public void update(){
+		String url =getPara("url",PathKit.getWebRootPath()+"/template/ysimages/");
+		try {
+			String filePath = url;
+			List<UploadFile> list=getFiles(filePath);
+			if(list.size()>0){
+				for(UploadFile upfile:list){
+					Record cd = Db.findById("t_pbxx", getPara("pbxxid"));
+					String imgname=cd.get("name");
+					String s=upfile.getParameterName();
+					UploadFile uf = getFile(s);
+					String upname=uf.getFileName();
+					String orname = uf.getOriginalFileName();
+					cd.set("name", orname);
+					cd.set("url", url+orname);
+					String orPath = filePath+orname;
+					String upPath= filePath+upname;
+					File oldimg = new File(filePath+imgname);
+					oldimg.delete();
+					File orfile = new File(orPath);
+					File up = new File(upPath);
+					if(!orPath.equals(upPath)){
+						orfile.delete();
+						up.renameTo(orfile);
+						continue;
+					}
+					cd.set("startdate", getPara("startdate"));
+					cd.set("enddate",  getPara("enddate"));
+					cd.set("hospitals", "");
+					cd.set("operator", ((User)getSessionAttr(User.LOGIN_USER)).get("username"));
+					cd.set("opdate", new Date());
+					if(Db.update("t_pbxx", cd)){
+						setAttr("msg","更新成功" );
+					}else{
+						setAttr("msg","更新失败" );
+					}
+				}
+			}else{
+				Record cd = Db.findById("t_pbxx", getPara("pbxxid"));
+				cd.set("startdate", getPara("startdate"));
+				cd.set("enddate",  getPara("enddate"));
+				cd.set("hospitals", "");
+				cd.set("operator", ((User)getSessionAttr(User.LOGIN_USER)).get("username"));
+				cd.set("opdate", new Date());
+				if(Db.update("t_pbxx", cd)){
+					setAttr("msg","更新成功" );
+				}else{
+					setAttr("msg","更新失败" );
+				}
+			}
+		} catch (Exception e) {
+				setAttr("msg", "失败："+e.getMessage());
+		}
+		setAttr("redirectionUrl", "/hospital/xxwh/picfabu");
+		render("/admin/common/success.html");
+	}
+}

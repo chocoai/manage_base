@@ -1,0 +1,11 @@
+package cn.com.jandar.action.admin;
+
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/admin/store",resource="仓库维护")
+public class StoreController extends AdminBaseController{
+	public void index(){
+		renderText("仓库维护");
+	}
+}

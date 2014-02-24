@@ -1,0 +1,105 @@
+package cn.com.jandar.model;
+
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.jfinal.core.Controller;
+import com.jfinal.ext.plugin.tablebind.TableBind;
+import com.jfinal.kit.StringKit;
+import com.jfinal.plugin.activerecord.DbKit;
+import com.jfinal.plugin.activerecord.Model;
+import com.jfinal.plugin.activerecord.Page;
+
+
+/**
+ * @author 
+ */
+@TableBind(tableName="c_produce")
+public class Produce extends Model<Produce> {
+    private static final long serialVersionUID = -2063970373324095312L;
+    public static final Produce dao = new Produce();
+    public static final String LOGIN_USER = "loginUser"; //登入用户session中的key name
+    
+    /**
+     * 获得入库单列表
+     * @return
+     */
+    public static List<Produce> getProduceList() {
+        List<Produce> produceList = Produce.dao.find("select * from c_produce where 1 = 1 and  c_produce.SBZT = 001  order by id");
+        return produceList;
+    }
+    /**
+     * 根据ID编号查询入库单
+     */
+    public static Produce getProduceById(String id){
+        return Produce.dao.findById(id);
+    }
+    /**
+     * 批量删除入库单
+     */
+    public static String delete(String[] ids) {
+        for (String id : ids) {
+            if (!Produce.dao.deleteById(id)) {
+                return "error";
+            }
+        }
+        return "success";
+    } 
+    
+    /**
+     * 分页查询入库单列表
+     */
+    public static Page<Produce> getProducePage(int sPageNum, int sPageSize, String orderBy, String order,String filter_LIKES_RKCKBH,String filter_LIKES_DHZT) {
+    	 List<Object> param = new ArrayList<Object>();
+         StringBuffer sqlBuffer = new StringBuffer("FROM c_produce where 1 = 1 and  c_produce.SBZT = 001 ");
+       
+         if (!StringKit.isBlank(filter_LIKES_RKCKBH)) {
+        	 sqlBuffer.append(" and  c_produce.RKCKBH = ? ");
+             param.add(filter_LIKES_RKCKBH);
+         }
+         if (!StringKit.isBlank(filter_LIKES_DHZT)) {     //判断是否是已复核
+        	 sqlBuffer.append(" and  c_produce.DHZT = ? ");
+             param.add(filter_LIKES_DHZT);
+         }else{
+        	 sqlBuffer.append(" and  c_produce.DHZT = 003 ");
+         }
+         sqlBuffer.append(" order by ").append(orderBy).append(" ").append(order);
+         Page<Produce> producePage = (Page<Produce>) Produce.dao.paginate(sPageNum, sPageSize, "SELECT * ",
+                                                                          sqlBuffer.toString(),param.toArray());
+         return producePage;
+    }
+    
+    /**
+     * 保存入库单,操作员默认为操作者的姓名
+     */
+    public static String save(Produce produce,Controller c) {
+    	User user = c.getSessionAttr(LOGIN_USER);
+    	produce.set("SBZT", "001"); //001代表设备状态为入库单
+		String DHZT =  produce.getStr("DHZT");
+		if(DHZT.equals("003")){     //002代表单号状态为已复核
+			produce.set("CHECKDATE", new Timestamp(System.currentTimeMillis()));
+		}
+    	produce.set("OPDATE", new Timestamp(System.currentTimeMillis()));
+    	produce.set("OPERATOR",user.getStr("name"));
+    	produce.save();
+        return "保存成功";
+    }
+    /**
+     * 更新入库单,更新操作员默认为操作者的姓名
+     */
+    public static String update(Produce produce,Controller c) {
+    	User user = c.getSessionAttr(LOGIN_USER);
+    	String DHZT =  produce.getStr("DHZT");
+		if(DHZT.equals("003")){     //002代表单号状态为已复核
+			produce.set("CHECKDATE", new Timestamp(System.currentTimeMillis()));
+		}else{
+			produce.set("CHECKDATE", null);
+		}
+    	produce.set("UPIPDATE", new Timestamp(System.currentTimeMillis()));
+    	produce.set("UPOPERATOR",user.getStr("name"));
+    	produce.update();
+        return "更新成功";
+    }
+}

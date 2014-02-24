@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<#include "/admin/common/include.html" />
+<link href="${base}/template/admin/css/index_top.css" type="text/css" rel="stylesheet"/>
+<link href="${base}/template/admin/css/index_public.css" type="text/css" rel="stylesheet"/>
+<title>top</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+</head>
+
+<body >
+	<div class="top">
+   	<div class="toplf"></div>
+    <div class="toprt">
+		<div class="toprttop">
+            	<table border="0" cellspacing="0">
+                	<tr>
+                    	<td class="toprttoptd">
+                    		<span class="cyffw"><a href="#">${(session.loginUser.name)!}</a></span>
+                    		<span class="cyff12 toprttopspan">您好！</span>
+                    	</td>
+                        <td class="toprtbttd"><img src="${base}/template/admin/imgs/index_08_1.png" /></td>
+                        <td class="cyff"><a href="${base}/admin/user/only_edit?id=${(session.loginUser.id)!}" target="mainFrame">个人资料</a></td>
+                        <td class="toprtbttd"><img src="${base}/template/admin/imgs/index_08_1.png" /></td>
+                        <td class="cyff"><a href="${base}/admin/user/pwd_edit?id=${(session.loginUser.id)!}" target="mainFrame">修改密码</a></td>
+                        <td class="toprtbttd"><img src="${base}/template/admin/imgs/index_09_1.png" /></td>
+                        <td class="cyff"><a href="${base}/admin/user/logout" target="_top">退出</a></td>
+                    </tr>
+                </table>
+        </div>
+		<div class="toprtbt">
+			<table cellspacing="2" width="604px" >
+		    	<tr align="right">
+ 					<td class="toprtbttd cyff2" align="right">
+					<#if session.loginUser.valuecatalog?exists>
+						<#list session.loginUser.valuecatalog.keySet() as key>
+								<img src="${base}/template/admin/imgs/${session.loginUser.imagecatalog.get(key)}" />
+			            		<a href="${base}/admin/menu?menucode=${session.loginUser.valuecatalog.get(key)}" target="menuFrame">${key}</a>
+						</#list>
+					</#if>
+					&nbsp;&nbsp;&nbsp;
+					</td>				
+		        </tr>
+		    </table>
+		</div>
+    </div>
+    </div>
+</body>
+</html>

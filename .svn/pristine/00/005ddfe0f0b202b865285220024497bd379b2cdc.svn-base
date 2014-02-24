@@ -1,0 +1,21 @@
+package cn.com.jandar.action.admin;
+
+import cn.com.jandar.kit.DbUtil;
+import cn.com.jandar.plugin.DicPlugin;
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/admin/startxt",resource="系统启用")
+public class StartxtController extends AdminBaseController{
+	@ButtonBind(buttonname="系统启用")
+	public void index(){
+		//初期入库完成，启用系统
+		if("002".equals(DbUtil.readDbString(DicPlugin.t_xtcs.get("XTQYBZ")))){
+			setAttr("msg", "系统已经启用，无需再次操作");
+			render("../common/error_global.html");
+			return;
+		}
+		renderText("系统启用");
+	}
+}

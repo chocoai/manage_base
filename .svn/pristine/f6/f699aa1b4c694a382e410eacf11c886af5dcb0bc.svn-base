@@ -1,0 +1,62 @@
+package cn.com.jandar.action.manage.bxgl;
+
+import com.jfinal.plugin.activerecord.Page;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cn.com.jandar.model.Bxd;
+import cty.kit.route.ButtonBind;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/bxgl/kbxd",resource="开报修单")
+public class KbxdController extends AdminBaseController{
+	
+	@ButtonBind(buttonname="查询")
+	public void index(){
+		Page<Bxd> page =  Bxd.getBxdPage(getParaToInt("pageNumber",1),getParaToInt("pageSize",PAGESIZE),getPara("orderBy","s_bxd.ID"),getPara("order","desc"),getPara("filter_LIKES_name"),"003");
+		keepPara("filter_LIKES_name");
+		setAttr("page", page);
+		render("kbxd_list.html");
+	}
+	
+	@ButtonBind(buttonname="新增")
+	public void add(){
+		render("kbxd_input.html");
+	}
+	
+	@ButtonBind(buttonname="新增")
+	public void save(){
+		Bxd bxd = getModel(Bxd.class);
+		setAttr("msg", Bxd.save(bxd,this));
+		setAttr("redirectionUrl", "/manage/bxgl/kbxd");
+		render("/admin/common/success.html");
+	}
+	
+	@ButtonBind(buttonname="更新")
+	public void edit(){
+		Bxd bxd = Bxd.getBxdById(getPara("id"));
+		String CLZT = bxd.getStr("CLZT");
+		setAttr("bxd", bxd);
+		
+		//判断是否已经回复
+		if(CLZT!=null){
+			render("../bxdhf/bxdhf_input.html");
+		}else{
+		    render("kbxd_input.html");
+		}
+	}
+	
+	@ButtonBind(buttonname="更新")
+	public void update(){
+		Bxd bxd = getModel(Bxd.class);
+		setAttr("msg", Bxd.update(bxd,this));
+		setAttr("redirectionUrl", "/manage/bxgl/kbxd");
+		render("/admin/common/success.html");
+	}
+	
+	@ButtonBind(buttonname="删除")
+	public void delete(){
+		String[] ids=getParaValues("ids");
+		renderJson("status", Bxd.delete(ids));
+	}
+}

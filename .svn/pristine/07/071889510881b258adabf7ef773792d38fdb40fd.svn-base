@@ -1,0 +1,13 @@
+package cn.com.jandar.action.manage.pancun;
+
+import cn.com.jandar.action.admin.AdminBaseController;
+import cty.kit.route.ControllerBind;
+
+
+@ControllerBind(controllerKey="/manage/scd/kccx",resource="库存查询")
+public class KccxController extends AdminBaseController{
+	public void index(){
+		//条件：所在仓库  ，根据单号类型合计
+		renderText("库存查询");
+	}
+}
